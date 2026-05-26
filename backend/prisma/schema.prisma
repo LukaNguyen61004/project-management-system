@@ -65,34 +65,43 @@ enum ActivityActionType {
   ISSUE_MOVED_TO_SPRINT
 }
 
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+}
+
 model User {
-  user_id             Int                  @id @default(autoincrement())
-  user_email          String               @unique
+  user_id             Int           @id @default(autoincrement())
+  user_email          String        @unique
+
   user_password_hash  String?
+  refresh_token       String?
+  
   user_name           String?
   user_avatar_url     String?
-  provider            String               @default("local")
-  user_created_at     DateTime             @default(now())
+
+  provider            AuthProvider  @default(LOCAL)
+
+  user_created_at     DateTime      @default(now())
+  user_updated_at     DateTime      @default(now()) @updatedAt
 
   owned_projects      Project[]
   project_memberships ProjectMember[]
-  reported_issues     Issue[]              @relation("Reporter")
-  assigned_issues     Issue[]              @relation("Assignee")
+
+  reported_issues     Issue[]       @relation("Reporter")
+  assigned_issues     Issue[]       @relation("Assignee")
 
   created_epics       Epic[]
-
   created_sprints     Sprint[]
 
   comments            Comment[]
 
-  notifications       Notification[]       @relation("NotificationReceiver")
-  sent_notifications  Notification[]       @relation("NotificationSender")
+  notifications       Notification[] @relation("NotificationReceiver")
+  sent_notifications  Notification[] @relation("NotificationSender")
 
   invitations_sent    ProjectInvitation[]
 
   activity_logs       ActivityLog[]
-
-  @@index([user_email])
 }
 
 model Project {
