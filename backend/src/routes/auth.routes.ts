@@ -21,4 +21,6 @@ router.post("/refresh-token", refreshTokenController)
 
 router.post("/logout", authMiddleware, logoutController)
 
+
+
 export default router;
