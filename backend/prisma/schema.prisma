@@ -5,7 +5,6 @@
 
 generator client {
   provider = "prisma-client-js"
- 
 }
 
 datasource db {
@@ -55,14 +54,19 @@ enum NotificationType {
 }
 
 enum ActivityActionType {
+  PROJECT_CREATED
+  MEMBER_INVITED
+  INVITATION_ACCEPTED
   ISSUE_CREATED
   ISSUE_UPDATED
   STATUS_CHANGED
   ISSUE_ASSIGNED
   PRIORITY_CHANGED
-  COMMENT_ADDED
-  SPRINT_CREATED
   ISSUE_MOVED_TO_SPRINT
+  SPRINT_CREATED
+  SPRINT_UPDATED
+  SPRINT_STATUS_CHANGED
+  COMMENT_ADDED
 }
 
 enum AuthProvider {
@@ -71,186 +75,188 @@ enum AuthProvider {
 }
 
 model User {
-  user_id             Int           @id @default(autoincrement())
-  user_email          String        @unique
+  user_id    Int    @id @default(autoincrement())
+  user_email String @unique
 
-  user_password_hash  String?
-  refresh_token       String?
-  
-  user_name           String?
-  user_avatar_url     String?
+  user_password_hash String?
+  refresh_token      String?
 
-  provider            AuthProvider  @default(LOCAL)
+  user_name       String?
+  user_avatar_url String?
 
-  user_created_at     DateTime      @default(now())
-  user_updated_at     DateTime      @default(now()) @updatedAt
+  provider AuthProvider @default(LOCAL)
+
+  user_created_at DateTime @default(now())
+  user_updated_at DateTime @default(now()) @updatedAt
 
   owned_projects      Project[]
   project_memberships ProjectMember[]
 
-  reported_issues     Issue[]       @relation("Reporter")
-  assigned_issues     Issue[]       @relation("Assignee")
+  reported_issues Issue[] @relation("Reporter")
+  assigned_issues Issue[] @relation("Assignee")
 
-  created_epics       Epic[]
-  created_sprints     Sprint[]
+  created_epics   Epic[]
+  created_sprints Sprint[]
 
-  comments            Comment[]
+  comments Comment[]
 
-  notifications       Notification[] @relation("NotificationReceiver")
-  sent_notifications  Notification[] @relation("NotificationSender")
+  notifications      Notification[] @relation("NotificationReceiver")
+  sent_notifications Notification[] @relation("NotificationSender")
 
-  invitations_sent    ProjectInvitation[]
+  invitations_sent ProjectInvitation[]
 
-  activity_logs       ActivityLog[]
+  activity_logs ActivityLog[]
 }
 
 model Project {
-  project_id           Int                  @id @default(autoincrement())
-  project_name         String
-  project_key          String               @unique
-  project_description  String?
-  owner_id             Int
-  project_created_at   DateTime             @default(now())
+  project_id          Int      @id @default(autoincrement())
+  project_name        String
+  project_key         String   @unique
+  project_description String?
+  owner_id            Int
+  project_created_at  DateTime @default(now())
 
-  owner                User                 @relation(fields: [owner_id], references: [user_id])
+  owner User @relation(fields: [owner_id], references: [user_id])
 
-  members              ProjectMember[]
-  epics                Epic[]
-  sprints              Sprint[]
-  issues               Issue[]
-  notifications        Notification[]
-  invitations          ProjectInvitation[]
-  activity_logs        ActivityLog[]
+  members       ProjectMember[]
+  epics         Epic[]
+  sprints       Sprint[]
+  issues        Issue[]
+  notifications Notification[]
+  invitations   ProjectInvitation[]
+  activity_logs ActivityLog[]
 
   @@index([project_key])
   @@index([owner_id])
 }
 
 model ProjectMember {
-  pm_id       Int       @id @default(autoincrement())
+  pm_id Int @id @default(autoincrement())
 
-  project_id  Int
-  user_id     Int
+  project_id Int
+  user_id    Int
 
-  role        UserRole  @default(member)
+  role UserRole @default(member)
 
-  joined_at   DateTime  @default(now())
+  joined_at DateTime @default(now())
 
-  project     Project   @relation(fields: [project_id], references: [project_id])
-  user        User      @relation(fields: [user_id], references: [user_id])
+  project Project @relation(fields: [project_id], references: [project_id])
+  user    User    @relation(fields: [user_id], references: [user_id])
 
   @@unique([project_id, user_id])
-
   @@index([project_id])
   @@index([user_id])
 }
 
 model Epic {
-  epic_id             Int        @id @default(autoincrement())
+  epic_id Int @id @default(autoincrement())
 
-  project_id          Int
+  project_id Int
 
-  epic_name           String
+  epic_name String
 
-  epic_description    String?
+  epic_description String?
 
-  epic_color          String     @default("#8B5CF6")
+  epic_color String @default("#8B5CF6")
 
-  created_by          Int
+  created_by Int
 
-  epic_created_at     DateTime   @default(now())
-  epic_updated_at     DateTime   @updatedAt
+  epic_created_at DateTime @default(now())
+  epic_updated_at DateTime @updatedAt
 
-  project             Project    @relation(fields: [project_id], references: [project_id])
+  project Project @relation(fields: [project_id], references: [project_id])
 
-  creator             User       @relation(fields: [created_by], references: [user_id])
+  creator User @relation(fields: [created_by], references: [user_id])
 
-  issues              Issue[]
+  issues Issue[]
 
   @@index([project_id])
 }
 
 model Sprint {
-  sprint_id            Int            @id @default(autoincrement())
+  sprint_id Int @id @default(autoincrement())
 
-  project_id           Int
+  project_id Int
 
-  sprint_name          String
+  sprint_name String
 
-  description          String?
+  description String?
 
-  sprint_status        SprintStatus   @default(planned)
+  sprint_status SprintStatus @default(planned)
 
-  start_date           DateTime?
+  start_date DateTime?
 
-  end_date             DateTime?
+  end_date DateTime?
 
-  created_by           Int
+  created_by Int
 
-  sprint_created_at    DateTime       @default(now())
-  sprint_updated_at    DateTime       @updatedAt
+  sprint_created_at DateTime @default(now())
+  sprint_updated_at DateTime @updatedAt
 
-  project              Project        @relation(fields: [project_id], references: [project_id])
+  project Project @relation(fields: [project_id], references: [project_id])
 
-  creator              User           @relation(fields: [created_by], references: [user_id])
+  creator User @relation(fields: [created_by], references: [user_id])
 
-  issues               Issue[]
+  issues Issue[]
 
-  notifications        Notification[]
+  notifications Notification[]
 
+  activity_logs ActivityLog[]
+
+  @@unique([project_id, sprint_name])
   @@index([project_id])
   @@index([sprint_status])
 }
 
 model Issue {
-  issue_id               Int                  @id @default(autoincrement())
+  issue_id Int @id @default(autoincrement())
 
-  project_id             Int
+  project_id Int
 
-  sprint_id              Int?
+  sprint_id Int?
 
-  epic_id                Int?
+  epic_id Int?
 
-  issue_key              String               @unique
+  issue_key String @unique
 
-  issue_name             String
+  issue_name String
 
-  issue_description      String?
+  issue_description String?
 
-  issue_type             IssueType            @default(task)
+  issue_type IssueType @default(task)
 
-  issue_status           IssueStatus          @default(todo)
+  issue_status IssueStatus @default(todo)
 
-  issue_priority         IssuePriority        @default(low)
+  issue_priority IssuePriority @default(low)
 
-  reporter_id            Int
+  reporter_id Int
 
-  assignee_id            Int?
+  assignee_id Int?
 
-  last_activity_at       DateTime             @default(now())
+  last_activity_at DateTime @default(now())
 
-  warning_count          Int                  @default(0)
+  warning_count Int @default(0)
 
-  review_reject_count    Int                  @default(0)
+  review_reject_count Int @default(0)
 
-  issue_created_at       DateTime             @default(now())
-  issue_updated_at       DateTime             @updatedAt
+  issue_created_at DateTime @default(now())
+  issue_updated_at DateTime @updatedAt
 
-  project                Project              @relation(fields: [project_id], references: [project_id])
+  project Project @relation(fields: [project_id], references: [project_id])
 
-  sprint                 Sprint?              @relation(fields: [sprint_id], references: [sprint_id])
+  sprint Sprint? @relation(fields: [sprint_id], references: [sprint_id])
 
-  epic                   Epic?                @relation(fields: [epic_id], references: [epic_id])
+  epic Epic? @relation(fields: [epic_id], references: [epic_id])
 
-  reporter               User                 @relation("Reporter", fields: [reporter_id], references: [user_id])
+  reporter User @relation("Reporter", fields: [reporter_id], references: [user_id])
 
-  assignee               User?                @relation("Assignee", fields: [assignee_id], references: [user_id])
+  assignee User? @relation("Assignee", fields: [assignee_id], references: [user_id])
 
-  comments               Comment[]
+  comments Comment[]
 
-  notifications          Notification[]
+  notifications Notification[]
 
-  activity_logs          ActivityLog[]
+  activity_logs ActivityLog[]
 
   @@index([issue_key])
   @@index([project_id])
@@ -264,56 +270,56 @@ model Issue {
 }
 
 model Comment {
-  comment_id      Int        @id @default(autoincrement())
+  comment_id Int @id @default(autoincrement())
 
-  issue_id        Int
+  issue_id Int
 
-  user_id         Int
+  user_id Int
 
-  content         String
+  content String
 
-  created_at      DateTime   @default(now())
+  created_at DateTime @default(now())
 
-  issue           Issue      @relation(fields: [issue_id], references: [issue_id])
+  issue Issue @relation(fields: [issue_id], references: [issue_id])
 
-  user            User       @relation(fields: [user_id], references: [user_id])
+  user User @relation(fields: [user_id], references: [user_id])
 
   @@index([issue_id])
   @@index([user_id])
 }
 
 model Notification {
-  notifi_id             Int                 @id @default(autoincrement())
+  notifi_id Int @id @default(autoincrement())
 
-  user_id               Int
+  user_id Int
 
-  sender_id             Int?
+  sender_id Int?
 
-  notifi_type           NotificationType
+  notifi_type NotificationType
 
-  notifi_title          String
+  notifi_title String
 
-  notifi_content        String
+  notifi_content String
 
-  is_read               Boolean             @default(false)
+  is_read Boolean @default(false)
 
-  related_issue_id      Int?
+  related_issue_id Int?
 
-  related_project_id    Int?
+  related_project_id Int?
 
-  related_sprint_id     Int?
+  related_sprint_id Int?
 
-  notifi_created_at     DateTime            @default(now())
+  notifi_created_at DateTime @default(now())
 
-  receiver              User                @relation("NotificationReceiver", fields: [user_id], references: [user_id])
+  receiver User @relation("NotificationReceiver", fields: [user_id], references: [user_id])
 
-  sender                User?               @relation("NotificationSender", fields: [sender_id], references: [user_id])
+  sender User? @relation("NotificationSender", fields: [sender_id], references: [user_id])
 
-  related_issue         Issue?              @relation(fields: [related_issue_id], references: [issue_id])
+  related_issue Issue? @relation(fields: [related_issue_id], references: [issue_id])
 
-  related_project       Project?            @relation(fields: [related_project_id], references: [project_id])
+  related_project Project? @relation(fields: [related_project_id], references: [project_id])
 
-  related_sprint        Sprint?             @relation(fields: [related_sprint_id], references: [sprint_id])
+  related_sprint Sprint? @relation(fields: [related_sprint_id], references: [sprint_id])
 
   @@index([user_id])
   @@index([notifi_created_at])
@@ -321,27 +327,27 @@ model Notification {
 }
 
 model ProjectInvitation {
-  invitation_id     Int         @id @default(autoincrement())
+  invitation_id Int @id @default(autoincrement())
 
-  project_id        Int
+  project_id Int
 
-  email             String
+  email String
 
-  token             String      @unique
+  token String @unique
 
-  role_member       UserRole    @default(member)
+  role_member UserRole @default(member)
 
-  invited_by        Int
+  invited_by Int
 
-  expires_at        DateTime
+  expires_at DateTime
 
-  accepted_at       DateTime?
+  accepted_at DateTime?
 
-  created_at        DateTime    @default(now())
+  created_at DateTime @default(now())
 
-  project           Project     @relation(fields: [project_id], references: [project_id])
+  project Project @relation(fields: [project_id], references: [project_id])
 
-  inviter           User        @relation(fields: [invited_by], references: [user_id])
+  inviter User @relation(fields: [invited_by], references: [user_id])
 
   @@index([project_id])
   @@index([email])
@@ -349,29 +355,33 @@ model ProjectInvitation {
 }
 
 model ActivityLog {
-  log_id          Int                    @id @default(autoincrement())
+  log_id Int @id @default(autoincrement())
 
-  user_id         Int
+  user_id Int
 
-  project_id      Int
+  project_id Int
 
-  issue_id        Int?
+  issue_id Int?
 
-  action_type     ActivityActionType
+  sprint_id Int?
 
-  field_name      String?
+  action_type ActivityActionType
 
-  old_value       String?
+  field_name String?
 
-  new_value       String?
+  old_value String?
 
-  created_at      DateTime               @default(now())
+  new_value String?
 
-  user            User                   @relation(fields: [user_id], references: [user_id])
+  created_at DateTime @default(now())
 
-  project         Project                @relation(fields: [project_id], references: [project_id])
+  user User @relation(fields: [user_id], references: [user_id])
 
-  issue           Issue?                 @relation(fields: [issue_id], references: [issue_id])
+  project Project @relation(fields: [project_id], references: [project_id])
+
+  issue Issue? @relation(fields: [issue_id], references: [issue_id])
+
+  sprint Sprint? @relation(fields: [sprint_id], references: [sprint_id])
 
   @@index([user_id])
   @@index([project_id])
@@ -379,5 +389,3 @@ model ActivityLog {
   @@index([action_type])
   @@index([created_at])
 }
-
-

@@ -1,6 +1,6 @@
 import prisma from "../lib/prisma.js"
 import type { CreateIssueInput, UpdateIssueInput } from "../validatons/issue.validation.js"
-import { IssuePriority, IssueType } from "@prisma/client"
+import { IssuePriority, IssueStatus, IssueType } from "@prisma/client"
 
 export type CreateIssueData = {
     issue_key: string;
@@ -55,6 +55,12 @@ export const getProjectIssues = async (projectId: number) => {
                     user_email: true,
                     user_avatar_url: true,
                 }
+            },
+            sprint: {
+                select: {
+                    sprint_id: true,
+                    sprint_name:true,
+                }
             }
         },
         orderBy: {
@@ -94,6 +100,13 @@ export const findIssueById = async (issueId: number) => {
                     project_name: true,
                     project_key: true,
                 }
+            },
+
+            sprint: {
+                select :{
+                    sprint_id:true, 
+                    sprint_name: true,
+                }
             }
         }
     })
@@ -124,10 +137,59 @@ export const updateIssue = async (issueId: number, data: UpdateIssueInput) => {
     })
 }
 
-export const deleteIssue = async (issueId: number) =>{
+export const deleteIssue = async (issueId: number) => {
     return prisma.issue.delete({
-        where:{
-            issue_id:issueId,
+        where: {
+            issue_id: issueId,
         }
     })
+}
+
+
+export const changeIssueStatus = async (issueId: number, status: IssueStatus) => {
+    return prisma.issue.update({
+        where: {
+            issue_id: issueId,
+        },
+
+        data: {
+            issue_status: status,
+        }
+    });
+}
+
+export const assignIssue = async (issueId: number, assigneeId: number) => {
+    return prisma.issue.update({
+        where: {
+            issue_id: issueId,
+        },
+        data: {
+            assignee_id: assigneeId,
+        }
+    });
+}
+
+export const changeIssuePriority = async(issue_id: number, priority: IssuePriority)=>{
+   return prisma.issue.update({
+    where:{
+        issue_id: issue_id,
+
+    },
+    data: {
+        issue_priority: priority,
+    }
+
+   })
+}
+
+export const updateIssueSprint =async (issueId: number, sprintId: number | null )=>{
+     return prisma.issue.update({
+        where:{
+            issue_id:issueId
+        }, 
+        data:{
+            sprint_id: sprintId
+        }
+     })
+
 }

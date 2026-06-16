@@ -1,7 +1,18 @@
 import type { Request, Response } from "express";
-import { createIssueService, deleteIssueService, getIssueDetailService, getProjectIssueService, updateIssueService } from "../services/issue.service.js";
-import { createIssueSchema, updateIssueSchema } from "../validatons/issue.validation.js";
-import { findIssueById } from "../repositories/issue.repository.js";
+
+import {
+    assignIssueService, changeIssuePriorityService, changeIssueStatusService, createIssueService,
+    deleteIssueService, getIssueDetailService, getProjectIssueService,
+    updateIssueService,
+    updateIssueSprintService
+} from "../services/issue.service.js";
+
+import {
+    assignIssueSchema, changeIssuePrioritySchema, changeIssueStatusSchema, createIssueSchema,
+    updateIssueSchema,
+    updateIssueSprintSchema
+} from "../validatons/issue.validation.js";
+
 
 export const createIssueController = async (req: Request, res: Response) => {
     try {
@@ -142,5 +153,122 @@ export const deleteIssueController = async (req: Request, res: Response) => {
             error: error instanceof Error ? error.message : "Unknown error"
         })
 
+    }
+}
+
+export const changeIssueStatusController = async (req: Request, res: Response) => {
+    try {
+        const issueId = Number(req.params.issueId);
+
+        if (isNaN(issueId)) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid issue id",
+            });
+        }
+
+        const validateData = changeIssueStatusSchema.parse(req.body);
+        const currentUser = req.user!.userId
+
+        const result = await changeIssueStatusService(issueId, validateData, currentUser);
+
+        res.status(200).json({
+            success: true,
+            data: result,
+        })
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error instanceof Error ? error.message : "Unknown error"
+        })
+    }
+}
+
+export const assignIssueController = async (req: Request, res: Response) => {
+    try {
+
+        const issueId = Number(req.params.issueId);
+
+        if (isNaN(issueId)) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid issue id",
+            });
+        }
+
+        const validateData = assignIssueSchema.parse(req.body);
+        const currentUser = req.user!.userId
+
+        const result = await assignIssueService(issueId, validateData, currentUser);
+
+        res.status(200).json({
+            success: true,
+            data: result,
+        })
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error instanceof Error ? error.message : "Unknown error"
+        })
+
+    }
+}
+
+export const changIssuePriorityController = async (req: Request, res: Response) => {
+    try {
+        const issueId = Number(req.params.issueId);
+
+        if (isNaN(issueId)) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid issue id",
+            });
+        }
+
+        const validateData = changeIssuePrioritySchema.parse(req.body);
+        const currentUser = req.user!.userId
+
+        const result = await changeIssuePriorityService(issueId, validateData, currentUser);
+        res.status(200).json({
+            success: true,
+            data: result,
+        })
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error instanceof Error ? error.message : "Unknown error"
+        })
+    }
+}
+
+export const updateIssueSprintController = async( req:Request, res:Response)=>{
+    try {
+        const issueId = Number(req.params.issueId);
+
+        if (isNaN(issueId)) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid issue id",
+            });
+        }
+
+        const validateData = updateIssueSprintSchema.parse(req.body);
+        const currentUser = req.user!.userId
+
+        const result = await updateIssueSprintService(issueId,currentUser, validateData);
+
+        res.status(200).json({
+            success: true,
+            data: result,
+        })
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error instanceof Error ? error.message : "Unknown error"
+        })
     }
 }
