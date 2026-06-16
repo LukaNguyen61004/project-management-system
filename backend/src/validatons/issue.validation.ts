@@ -1,5 +1,5 @@
-import { optional, z } from "zod"
-import { IssuePriority, IssueType } from "@prisma/client";
+import { z } from "zod"
+import { IssuePriority, IssueStatus, IssueType } from "@prisma/client";
 
 export const createIssueSchema = z.object({
     issue_name: z
@@ -23,6 +23,7 @@ export const createIssueSchema = z.object({
         .positive()
         .optional()
 })
+
 export type CreateIssueInput = z.infer<typeof createIssueSchema>
 
 export const updateIssueSchema = z.object({
@@ -41,3 +42,37 @@ export const updateIssueSchema = z.object({
         .optional(),
 })
 export type UpdateIssueInput = z.infer<typeof updateIssueSchema>;
+
+
+export const changeIssueStatusSchema = z.object({
+    issue_status: z.nativeEnum(IssueStatus),
+})
+
+export type ChangIssueStatusInput = z.infer<typeof changeIssueStatusSchema>;
+
+
+export const assignIssueSchema = z.object({
+    assignee_id: z
+         .number()
+         .int()
+         .positive(),
+})
+
+export type AssignIssueInput = z.infer<typeof assignIssueSchema>;
+
+export const changeIssuePrioritySchema = z.object({
+    issue_priority: z.nativeEnum(IssuePriority),
+})
+
+export type ChangIssuePriorityInput = z.infer< typeof changeIssuePrioritySchema>;
+
+export const updateIssueSprintSchema = z.object({
+    sprint_id: z
+    .number()
+    .int()
+    .positive()
+    .nullable(),
+}) 
+
+export type UpdateIssueSprintInput = z.infer<typeof updateIssueSprintSchema>;
+

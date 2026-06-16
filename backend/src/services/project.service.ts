@@ -88,7 +88,7 @@ export const acceptInvitationService = async (token: string, currentUserId: numb
         throw new Error("Invitation already accepted");
     }
 
-    if (invitation.expires_at > new Date()) {
+    if (invitation.expires_at < new Date()) {
         throw new Error("Invitation expired");
     }
 
