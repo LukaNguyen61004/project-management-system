@@ -6,8 +6,10 @@ import {
     removeProjectMember, updateProject,
     deleteProject
 } from "../repositories/project.repository.js";
-import  type {UpdateProjectInput} from "../validatons/project.validation.js"
+import type { UpdateProjectInput } from "../validatons/project.validation.js"
 import { findUserByEmail, findUserById } from "../repositories/auth.repository.js";
+import { createActivityLogService } from "./activityLog.service.js";
+import { ActivityActionType } from "@prisma/client";
 
 
 
@@ -19,6 +21,11 @@ export const createProjectService = async (userId: number, project_name: string,
     }
 
     const project = await createProjectWithAdmin(userId, project_name, project_key, project_description);
+    await createActivityLogService({
+        project_id: project.project_id,
+        user_id: userId,
+        action_type: ActivityActionType.PROJECT_CREATED,
+    });
 
     return project;
 }
@@ -67,6 +74,11 @@ export const inviteMemberService = async (projectId: number, currentUserId: numb
     const token = uuidv4();
 
     const invitation = await creatInvitation(projectId, email, token, currentUserId);
+    await createActivityLogService({
+        user_id: currentUserId,
+        project_id: projectId,
+        action_type: ActivityActionType.MEMBER_INVITED,
+    });
 
     return invitation
 }
@@ -119,6 +131,12 @@ export const acceptInvitationService = async (token: string, currentUserId: numb
         invitation.invitation_id
     );
 
+    await createActivityLogService({
+        user_id: currentUserId,
+        project_id: invitation.project_id,
+        action_type: ActivityActionType.INVITATION_ACCEPTED,
+    });
+
     return {
         message: "Invitation accepted",
         project: invitation.project,
@@ -153,49 +171,98 @@ export const removeProjectMembersService = async (projectId: number, currentUser
 
     await removeProjectMember(projectId, targetUserId);
 
+    await createActivityLogService({
+        user_id: currentUserId,
+        project_id: projectId,
+        action_type: ActivityActionType.MEMBER_REMOVED,
+    });
+
+
     return {
-        message:"Member removed successfully"
+        message: "Member removed successfully"
     }
 }
 
-export const leaveProjectService = async (projectId: number, currentUserId: number) =>{
-     const project = await findProjectById(projectId);
+export const leaveProjectService = async (projectId: number, currentUserId: number) => {
+    const project = await findProjectById(projectId);
 
     if (!project) {
         throw new Error("Project not found");
     }
 
-     if (project.owner_id === currentUserId) {
+    if (project.owner_id === currentUserId) {
         throw new Error(" project owner cannot leave");
     }
 
     await removeProjectMember(projectId, currentUserId);
 
+    await createActivityLogService({
+        user_id: currentUserId,
+        project_id: projectId,
+        action_type: ActivityActionType.MEMBER_LEFT,
+    });
+
     return {
-        message:"Left project successfully"
+        message: "Left project successfully"
     }
 }
 
-export const updateProjectService = async (projectId: number, data:UpdateProjectInput )=>{
-    const updatedProject =await updateProject( projectId, data );
+export const updateProjectService = async (projectId: number, currentUserId: number, data: UpdateProjectInput) => {
+    const project = await findProjectById(projectId);
+    if (!project) {
+        throw new Error("Project not found");
+    }
+
+    const updatedProject = await updateProject(projectId, data);
+
+    if (data.project_name !== undefined && data.project_name !== project.project_name) {
+        
+        await createActivityLogService({
+            user_id: currentUserId,
+            project_id: projectId,
+            action_type: ActivityActionType.PROJECT_UPDATED,
+            field_name: "project_name",
+            old_value: project.project_name,
+            new_value: data.project_name,
+        });
+    }
+
+    if (data.project_description !== undefined && data.project_description !== project.project_description) {
+
+        await createActivityLogService({
+            user_id: currentUserId,
+            project_id: projectId,
+            action_type: ActivityActionType.PROJECT_UPDATED,
+            field_name: "project_description",
+            old_value: project.project_description ?? "",
+            new_value: data.project_description ?? "",
+        });
+    }
 
     return updatedProject;
 }
 
-export const deleteProjectService= async(projectId: number, currentUserId: number)=> {
+export const deleteProjectService = async (projectId: number, currentUserId: number) => {
     const project = await findProjectById(projectId);
 
-    if(!project){
+    if (!project) {
         throw new Error("Project not found");
     }
 
-    if(project.owner_id !== currentUserId) {
+    if (project.owner_id !== currentUserId) {
         throw new Error("Only project owner can delete");
     }
-    
+
+    await createActivityLogService({
+        user_id: currentUserId,
+        project_id: projectId,
+        action_type: ActivityActionType.PROJECT_DELETED,
+    });
+
+
     await deleteProject(projectId);
 
-    return { message: "Project deleted successfully"};
+    return { message: "Project deleted successfully" };
 }
 
 
