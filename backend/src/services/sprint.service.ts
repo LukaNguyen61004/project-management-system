@@ -1,8 +1,9 @@
 
-import { SprintStatus } from "@prisma/client";
+import { ActivityActionType, SprintStatus } from "@prisma/client";
 import { findProjectById, findProjectMember } from "../repositories/project.repository.js";
 import { createSprint, findSprintById, findSprintByName, getProjectSprints, getSprintIssues, updateSprint, updateSprintStatus, type createSprintData } from "../repositories/sprint.repository.js";
 import type { changeSprintStatus, CreateSprintInput, UpdateSprintInput } from "../validatons/sprint.validation.js";
+import { createActivityLogService } from "./activityLog.service.js";
 
 
 
@@ -56,8 +57,16 @@ export const createSprintService = async (projectId: number, currentUserId: numb
             end_date: new Date(data.end_date),
         }),
     };
+    const newSprint = await createSprint(sprintData);
 
-    return createSprint(sprintData);
+    await createActivityLogService({
+        user_id: currentUserId,
+        project_id: projectId,
+        sprint_id: newSprint.sprint_id,
+        action_type: ActivityActionType.SPRINT_CREATED,
+    });
+
+    return newSprint;
 }
 
 export const getProjectSprintsService = async (projectId: number, currentUserId: number) => {
@@ -71,6 +80,8 @@ export const getProjectSprintsService = async (projectId: number, currentUserId:
     if (!currentMember) {
         throw new Error(" You are not member of this project");
     }
+
+
 
     return getProjectSprints(projectId);
 }
@@ -126,7 +137,59 @@ export const updateSprintService = async (sprintId: number, currentUserId: numbe
         }
     }
 
-    return updateSprint(sprintId, data);
+    const updatedSprint = await updateSprint(sprintId, data);
+
+    if (data.sprint_name !== undefined && data.sprint_name !== sprint.sprint_name) {
+        await createActivityLogService({
+            user_id: currentUserId,
+            project_id: sprint.project_id,
+            sprint_id: sprintId,
+            action_type: ActivityActionType.SPRINT_UPDATED,
+            field_name: "sprint_name",
+            old_value: sprint.sprint_name,
+            new_value: data.sprint_name,
+        });
+    }
+
+    if (data.description !== undefined && data.description !== sprint.description) {
+        await createActivityLogService({
+            user_id: currentUserId,
+            project_id: sprint.project_id,
+            sprint_id: sprintId,
+            action_type: ActivityActionType.SPRINT_UPDATED,
+            field_name: "description",
+            old_value: sprint.description ?? "",
+            new_value: data.description ?? "",
+        });
+    }
+
+    if (data.start_date !== undefined && data.start_date !== sprint.start_date?.toISOString()) {
+        await createActivityLogService({
+            user_id: currentUserId,
+            project_id: sprint.project_id,
+            sprint_id: sprintId,
+            action_type: ActivityActionType.SPRINT_UPDATED,
+            field_name: "start_date",
+            old_value: sprint.start_date?.toISOString() ?? "",
+            new_value: data.start_date,
+        });
+    }
+
+    if (data.end_date !== undefined && data.end_date !== sprint.end_date?.toISOString()) {
+        await createActivityLogService({
+            user_id: currentUserId,
+            project_id: sprint.project_id,
+            sprint_id: sprintId,
+            action_type: ActivityActionType.SPRINT_UPDATED,
+            field_name: "end_date",
+            old_value: sprint.end_date?.toISOString() ?? "",
+            new_value: data.end_date,
+        });
+    }
+
+
+
+    return updatedSprint;
 }
 
 export const changeStatusSprintService = async (sprintId: number, currentUserId: number, status: changeSprintStatus) => {
@@ -145,7 +208,19 @@ export const changeStatusSprintService = async (sprintId: number, currentUserId:
         throw new Error("This status does not change");
     }
 
-    return updateSprintStatus(sprintId, status.sprint_status);
+    const updatedSprint = await updateSprintStatus(sprintId, status.sprint_status);
+
+    await createActivityLogService({
+        user_id: currentUserId,
+        project_id: sprint.project_id,
+        sprint_id: sprintId,
+        action_type: ActivityActionType.SPRINT_STATUS_CHANGED,
+        field_name: "sprint_status",
+        old_value: sprint.sprint_status,
+        new_value: status.sprint_status,
+    });
+
+    return updatedSprint
 }
 
 export const getSprintIssuesService = async (sprintId: number, currentUserId: number) => {

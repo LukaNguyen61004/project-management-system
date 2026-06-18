@@ -2,12 +2,8 @@ import type { Request, Response } from "express";
 import { createProjectSchema, inviteMemberSchema, acceptInvitationSchema, updateProjectSchema } from "../validatons/project.validation.js";
 import {
     createProjectService, getUserProjectsServices, getProjectDetailService, inviteMemberService,
-    acceptInvitationService,
-    getProjectMembersService,
-    removeProjectMembersService,
-    leaveProjectService,
-    updateProjectService,
-    deleteProjectService
+    acceptInvitationService, getProjectMembersService, removeProjectMembersService,
+    leaveProjectService, updateProjectService, deleteProjectService
 } from "../services/project.service.js";
 
 export const createProjectController = async (req: Request, res: Response) => {
@@ -215,9 +211,11 @@ export const updateProjectController = async (req: Request, res: Response) => {
             });
         }
 
+        const currentUser = req.user!.userId;
+
         const validatedData = updateProjectSchema.parse(req.body);
 
-        const updatedProject = await updateProjectService(projectId, validatedData);
+        const updatedProject = await updateProjectService(projectId, currentUser, validatedData);
 
         res.status(200).json({
             success: true,

@@ -4,6 +4,8 @@ import type { AssignIssueInput, ChangIssuePriorityInput, ChangIssueStatusInput, 
 import { findProjectById, findProjectMember } from "../repositories/project.repository.js";
 import { findUserById } from "../repositories/auth.repository.js";
 import { findSprintById } from "../repositories/sprint.repository.js";
+import { createActivityLogService } from "./activityLog.service.js";
+import { ActivityActionType } from "@prisma/client";
 
 
 export const createIssueService = async (projectId: number, reporterId: number, data: CreateIssueInput) => {
@@ -52,8 +54,15 @@ export const createIssueService = async (projectId: number, reporterId: number, 
                 data.issue_assignee,
         }),
     }
+    const issue = await creatIssue(issueData);
 
-    return creatIssue(issueData);
+    await createActivityLogService({
+        user_id: reporterMember.user_id,
+        project_id: project.project_id,
+        issue_id: issue.issue_id,
+        action_type: ActivityActionType.ISSUE_CREATED,
+    })
+    return issue;
 }
 
 export const getProjectIssueService = async (projectId: number, currentUserId: number) => {
@@ -103,7 +112,53 @@ export const updateIssueService = async (issueId: number, currentUserId: number,
         throw new Error("No fields provided for update");
     }
 
-    return updateIssue(issueId, data);
+    const update = await updateIssue(issueId, data);
+    if (
+        data.issue_name !== undefined &&
+        data.issue_name !== issue.issue_name
+    ) {
+        await createActivityLogService({
+            user_id: currentUserId,
+            project_id: issue.project_id,
+            issue_id: issue.issue_id,
+            action_type: ActivityActionType.ISSUE_UPDATED,
+            field_name: "issue_name",
+            old_value: issue.issue_name,
+            new_value: data.issue_name,
+        });
+    }
+
+    if (
+        data.issue_description !== undefined &&
+        data.issue_description !== issue.issue_description
+    ) {
+        await createActivityLogService({
+            user_id: currentUserId,
+            project_id: issue.project_id,
+            issue_id: issue.issue_id,
+            action_type: ActivityActionType.ISSUE_UPDATED,
+            field_name: "issue_description",
+            old_value: issue.issue_description ?? undefined,
+            new_value: data.issue_description,
+        });
+    }
+
+    if (
+        data.issue_type !== undefined &&
+        data.issue_type !== issue.issue_type
+    ) {
+        await createActivityLogService({
+            user_id: currentUserId,
+            project_id: issue.project_id,
+            issue_id: issue.issue_id,
+            action_type: ActivityActionType.ISSUE_UPDATED,
+            field_name: "issue_type",
+            old_value: issue.issue_type,
+            new_value: data.issue_type,
+        });
+    }
+
+    return update;
 }
 
 export const deleteIssueService = async (issueId: number, currentUserId: number) => {
@@ -117,6 +172,12 @@ export const deleteIssueService = async (issueId: number, currentUserId: number)
     if (!currentUser) {
         throw new Error("You are not a member of this project");
     }
+    await createActivityLogService({
+        user_id: currentUserId,
+        project_id: issue.project_id,
+        issue_id: issue.issue_id,
+        action_type: ActivityActionType.ISSUE_DELETED,
+    });
 
     await deleteIssue(issueId);
 
@@ -139,8 +200,19 @@ export const changeIssueStatusService = async (issueId: number, data: ChangIssue
     if (issue.issue_status === data.issue_status) {
         throw new Error("Issue already has this status");
     }
+    const updateStatus = await changeIssueStatus(issueId, data.issue_status);
 
-    return changeIssueStatus(issueId, data.issue_status);
+    await createActivityLogService({
+        user_id: currentUserId,
+        project_id: issue.project_id,
+        issue_id: issue.issue_id,
+        action_type: ActivityActionType.STATUS_CHANGED,
+        field_name: "issue_status",
+        old_value: issue.issue_status,
+        new_value: data.issue_status,
+    });
+
+    return updateStatus;
 }
 
 export const assignIssueService = async (issueId: number, data: AssignIssueInput, currentUserId: number) => {
@@ -171,8 +243,19 @@ export const assignIssueService = async (issueId: number, data: AssignIssueInput
     if (issue.assignee_id === data.assignee_id) {
         throw new Error("Issue already assigned to this user")
     }
+    const assigned = await assignIssue(issueId, data.assignee_id);
 
-    return assignIssue(issueId, data.assignee_id);
+    await createActivityLogService({
+        user_id: currentUserId,
+        project_id: issue.project_id,
+        issue_id: issue.issue_id,
+        action_type: ActivityActionType.ISSUE_ASSIGNED,
+        field_name: "assignee_id",
+        old_value: issue.assignee_id?.toString(),
+        new_value: data.assignee_id.toString(),
+    });
+
+    return assigned;
 }
 
 export const changeIssuePriorityService = async (issueId: number, data: ChangIssuePriorityInput, currentUserId: number) => {
@@ -191,8 +274,19 @@ export const changeIssuePriorityService = async (issueId: number, data: ChangIss
     if (issue.issue_priority === data.issue_priority) {
         throw new Error("Issue already had the same priority");
     }
+    const updated = await changeIssuePriority(issueId, data.issue_priority);
 
-    return changeIssuePriority(issueId, data.issue_priority);
+    await createActivityLogService({
+        user_id: currentUserId,
+        project_id: issue.project_id,
+        issue_id: issue.issue_id,
+        action_type: ActivityActionType.PRIORITY_CHANGED,
+        field_name: "issue_priority",
+        old_value: issue.issue_priority,
+        new_value: data.issue_priority,
+    });
+
+    return updated;
 }
 
 export const updateIssueSprintService = async (issueId: number, currentUserId: number, data: UpdateIssueSprintInput) => {
@@ -207,13 +301,13 @@ export const updateIssueSprintService = async (issueId: number, currentUserId: n
         throw new Error("You are not a member of this project");
     }
 
-    if(currentMember.role !== "admin"){
+    if (currentMember.role !== "admin") {
         throw new Error("Only admin can update issue in sprint");
     }
 
     if (sprint_id === null) {
         if (issue.sprint_id === null) {
-            throw new Error ("Issue is not assigned any sprint");
+            throw new Error("Issue is not assigned any sprint");
         }
 
         return updateIssueSprint(issueId, null);
@@ -231,6 +325,18 @@ export const updateIssueSprintService = async (issueId: number, currentUserId: n
     if (issue.sprint_id === sprint_id) {
         throw new Error("Issue is already moved to this sprint");
     }
+    const updated = await updateIssueSprint(issueId, sprint_id);
 
-    return await updateIssueSprint(issueId, sprint_id);
+    await createActivityLogService({
+        user_id: currentUserId,
+        project_id: issue.project_id,
+        issue_id: issue.issue_id,
+        sprint_id,
+        action_type: ActivityActionType.ISSUE_MOVED_TO_SPRINT,
+        field_name: "sprint_id",
+        old_value: issue.sprint_id?.toString(),
+        new_value: sprint_id?.toString(),
+    });
+
+    return updated;
 }
