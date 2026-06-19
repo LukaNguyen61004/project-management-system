@@ -5,6 +5,7 @@ import projectRouters from './project.routes.js'
 import issueRouters from './issue.routes.js'
 import sprintRouters from "./sprint.routes.js"
 import activityLogRouters from "./activityLog.routes.js"
+import commentRouter from "./comment.router.js"
 
 const router= Router();
 
@@ -17,5 +18,7 @@ router.use("/issues", issueRouters);
 router.use("/sprints", sprintRouters);
 
 router.use("/activities",activityLogRouters);
+
+router.use("/comments", commentRouter);
 
 export default router;

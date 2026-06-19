@@ -11,6 +11,10 @@ export const createActivityLogSchema = z.object({
         .number()
         .optional(),
 
+    comment_id:z
+        .number()
+        .optional(),
+
     action_type: z.nativeEnum(ActivityActionType),
     
     field_name :z

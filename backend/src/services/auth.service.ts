@@ -165,10 +165,7 @@ export const getCurrentUserService = async (userId: number) => {
         throw new Error("User not found");
     }
 
-    const {
-        user_password_hash,
-        ...safeUser
-    } = user;
+    const { user_password_hash, refresh_token, ...safeUser} = user;
     
     return safeUser;
 }
