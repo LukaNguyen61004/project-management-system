@@ -72,6 +72,8 @@ enum ActivityActionType {
   SPRINT_UPDATED
   SPRINT_STATUS_CHANGED
   COMMENT_ADDED
+  COMMENT_UPDATED
+  COMMENT_DELETED
 }
 
 enum AuthProvider {
@@ -284,6 +286,8 @@ model Comment {
   content String
 
   created_at DateTime @default(now())
+
+  updated_at DateTime @updatedAt
 
   issue Issue @relation(fields: [issue_id], references: [issue_id])
 

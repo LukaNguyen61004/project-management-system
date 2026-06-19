@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { registerSchema, loginSchema, googleLoginSchema } from "../validatons/auth.validation.js";
 import { registerService, loginService, firebaseGoogleLoginService, getCurrentUserService, refreshTokenService, logoutService } from "../services/auth.service.js";
-import { request } from "http";
+
 
 export const registerController = async (req: Request, res: Response) => {
     try {
@@ -80,7 +80,7 @@ export const getCurrentUserController = async (req: Request, res: Response) => {
 
 export const refreshTokenController = async (req: Request, res: Response) => {
     try {
-        console.log(req.body);
+        
         const { refreshToken } = req.body;
 
 

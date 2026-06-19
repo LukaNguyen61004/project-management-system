@@ -17,9 +17,9 @@ router.post("/google", firebaseGoogleLoginController);
 
 router.get("/me",authMiddleware, getCurrentUserController);
 
-router.post("/refresh-token", refreshTokenController)
+router.post("/refresh-token", refreshTokenController);
 
-router.post("/logout", authMiddleware, logoutController)
+router.post("/logout", authMiddleware, logoutController);
 
 
 
