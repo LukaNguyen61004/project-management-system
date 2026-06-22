@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
-import { requireProjectRole } from "../middlewares/project-role.middleware.js";
 import { changeSprintStatusController, createSprintController, getProjectSprintsController, getSprintDetailController, 
          getSprintIssuesController, updateSprintController 
 } from "../controllers/sprint.controller.js";
@@ -8,7 +7,7 @@ import { changeSprintStatusController, createSprintController, getProjectSprints
 
 const router = Router();
 
-router.post("/projects/:projectId/sprints", authMiddleware, requireProjectRole(["admin"]), createSprintController);
+router.post("/projects/:projectId/sprints", authMiddleware, createSprintController);
 
 router.get("/projects/:projectId/sprints", authMiddleware, getProjectSprintsController);
 

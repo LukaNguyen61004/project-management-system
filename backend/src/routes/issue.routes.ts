@@ -2,7 +2,8 @@ import { Router } from "express";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import {assignIssueController, changeIssueStatusController,  createIssueController, 
        deleteIssueController, getIssueDetailController, getProjectIssuesController, 
-       updateIssueController, changIssuePriorityController, updateIssueSprintController
+       updateIssueController, changIssuePriorityController, updateIssueSprintController,
+       updateIssueEpicController
 } from "../controllers/issue.controller.js";
 
 
@@ -26,5 +27,7 @@ router.patch("/:issueId/assign",authMiddleware, assignIssueController)
 router.patch("/:issueId/priority",authMiddleware, changIssuePriorityController);
 
 router.patch("/:issueId/sprint", authMiddleware, updateIssueSprintController);
+
+router.patch("/:issueId/epic", authMiddleware, updateIssueEpicController);
 
 export default router;

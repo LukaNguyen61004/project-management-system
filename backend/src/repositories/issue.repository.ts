@@ -193,3 +193,14 @@ export const updateIssueSprint =async (issueId: number, sprintId: number | null 
      })
 
 }
+
+export const updateIssueEpic = async ( issueId: number, epicId: number | null) => {
+    return prisma.issue.update({
+        where: {
+            issue_id: issueId,
+        },
+        data: {
+            epic_id: epicId,
+        },
+    });
+};
