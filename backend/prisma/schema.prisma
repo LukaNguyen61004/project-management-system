@@ -67,7 +67,11 @@ enum ActivityActionType {
   ISSUE_ASSIGNED
   PRIORITY_CHANGED
   ISSUE_MOVED_TO_SPRINT
+  ISSUE_MOVED_TO_EPIC
   ISSUE_DELETED
+  EPIC_CREATED
+  EPIC_UPDATED
+  EPIC_DELETED
   SPRINT_CREATED
   SPRINT_UPDATED
   SPRINT_STATUS_CHANGED
@@ -176,6 +180,8 @@ model Epic {
   creator User @relation(fields: [created_by], references: [user_id])
 
   issues Issue[]
+
+  @@unique([project_id, epic_name])
 
   @@index([project_id])
 }

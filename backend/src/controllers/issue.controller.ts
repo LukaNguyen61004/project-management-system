@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import {
     assignIssueService, changeIssuePriorityService, changeIssueStatusService, createIssueService,
     deleteIssueService, getIssueDetailService, getProjectIssueService,
+    updateIssueEpicService,
     updateIssueService,
     updateIssueSprintService
 } from "../services/issue.service.js";
@@ -272,3 +273,54 @@ export const updateIssueSprintController = async( req:Request, res:Response)=>{
         })
     }
 }
+
+export const updateIssueEpicController = async (req: Request,  res: Response) => {
+    try {
+
+        const issueId = Number(req.params.issueId);
+
+        const currentUserId = req.user!.userId;
+
+        const { epic_id } = req.body;
+        
+
+        const issue = await updateIssueEpicService(issueId, epic_id, currentUserId);
+
+        return res.status(200).json({
+            message: "Issue epic updated successfully",
+            data: issue,
+        });
+
+    } catch (error) {
+
+        if (error instanceof Error) {
+
+            switch (error.message) {
+
+                case "Issue not found":
+                    return res.status(404).json({
+                        error: error.message,
+                    });
+
+                case "Epic not found":
+                    return res.status(404).json({
+                        error: error.message,
+                    });
+
+                case "You are not a member of this project":
+                    return res.status(403).json({
+                        error: error.message,
+                    });
+
+                case "Epic does not belong to this project":
+                    return res.status(400).json({
+                        error: error.message,
+                    });
+            }
+        }
+
+        return res.status(500).json({
+            error: error instanceof Error ? error.message : "Unknown error",
+        });
+    }
+};

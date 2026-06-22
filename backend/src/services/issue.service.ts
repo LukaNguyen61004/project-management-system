@@ -1,4 +1,4 @@
-import { creatIssue, countProjectIssues, getProjectIssues, findIssueById, updateIssue, changeIssueStatus, assignIssue, changeIssuePriority, updateIssueSprint } from "../repositories/issue.repository.js";
+import { creatIssue, countProjectIssues, getProjectIssues, findIssueById, updateIssue, changeIssueStatus, assignIssue, changeIssuePriority, updateIssueSprint, updateIssueEpic } from "../repositories/issue.repository.js";
 import { deleteIssue, type CreateIssueData } from "../repositories/issue.repository.js"
 import type { AssignIssueInput, ChangIssuePriorityInput, ChangIssueStatusInput, CreateIssueInput, UpdateIssueInput, UpdateIssueSprintInput } from "../validatons/issue.validation.js";
 import { findProjectById, findProjectMember } from "../repositories/project.repository.js";
@@ -6,6 +6,7 @@ import { findUserById } from "../repositories/auth.repository.js";
 import { findSprintById } from "../repositories/sprint.repository.js";
 import { createActivityLogService } from "./activityLog.service.js";
 import { ActivityActionType } from "@prisma/client";
+import { findEpicById } from "../repositories/epic.repository.js";
 
 
 export const createIssueService = async (projectId: number, reporterId: number, data: CreateIssueInput) => {
@@ -340,3 +341,51 @@ export const updateIssueSprintService = async (issueId: number, currentUserId: n
 
     return updated;
 }
+
+export const updateIssueEpicService = async (issueId: number, epicId: number | null, currentUserId: number) => {
+
+    const issue = await findIssueById(issueId);
+
+    if (!issue) {
+        throw new Error("Issue not found");
+    }
+
+    const isMember = await findProjectMember(issue.project_id, currentUserId);
+
+    if (!isMember) {
+        throw new Error("You are not a member of this project");
+    }
+
+
+    let epic = null;
+    
+  
+
+    if (epicId !== null) {
+
+        epic = await findEpicById(epicId);
+          
+
+        if (!epic) {
+            throw new Error("Epic not found");
+        }
+
+        if (epic.project_id !== issue.project_id) {
+            throw new Error("Epic does not belong to this project");
+        }
+    }
+
+    const updatedIssue = await updateIssueEpic(issueId, epicId);
+
+    await createActivityLogService({
+        user_id: currentUserId,
+        project_id: issue.project_id,
+        issue_id: issue.issue_id,
+        action_type: ActivityActionType.ISSUE_MOVED_TO_EPIC,
+        field_name: "epic_id",
+        old_value: issue.epic_id?.toString(),
+        new_value: epicId?.toString(),
+    });
+
+    return updatedIssue;
+};

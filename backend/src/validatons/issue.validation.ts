@@ -76,3 +76,9 @@ export const updateIssueSprintSchema = z.object({
 
 export type UpdateIssueSprintInput = z.infer<typeof updateIssueSprintSchema>;
 
+export const updateIssueEpicSchema = z.object({
+    epic_id: z.number().nullable(),
+});
+
+export type UpdateIssueEpicInput = z.infer<typeof updateIssueEpicSchema>;
+
