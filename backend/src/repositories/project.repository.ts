@@ -187,6 +187,15 @@ export const getProjectMembers = async (projectId: number) =>{
     })
 }
 
+export const getProjectMemberIds = async (projectId: number) => {
+    return prisma.projectMember.findMany({
+        where: { project_id: projectId },
+        select: {
+            user_id: true,
+        }
+    });
+};
+
 export const removeProjectMember = async (projectId:number, userId: number) =>{
     return prisma.projectMember.delete({
         where:{

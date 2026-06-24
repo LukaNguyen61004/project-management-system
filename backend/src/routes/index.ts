@@ -7,6 +7,7 @@ import sprintRouters from "./sprint.routes.js"
 import activityLogRouters from "./activityLog.routes.js"
 import commentRouter from "./comment.router.js"
 import epicRouter from "./epic.routes.js"
+import notificationRouter from "./notification.routes.js"
 
 const router= Router();
 
@@ -23,6 +24,8 @@ router.use("/activities",activityLogRouters);
 router.use("/comments", commentRouter);
 
 router.use("/epics",epicRouter);
+
+router.use("/notifications", notificationRouter);
 
 
 

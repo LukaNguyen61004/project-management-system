@@ -1,9 +1,11 @@
 
-import { ActivityActionType, SprintStatus } from "@prisma/client";
-import { findProjectById, findProjectMember } from "../repositories/project.repository.js";
+import { ActivityActionType, NotificationType, SprintStatus } from "@prisma/client";
+import { findProjectById, findProjectMember, getProjectMemberIds } from "../repositories/project.repository.js";
 import { createSprint, findSprintById, findSprintByName, getProjectSprints, getSprintIssues, updateSprint, updateSprintStatus, type createSprintData } from "../repositories/sprint.repository.js";
 import type { changeSprintStatus, CreateSprintInput, UpdateSprintInput } from "../validatons/sprint.validation.js";
 import { createActivityLogService } from "./activityLog.service.js";
+import { notifyProjectMembers } from "../helper/notification.helper.js";
+
 
 
 
@@ -200,6 +202,7 @@ export const changeStatusSprintService = async (sprintId: number, currentUserId:
     }
 
     const currentMember = await findProjectMember(sprint.project_id, currentUserId);
+
     if (!currentMember) {
         throw new Error(" You are not member of this project");
     }
@@ -210,6 +213,7 @@ export const changeStatusSprintService = async (sprintId: number, currentUserId:
 
     const updatedSprint = await updateSprintStatus(sprintId, status.sprint_status);
 
+
     await createActivityLogService({
         user_id: currentUserId,
         project_id: sprint.project_id,
@@ -219,6 +223,22 @@ export const changeStatusSprintService = async (sprintId: number, currentUserId:
         old_value: sprint.sprint_status,
         new_value: status.sprint_status,
     });
+
+    await notifyProjectMembers(
+        sprint.project_id,
+        currentUserId,
+        status.sprint_status === "active"
+            ? NotificationType.sprint_started
+            : NotificationType.sprint_completed,
+        status.sprint_status === "active"
+            ? "Sprint started"
+            : "Sprint completed",
+        status.sprint_status === "active"
+            ? `Sprint #${sprintId} has started`
+            : `Sprint #${sprintId} has been completed`,
+        undefined,
+        sprintId
+    );
 
     return updatedSprint
 }

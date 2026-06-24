@@ -9,7 +9,8 @@ import {
 import type { UpdateProjectInput } from "../validatons/project.validation.js"
 import { findUserByEmail, findUserById } from "../repositories/auth.repository.js";
 import { createActivityLogService } from "./activityLog.service.js";
-import { ActivityActionType } from "@prisma/client";
+import { ActivityActionType, NotificationType } from "@prisma/client";
+import { createNotificationService } from "./notification.service.js";
 
 
 
@@ -80,6 +81,17 @@ export const inviteMemberService = async (projectId: number, currentUserId: numb
         action_type: ActivityActionType.MEMBER_INVITED,
     });
 
+    await createNotificationService(
+        existingUser!.user_id,
+        currentUserId,
+        NotificationType.project_invitation,
+        "Project invitation",
+        `You were invited to project ${projectId}`,
+        undefined,
+        projectId
+    );
+
+
     return invitation
 }
 
@@ -136,6 +148,16 @@ export const acceptInvitationService = async (token: string, currentUserId: numb
         project_id: invitation.project_id,
         action_type: ActivityActionType.INVITATION_ACCEPTED,
     });
+
+    await createNotificationService(
+        invitation.invited_by,
+        currentUserId,
+        NotificationType.project_invitation,
+        "New member joined",
+        `${currentUser.user_name} joined the project`,
+        undefined,
+        invitation.project_id
+    );
 
     return {
         message: "Invitation accepted",
@@ -216,7 +238,7 @@ export const updateProjectService = async (projectId: number, currentUserId: num
     const updatedProject = await updateProject(projectId, data);
 
     if (data.project_name !== undefined && data.project_name !== project.project_name) {
-        
+
         await createActivityLogService({
             user_id: currentUserId,
             project_id: projectId,

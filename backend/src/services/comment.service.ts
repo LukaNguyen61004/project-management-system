@@ -1,10 +1,11 @@
 
 import { createActivityLogService } from "./activityLog.service.js";
-import { ActivityActionType } from "@prisma/client";
+import { ActivityActionType, NotificationType } from "@prisma/client";
 import { findIssueById } from "../repositories/issue.repository.js";
 import { createComment, deleteComment, getCommentById, getIssueComments, updateComment } from "../repositories/comment.repository.js";
 import type { CreateCommentInput, UpdateCommentInput } from "../validatons/comment.validation.js";
 import { findProjectMember } from "../repositories/project.repository.js";
+import { createNotificationService } from "./notification.service.js";
 
 export const createCommentService = async (issueId: number, currentUserId: number, data: CreateCommentInput) => {
 
@@ -31,6 +32,18 @@ export const createCommentService = async (issueId: number, currentUserId: numbe
         action_type: ActivityActionType.COMMENT_ADDED
     })
 
+    if (issue.assignee_id && issue.assignee_id !== currentUserId) {
+        await createNotificationService(
+            issue.assignee_id,
+            currentUserId,
+            NotificationType.comment_added,
+            "New comment",
+            `New comment on issue #${issue.issue_id}`,
+            issue.issue_id,
+            issue.project_id
+        );
+    }
+
     return comment;
 }
 
@@ -40,7 +53,7 @@ export const getIssueCommentsService = async (issueId: number, currentUserId: nu
     if (!issue) {
         throw new Error("Issue not found");
     }
-    
+
     const currentUser = await findProjectMember(issue.project_id, currentUserId);
 
     if (!currentUser) {
