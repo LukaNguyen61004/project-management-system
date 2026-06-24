@@ -46,10 +46,11 @@ enum SprintStatus {
 
 enum NotificationType {
   issue_assigned
-  issue_updated
-  sprint_created
-  project_invitation
   comment_added
+  sprint_started
+  sprint_completed
+  project_invitation
+  project_member_joined
   stale_issue_warning
 }
 
@@ -306,7 +307,7 @@ model Comment {
 model Notification {
   notifi_id Int @id @default(autoincrement())
 
-  user_id Int
+  receiver_id Int
 
   sender_id Int?
 
@@ -326,7 +327,7 @@ model Notification {
 
   notifi_created_at DateTime @default(now())
 
-  receiver User @relation("NotificationReceiver", fields: [user_id], references: [user_id])
+  receiver User @relation("NotificationReceiver", fields: [receiver_id], references: [user_id])
 
   sender User? @relation("NotificationSender", fields: [sender_id], references: [user_id])
 
@@ -336,9 +337,9 @@ model Notification {
 
   related_sprint Sprint? @relation(fields: [related_sprint_id], references: [sprint_id])
 
-  @@index([user_id])
+  @@index([receiver_id])
   @@index([notifi_created_at])
-  @@index([user_id, is_read])
+  @@index([receiver_id, is_read])
 }
 
 model ProjectInvitation {

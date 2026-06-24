@@ -5,8 +5,9 @@ import { findProjectById, findProjectMember } from "../repositories/project.repo
 import { findUserById } from "../repositories/auth.repository.js";
 import { findSprintById } from "../repositories/sprint.repository.js";
 import { createActivityLogService } from "./activityLog.service.js";
-import { ActivityActionType } from "@prisma/client";
+import { ActivityActionType, NotificationType } from "@prisma/client";
 import { findEpicById } from "../repositories/epic.repository.js";
+import { createNotificationService } from "./notification.service.js";
 
 
 export const createIssueService = async (projectId: number, reporterId: number, data: CreateIssueInput) => {
@@ -246,6 +247,16 @@ export const assignIssueService = async (issueId: number, data: AssignIssueInput
     }
     const assigned = await assignIssue(issueId, data.assignee_id);
 
+    await createNotificationService(
+        data.assignee_id,
+        currentUserId,
+        NotificationType.issue_assigned,
+        "You were assigned to an issue",
+        `Issue #${issue.issue_id} has been assigned to you`,
+        issue.issue_id,
+        issue.project_id
+    );
+
     await createActivityLogService({
         user_id: currentUserId,
         project_id: issue.project_id,
@@ -358,13 +369,13 @@ export const updateIssueEpicService = async (issueId: number, epicId: number | n
 
 
     let epic = null;
-    
-  
+
+
 
     if (epicId !== null) {
 
         epic = await findEpicById(epicId);
-          
+
 
         if (!epic) {
             throw new Error("Epic not found");

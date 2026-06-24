@@ -5,8 +5,7 @@ import type { CreateEpicInput, UpdateEpicInput } from "../validatons/epic.valida
 import { createActivityLogService } from "./activityLog.service.js";
 
 
-export const createEpicService = async (projectId: number, userId: number, data: CreateEpicInput
-) => {
+export const createEpicService = async (projectId: number, userId: number, data: CreateEpicInput) => {
 
     const project = await findProjectById(projectId);
 
@@ -45,10 +44,7 @@ export const createEpicService = async (projectId: number, userId: number, data:
     return epic;
 };
 
-export const getProjectEpicsService = async (
-    projectId: number,
-    userId: number
-) => {
+export const getProjectEpicsService = async (projectId: number,userId: number) => {
 
     const project = await findProjectById(projectId);
 
