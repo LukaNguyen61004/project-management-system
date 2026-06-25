@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@theme {
+  --color-jira-blue: #0052cc;
+  --color-jira-blue-dark: #0747a6;
+  --color-jira-blue-light: #deebff;
+  --color-jira-sidebar: #1d2125;
+  --color-jira-sidebar-hover: #2c333a;
+  --color-jira-border: #dfe1e6;
+  --color-jira-text: #172b4d;
+  --color-jira-text-subtle: #5e6c84;
+  --color-jira-bg: #f4f5f7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  color: var(--color-jira-text);
+  background: var(--color-jira-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
