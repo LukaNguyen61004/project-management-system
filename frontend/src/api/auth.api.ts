@@ -10,7 +10,7 @@ export interface GoogleLoginResponse {
 }
 
 export const authApi = {
-  register: (user_email: string, user_password: string) => 
+  register: (user_email: string, user_password: string) =>
     apiClient.post<RegisterResponse>('/auth/register', { user_email, user_password }),
 
   login: (user_email: string, user_password: string) =>
@@ -20,4 +20,7 @@ export const authApi = {
     apiClient.post<GoogleLoginResponse>('/auth/google', { idToken }),
 
   getMe: () => apiClient.get<{ data: User }>('/auth/me'),
+
+  logout: () =>
+    apiClient.post<{ success: boolean; data: { message: string } }>('/auth/logout')
 }
