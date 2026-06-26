@@ -3,13 +3,14 @@ import { UserMenu } from './UserMenu'
 interface AppHeaderProps {
   title: string
   subtitle?: string
-  children?: React.ReactNode
+  children?: React.ReactNode,
+  compact?: boolean
 }
 
-export function AppHeader({ title, subtitle, children }: AppHeaderProps) {
+export function AppHeader({ title, subtitle, children, compact }: AppHeaderProps) {
   return (
-    <header className="bg-white border-b border-jira-border px-6 py-4">
-      <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
+    <header className={`bg-white border-b border-jira-border  py-4 ${compact ? 'px-4' : 'px-6'}`}>
+      <div className={`flex items-center justify-between gap-4 ${compact ? 'w-full' : 'max-w-6xl mx-auto'}`}>
         {/* Trái: title + subtitle */}
         <div className="min-w-0">
           <h1 className="text-xl font-semibold text-jira-text truncate">{title}</h1>
