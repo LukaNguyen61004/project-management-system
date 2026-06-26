@@ -3,6 +3,10 @@ import { ProtectedRoute } from './ProtectedRoute'
 import { LoginPage } from '../pages/LoginPage'
 import { RegisterPage } from '../pages/RegisterPage'
 import { ProjectsPage } from '../pages/ProjectsPage'
+import { BoardPage } from '../pages/BoardPage'
+import { BacklogPage } from '../pages/BacklogPage'
+import { ProjectLayout } from '../components/layout/ProjectLayout'
+import { ProjectSettingPage } from '../pages/ProjectSettingPage'
 
 export function AppRouter() {
   return (
@@ -18,8 +22,21 @@ export function AppRouter() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/projects/:projectId"
+          element={
+            <ProtectedRoute>
+              <ProjectLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="board" replace />} />
+          <Route path="board" element={<BoardPage />} />
+          <Route path="backlog" element={<BacklogPage />} />
+          <Route path="settings" element={<ProjectSettingPage />} />
+        </Route>
         <Route path="/" element={<Navigate to="/projects" replace />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/projects" replace />} />
       </Routes>
     </BrowserRouter>
   )
