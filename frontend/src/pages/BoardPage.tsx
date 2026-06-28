@@ -6,7 +6,7 @@ import { KanbanBoard } from '../components/board/KanbanBoard'
 import { CreateIssueModal } from '../components/issue/CreateIssueModal'
 import { IssueDetailPanel } from '../components/issue/IssueDetailPanel'
 import { Button } from '../components/ui/Button'
-import type { Issue } from '../types/issue.type'
+import type { Issue } from '../types/issue.types'
 
 export function BoardPage() {
   const { projectId } = useParams()

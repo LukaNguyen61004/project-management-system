@@ -1,13 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { X } from 'lucide-react'
-import type { Issue } from '../../types/issue.type'
+import { Send, X, Pencil, Trash2 } from 'lucide-react'
+import type { Issue } from '../../types/issue.types'
 import type { IssuePriority, IssueStatus, IssueType } from '../../types/enums'
 import { issueApi } from '../../api/issue.api'
 import { projectApi } from '../../api/project.api'
 import { ISSUE_PRIORITIES, ISSUE_STATUSES, ISSUE_TYPES } from '../../utils/constants'
 import { Input } from '../ui/Input'
 import { Button } from '../ui/Button'
+import { Avatar } from '../ui/Avatar'
+import { commentApi } from '../../api/comment.api'
+import { formatDistanceToNow } from 'date-fns'
+import { cn } from '../../utils/cn'
+import { useAuthStore } from '../../store/auth.store'
+
 
 interface IssueDetailPanelProps {
   issue: Issue | null
@@ -19,18 +25,19 @@ interface IssueDetailPanelProps {
 const selectClass =
   'mt-1 w-full rounded border border-jira-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-jira-blue'
 
-export function IssueDetailPanel({
-  issue,
-  projectId,
-  onClose,
-  onDeleted,
-}: IssueDetailPanelProps) {
+export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: IssueDetailPanelProps) {
   const queryClient = useQueryClient()
+  const currentUser = useAuthStore((s) => s.user)
+
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [type, setType] = useState<IssueType>('task')
+  const [commentText, setCommentText] = useState('')
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
+  const [editText, setEditText] = useState('')
 
   const issueId = issue?.issue_id
+  const isOwnComment = (userId: number) => currentUser?.user_id === userId
 
   const { data: detail } = useQuery({
     queryKey: ['issue', issueId],
@@ -42,6 +49,12 @@ export function IssueDetailPanel({
     queryKey: ['members', projectId],
     queryFn: () => projectApi.getMembers(projectId).then((r) => r.data.members),
     enabled: !!issueId && !!projectId,
+  })
+
+  const { data: comments = [] } = useQuery({
+    queryKey: ['comments', issueId],
+    queryFn: () => commentApi.getByIssue(issueId!).then((r) => r.data.data),
+    enabled: !!issueId,
   })
 
   const currentIssue = detail || issue
@@ -106,6 +119,39 @@ export function IssueDetailPanel({
       return issueApi.assign(issueId, assignee_id)
     },
     onSuccess: invalidate,
+  })
+
+  const commentMutation = useMutation({
+    mutationFn: (content: string) => {
+      if (!issueId) throw new Error('No issue')
+      return commentApi.create(issueId, content)
+    },
+    onSuccess: () => {
+      setCommentText('')
+      queryClient.invalidateQueries({ queryKey: ['comments', issueId] })
+    },
+  })
+
+  const updateCommentMutation = useMutation({
+    mutationFn: ({ commentId, content }: { commentId: number; content: string }) => {
+      if (!issueId) throw new Error('No issue')
+      return commentApi.update(issueId, commentId, content)
+    },
+    onSuccess: () => {
+      setEditingCommentId(null)
+      setEditText('')
+      queryClient.invalidateQueries({ queryKey: ['comments', issueId] })
+    },
+  })
+
+  const deleteCommentMutation = useMutation({
+    mutationFn: (commentId: number) => {
+      if (!issueId) throw new Error('No issue')
+      return commentApi.delete(issueId, commentId)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comments', issueId] })
+    },
   })
 
   if (!issue || !currentIssue) return null
@@ -196,7 +242,7 @@ export function IssueDetailPanel({
             <div>
               <label className="text-sm font-medium text-jira-text">Assignee</label>
               <select
-                value={currentIssue.assignee_id ?? ''}
+                value={String(currentIssue.assignee_id ?? '')}
                 onChange={(e) => {
                   const id = Number(e.target.value)
                   if (id) assignMutation.mutate(id)
@@ -214,11 +260,24 @@ export function IssueDetailPanel({
 
             <div>
               <label className="text-sm font-medium text-jira-text">Reporter</label>
-              <p className="mt-1 text-sm text-jira-text">
-                {currentIssue.reporter?.user_name ||
-                  currentIssue.reporter?.user_email ||
-                  `#${currentIssue.reporter_id}`}
-              </p>
+              <div className="flex items-center gap-2 mt-1">
+                {currentIssue.reporter ? (
+                  <>
+                    <Avatar
+                      name={currentIssue.reporter.user_name || currentIssue.reporter.user_email}
+                      src={currentIssue.reporter.user_avatar_url}
+                      size="sm"
+                    />
+                    <span className="text-sm text-jira-text">
+                      {currentIssue.reporter.user_name ||
+                        currentIssue.reporter.user_email ||
+                        `#${currentIssue.reporter_id}`}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-sm text-jira-text">#{currentIssue.reporter_id}</span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -228,6 +287,123 @@ export function IssueDetailPanel({
           >
             {updateMutation.isPending ? 'Saving...' : 'Save changes'}
           </Button>
+
+          <div className="pt-4 border-t border-jira-border">
+            <h3 className="text-sm font-semibold text-jira-text-subtle mb-3">
+              Comments ({comments.length})
+            </h3>
+
+            <div className="space-y-3 mb-4">
+              {comments.map((c) => (
+                <div key={c.comment_id} className="flex gap-3">
+                  <Avatar
+                    name={c.user?.user_name || c.user?.user_email}
+                    src={c.user?.user_avatar_url}
+                    size="sm"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">
+                        {c.user?.user_name || c.user?.user_email}
+                      </span>
+                      <span className="text-xs text-jira-text-subtle">
+                        {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
+                      </span>
+                      {isOwnComment(c.user_id) && editingCommentId !== c.comment_id && (
+                        <div className="ml-auto flex items-center gap-1">
+                          <button
+                            type="button"
+                            title="Edit"
+                            onClick={() => {
+                              setEditingCommentId(c.comment_id)
+                              setEditText(c.content)
+                            }}
+                            className="p-1 rounded text-jira-text-subtle hover:text-jira-blue hover:bg-gray-100"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            title="Delete"
+                            onClick={() => {
+                              if (window.confirm('Delete this comment?')) {
+                                deleteCommentMutation.mutate(c.comment_id)
+                              }
+                            }}
+                            className="p-1 rounded text-jira-text-subtle hover:text-red-500 hover:bg-red-50"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    {editingCommentId === c.comment_id ? (
+                      <div className="mt-1 space-y-2">
+                        <textarea
+                          value={editText}
+                          onChange={(e) => setEditText(e.target.value)}
+                          rows={2}
+                          className={selectClass}
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            disabled={!editText.trim() || updateCommentMutation.isPending}
+                            onClick={() =>
+                              updateCommentMutation.mutate({
+                                commentId: c.comment_id,
+                                content: editText.trim(),
+                              })
+                            }
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => {
+                              setEditingCommentId(null)
+                              setEditText('')
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-jira-text mt-1">{c.content}</p>
+                    )}
+
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Add a comment..."
+                className={cn(
+                  'flex-1 rounded border border-jira-border px-3 py-2 text-sm',
+                  'focus:outline-none focus:ring-2 focus:ring-jira-blue'
+                )}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && commentText.trim()) {
+                    commentMutation.mutate(commentText.trim())
+                  }
+                }}
+              />
+              <Button
+                size="sm"
+                disabled={!commentText.trim() || commentMutation.isPending}
+                onClick={() => commentMutation.mutate(commentText.trim())}
+              >
+                <Send size={14} />
+              </Button>
+            </div>
+          </div>
 
           <div className="pt-4 border-t border-jira-border">
             <Button

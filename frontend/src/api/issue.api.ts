@@ -1,5 +1,5 @@
 import { apiClient } from './client'
-import type { Issue, UpdateIssueInput } from '../types/issue.type'
+import type { Issue, UpdateIssueInput } from '../types/issue.types'
 import type { IssueStatus, IssueType, IssuePriority } from '../types/enums';
 
 

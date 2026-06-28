@@ -1,4 +1,4 @@
-import type { Issue } from '../../types/issue.type'
+import type { Issue } from '../../types/issue.types'
 import { ISSUE_PRIORITIES, ISSUE_STATUSES } from '../../utils/constants'
 import { cn } from '../../utils/cn'
 

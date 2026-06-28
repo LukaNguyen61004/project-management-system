@@ -24,6 +24,27 @@ export const countProjectIssues = async (project_id: number) => {
     })
 }
 
+
+export const getNextIssueNumber = async (projectId: number, projectKey: string) => {
+    const issues = await prisma.issue.findMany({
+        where: { project_id: projectId },
+        select: { issue_key: true },
+    })
+
+    const prefix = `${projectKey}-`
+    let max = 0
+
+    for (const issue of issues) {
+        if (!issue.issue_key.startsWith(prefix)) continue
+        const num = parseInt(issue.issue_key.slice(prefix.length), 10)
+        if (!Number.isNaN(num)) {
+            max = Math.max(max, num)
+        }
+    }
+
+    return max + 1
+}
+
 export const creatIssue = async (data: CreateIssueData) => {
 
     return prisma.issue.create({

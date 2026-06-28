@@ -1,4 +1,4 @@
-import { creatIssue, countProjectIssues, getProjectIssues, findIssueById, updateIssue, changeIssueStatus, assignIssue, changeIssuePriority, updateIssueSprint, updateIssueEpic } from "../repositories/issue.repository.js";
+import { creatIssue, getNextIssueNumber, getProjectIssues, findIssueById, updateIssue, changeIssueStatus, assignIssue, changeIssuePriority, updateIssueSprint, updateIssueEpic } from "../repositories/issue.repository.js";
 import { deleteIssue, type CreateIssueData } from "../repositories/issue.repository.js"
 import type { AssignIssueInput, ChangIssuePriorityInput, ChangIssueStatusInput, CreateIssueInput, UpdateIssueInput, UpdateIssueSprintInput } from "../validatons/issue.validation.js";
 import { findProjectById, findProjectMember } from "../repositories/project.repository.js";
@@ -31,9 +31,8 @@ export const createIssueService = async (projectId: number, reporterId: number, 
         }
     }
 
-    const isseCount = await countProjectIssues(projectId);
-
-    const issueKey = `${project.project_key}-${isseCount + 1}`;
+    const nextNumber = await getNextIssueNumber(projectId, project.project_key);
+    const issueKey = `${project.project_key}-${nextNumber}`;
 
     const issueData: CreateIssueData = {
         issue_key: issueKey,
