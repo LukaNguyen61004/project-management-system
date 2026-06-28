@@ -1,4 +1,4 @@
-import type { Issue } from '../../types/issue.type'
+import type { Issue } from '../../types/issue.types'
 import type { IssueStatus } from '../../types/enums'
 import { STATUS_COLUMN_COLORS } from '../../utils/constants'
 import { IssueCard } from './IssueCard'

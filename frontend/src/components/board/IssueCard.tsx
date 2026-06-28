@@ -1,4 +1,4 @@
-import type { Issue } from "../../types/issue.type";
+import type { Issue } from "../../types/issue.types";
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { cn } from '../../utils/cn'

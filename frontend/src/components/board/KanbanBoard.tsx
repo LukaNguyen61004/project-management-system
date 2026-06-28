@@ -10,7 +10,7 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { Issue } from '../../types/issue.type'
+import type { Issue } from '../../types/issue.types'
 import type { IssueStatus } from '../../types/enums'
 import { issueApi } from '../../api/issue.api'
 import { ISSUE_STATUSES } from '../../utils/constants'

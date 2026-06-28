@@ -6,7 +6,7 @@ import { BacklogList } from '../components/backlog/BacklogList'
 import { CreateIssueModal } from '../components/issue/CreateIssueModal'
 import { IssueDetailPanel } from '../components/issue/IssueDetailPanel'
 import { Button } from '../components/ui/Button'
-import type { Issue } from '../types/issue.type'
+import type { Issue } from '../types/issue.types'
 
 export function BacklogPage() {
   const { projectId } = useParams()
