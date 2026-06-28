@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { authApi } from '../api/auth.api'
 import { useAuthStore } from '../store/auth.store'
@@ -11,6 +11,8 @@ import { useGoogleLogin } from '../hooks/useGoogleLogin'
 
 export function LoginPage() {
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
+    const redirect = searchParams.get('redirect') || '/projects'
     const setAuth = useAuthStore((s) => s.setAuth)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -22,7 +24,7 @@ export function LoginPage() {
         onSuccess: (res) => {
             const { safeUser, accessToken, refreshToken } = res.data.data
             setAuth(safeUser, accessToken, refreshToken)
-            navigate('/projects')
+            navigate(redirect)
         },
         onError: (err) => {
             setError(getApiErrorMessage(err, 'Login failed'))
