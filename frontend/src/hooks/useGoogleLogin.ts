@@ -1,6 +1,6 @@
 import { signInWithPopup } from 'firebase/auth'
 import { useMutation } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { auth, googleProvider } from '../lib/firebase'
 import { authApi } from '../api/auth.api'
 import { useAuthStore } from '../store/auth.store'
@@ -20,6 +20,8 @@ function toSafeUser(raw: Record<string, unknown>): User {
 
 export function useGoogleLogin() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirect = searchParams.get('redirect') || '/projects'
   const setAuthGoogle = useAuthStore((s) => s.setAuthGoogle)
 
   return useMutation({
@@ -32,7 +34,7 @@ export function useGoogleLogin() {
       const payload = res.data.user
       const safeUser = toSafeUser(payload.user as unknown as Record<string, unknown>)
       setAuthGoogle(safeUser, payload.accessToken)
-      navigate('/projects')
+      navigate(redirect)
     },
   })
 }
