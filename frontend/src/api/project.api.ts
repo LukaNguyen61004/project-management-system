@@ -1,6 +1,6 @@
 import { apiClient } from "./client"
-import type { Project, CreateProjectInput } from "../types/project.type"
-import type { ProjectMember } from '../types/project.type'
+import type { Project, CreateProjectInput } from "../types/project.types"
+import type { ProjectMember } from '../types/project.types'
 
 
 export const projectApi = {
@@ -31,4 +31,20 @@ export const projectApi = {
             '/projects/invitations/accept',
             { token }
         ),
+
+    getPendingInvitations: () =>
+        apiClient.get<{
+            success: boolean
+            data: Array<{
+                invitation_id: number
+                project_id: number
+                email: string
+                token: string
+                expires_at: string
+                project: { project_id: number; project_name: string; project_key: string }
+            }>
+        }>('/projects/invitations/pending'),
+
+    declineInvitation: (token: string) =>
+        apiClient.post('/projects/invitations/decline', { token }),
 }
