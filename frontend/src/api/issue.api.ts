@@ -39,4 +39,7 @@ export const issueApi = {
 
   assign: (issueId: number, assignee_id: number) =>
     apiClient.patch(`/issues/${issueId}/assign`, { assignee_id }),
+
+  updateSprint: (issueId: number, sprint_id : number | null) =>
+    apiClient.patch(`/issues/${issueId}/sprint`, { sprint_id })
 }
