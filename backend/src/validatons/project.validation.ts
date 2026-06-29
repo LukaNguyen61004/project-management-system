@@ -1,21 +1,21 @@
-import {z} from "zod";
+import { z } from "zod";
 
 export const createProjectSchema = z.object({
-    project_name: z
-       .string()
-       .min(3)
-       .max(100),
-    
-    project_key: z
-       .string()
-       .min(2)
-       .max(10)
-       .regex(/^[A-Z]+$/),
-    
-    project_description: z
-       .string()
-       .max(500)
-       .optional(),
+   project_name: z
+      .string()
+      .min(3)
+      .max(100),
+
+   project_key: z
+      .string()
+      .min(2)
+      .max(10)
+      .regex(/^[A-Z]+$/),
+
+   project_description: z
+      .string()
+      .max(500)
+      .optional(),
 })
 
 export const inviteMemberSchema = z.object({
@@ -29,15 +29,20 @@ export const acceptInvitationSchema = z.object({
 
 export const updateProjectSchema = z.object({
    project_name: z
-       .string()
-       .min(3)
-       .max(100)
-       .optional(),
+      .string()
+      .min(3)
+      .max(100)
+      .optional(),
 
    project_description: z
-        .string()
-        .max(1000)
-        .optional(),
+      .string()
+      .max(1000)
+      .optional(),
 })
 
-export type UpdateProjectInput = z.infer< typeof updateProjectSchema >;
+export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
+
+
+export const declineInvitationSchema = z.object({
+   token: z.string().min(1),
+})
