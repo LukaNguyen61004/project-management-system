@@ -234,3 +234,29 @@ export const deleteProject =async (projectId: number)=>{
         }
     })
 }
+
+export const findPendingInvitationsByEmail = async (email: string) => {
+  return prisma.projectInvitation.findMany({
+    where: {
+      email,
+      accepted_at: null,
+      expires_at: { gt: new Date() },
+    },
+    include: {
+      project: {
+        select: {
+          project_id: true,
+          project_name: true,
+          project_key: true,
+        },
+      },
+    },
+    orderBy: { created_at: 'desc' },
+  })
+}
+
+export const deleteInvitationByToken = async (token: string) => {
+  return prisma.projectInvitation.delete({
+    where: { token },
+  })
+}

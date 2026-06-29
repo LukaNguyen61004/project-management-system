@@ -4,7 +4,9 @@ import {
     findProjectMembership, findPendingInvitation, creatInvitation, acceptInvitation,
     findInvitationByToken, createProjectMembership, getProjectMembers, findProjectById,
     removeProjectMember, updateProject,
-    deleteProject
+    deleteProject,
+    findPendingInvitationsByEmail,
+    deleteInvitationByToken
 } from "../repositories/project.repository.js";
 import type { UpdateProjectInput } from "../validatons/project.validation.js"
 import { findUserByEmail, findUserById } from "../repositories/auth.repository.js";
@@ -287,6 +289,29 @@ export const deleteProjectService = async (projectId: number, currentUserId: num
     return { message: "Project deleted successfully" };
 }
 
+
+export const getMyPendingInvitationsService = async (currentUserId: number) => {
+    const user = await findUserById(currentUserId)
+    if (!user) throw new Error('User not found')
+
+    return findPendingInvitationsByEmail(user.user_email)
+}
+
+export const declineInvitationService = async (token: string, currentUserId: number) => {
+    const user = await findUserById(currentUserId)
+    if (!user) throw new Error('User not found')
+
+    const invitation = await findInvitationByToken(token)
+    
+    if (!invitation) throw new Error('Invitation not found')
+    if (invitation.accepted_at) throw new Error('Invitation already accepted')
+    if (invitation.email !== user.user_email) {
+        throw new Error('This invitation is not for your account')
+    }
+
+    await deleteInvitationByToken(token)
+    return { message: 'Invitation declined' }
+}
 
 
 

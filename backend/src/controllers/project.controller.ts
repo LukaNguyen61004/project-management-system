@@ -1,9 +1,11 @@
 import type { Request, Response } from "express";
-import { createProjectSchema, inviteMemberSchema, acceptInvitationSchema, updateProjectSchema } from "../validatons/project.validation.js";
+import { createProjectSchema, inviteMemberSchema, acceptInvitationSchema, updateProjectSchema, declineInvitationSchema } from "../validatons/project.validation.js";
 import {
     createProjectService, getUserProjectsServices, getProjectDetailService, inviteMemberService,
     acceptInvitationService, getProjectMembersService, removeProjectMembersService,
-    leaveProjectService, updateProjectService, deleteProjectService
+    leaveProjectService, updateProjectService, deleteProjectService,
+    declineInvitationService,
+    getMyPendingInvitationsService
 } from "../services/project.service.js";
 
 export const createProjectController = async (req: Request, res: Response) => {
@@ -256,6 +258,28 @@ export const deleteProjectController = async (req: Request, res: Response) => {
     }
 }
 
+export const getMyPendingInvitationsController = async (req: Request, res: Response) => {
+    try {
+        const invitations = await getMyPendingInvitationsService(req.user!.userId)
+        return res.status(200).json({ success: true, data: invitations })
+    } catch (error) {
+        return res.status(400).json({
+            error: error instanceof Error ? error.message : 'Unknown error',
+        })
+    }
+}
+
+export const declineInvitationController = async (req: Request, res: Response) => {
+    try {
+        const { token } = declineInvitationSchema.parse(req.body)
+        const result = await declineInvitationService(token, req.user!.userId)
+        return res.status(200).json({ success: true, ...result })
+    } catch (error) {
+        return res.status(400).json({
+            error: error instanceof Error ? error.message : 'Unknown error',
+        })
+    }
+}
 
 
 
