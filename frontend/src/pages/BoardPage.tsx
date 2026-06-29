@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { issueApi } from '../api/issue.api'
+import { sprintApi } from '../api/sprint.api'
 import { KanbanBoard } from '../components/board/KanbanBoard'
 import { CreateIssueModal } from '../components/issue/CreateIssueModal'
 import { IssueDetailPanel } from '../components/issue/IssueDetailPanel'
@@ -20,23 +21,42 @@ export function BoardPage() {
     enabled: !!pid,
   })
 
+  const { data: sprints = [], isLoading: sprintsLoading } = useQuery({
+    queryKey: ['sprints', pid],
+    queryFn: () => sprintApi.getByProject(pid).then((r) => r.data.data),
+    enabled: !!pid,
+  })
+
   const handleIssueClick = (issue: Issue) => {
     setSelectedIssue(issue)
   }
 
-  if (isLoading) return <div className="p-6 text-jira-text-subtle">Loading board...</div>
+  const activeSprint = sprints.find((s) => s.sprint_status === 'active')
+
+  const boardIssues = activeSprint ? issues.filter((i) => i.sprint_id === activeSprint.sprint_id) : issues
+
+  if (isLoading || sprintsLoading) return <div>Loading board...</div>
   if (isError) return <div className="p-6 text-red-500">Failed to load issues.</div>
 
   return (
     <>
       <div className="px-4 py-3 bg-white border-b border-jira-border flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-jira-text">Board</h2>
+        <div>
+          <h2 className="text-sm font-semibold text-jira-text">
+            {activeSprint ? activeSprint.sprint_name : 'All issues'}
+          </h2>
+          <p className="text-xs text-jira-text-subtle">
+            {activeSprint
+              ? 'Active sprint board'
+              : 'No active sprint — showing all project issues'}
+          </p>
+        </div>
         <Button size="sm" onClick={() => setShowCreate(true)}>+ Create issue</Button>
       </div>
 
       <KanbanBoard
         projectId={pid}
-        issues={issues}
+        issues={boardIssues}
         onIssueClick={handleIssueClick}
       />
 

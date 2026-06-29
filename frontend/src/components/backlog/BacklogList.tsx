@@ -1,51 +1,90 @@
+import { useState } from 'react'
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  closestCorners,
+  type DragEndEvent,
+  type DragStartEvent,
+} from '@dnd-kit/core'
 import type { Issue } from '../../types/issue.types'
-import { ISSUE_PRIORITIES, ISSUE_STATUSES } from '../../utils/constants'
-import { cn } from '../../utils/cn'
+import type { Sprint } from '../../types/sprint.types'
+import { useMoveIssueToSprint } from '../../hooks/useMoveIssueToSprint'
+import { SprintList } from '../sprint/SprintList'
+import { resolveTargetSprintId } from '../sprint/sprintDnd'
+import { BacklogSection } from './BacklogSection'
+import { BacklogIssueRow } from './BacklogIssueRow'
 
 interface BacklogListProps {
+  projectId: number
   issues: Issue[]
+  sprints: Sprint[]
   onIssueClick: (issue: Issue) => void
+  onEditSprint?: (sprint: Sprint) => void
 }
 
-export function BacklogList({ issues, onIssueClick }: BacklogListProps) {
-  if (issues.length === 0) {
-    return (
-      <p className="text-sm text-jira-text-subtle text-center py-12">
-        No issues yet. Create one to get started.
-      </p>
-    )
+export function BacklogList({
+  projectId,
+  issues,
+  sprints,
+  onIssueClick,
+  onEditSprint,
+}: BacklogListProps) {
+  const [activeIssue, setActiveIssue] = useState<Issue | null>(null)
+  const moveMutation = useMoveIssueToSprint(projectId)
+  const backlogIssues = issues.filter((i) => !i.sprint_id)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  )
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const issue = issues.find((i) => i.issue_id === event.active.id)
+    if (issue) setActiveIssue(issue)
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveIssue(null)
+    const { active, over } = event
+    if (!over) return
+
+    const issueId = active.id as number
+    const issue = issues.find((i) => i.issue_id === issueId)
+    if (!issue) return
+
+    const targetSprintId = resolveTargetSprintId(over.id, issues)
+    if (targetSprintId === undefined) return
+    if (issue.sprint_id === targetSprintId) return
+
+    moveMutation.mutate({ issueId, sprintId: targetSprintId })
   }
 
   return (
-    <div className="bg-white rounded-lg border border-jira-border overflow-hidden">
-      <div className="grid grid-cols-[6rem_1fr_8rem_8rem] gap-4 px-4 py-2 bg-jira-bg border-b border-jira-border text-xs font-semibold text-jira-text-subtle uppercase">
-        <span>Key</span>
-        <span>Summary</span>
-        <span>Status</span>
-        <span>Priority</span>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCorners}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="p-4">
+        <SprintList
+          sprints={sprints}
+          issues={issues}
+          onIssueClick={onIssueClick}
+          onEditSprint={onEditSprint}
+        />
+        <BacklogSection issues={backlogIssues} onIssueClick={onIssueClick} />
       </div>
-      <div className="divide-y divide-jira-border">
-        {issues.map((issue) => {
-          const statusLabel = ISSUE_STATUSES.find((s) => s.value === issue.issue_status)?.label
-          const priority = ISSUE_PRIORITIES.find((p) => p.value === issue.issue_priority)
 
-          return (
-            <button
-              key={issue.issue_id}
-              type="button"
-              onClick={() => onIssueClick(issue)}
-              className="w-full grid grid-cols-[6rem_1fr_8rem_8rem] gap-4 px-4 py-3 text-left hover:bg-jira-bg transition-colors"
-            >
-              <span className="text-xs text-jira-text-subtle font-medium">{issue.issue_key}</span>
-              <span className="text-sm text-jira-text truncate">{issue.issue_name}</span>
-              <span className="text-xs text-jira-text">{statusLabel}</span>
-              <span className={cn('text-xs font-medium uppercase', priority?.color)}>
-                {priority?.label}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-    </div>
+      <DragOverlay>
+        {activeIssue && (
+          <div className="flex items-center gap-3 px-4 py-2.5 bg-white shadow-lg rounded border border-jira-border cursor-grabbing">
+            <BacklogIssueRow issue={activeIssue} />
+          </div>
+        )}
+      </DragOverlay>
+    </DndContext>
   )
 }
