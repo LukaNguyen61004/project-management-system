@@ -1,4 +1,5 @@
 import { UserMenu } from './UserMenu'
+import { NotificationBell } from '../notification/NotificationBell'
 
 interface AppHeaderProps {
   title: string
@@ -22,6 +23,7 @@ export function AppHeader({ title, subtitle, children, compact }: AppHeaderProps
         {/* Phải: nút tùy trang + user menu */}
         <div className="flex items-center gap-3 shrink-0">
           {children}
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>

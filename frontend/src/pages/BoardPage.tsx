@@ -8,6 +8,7 @@ import { CreateIssueModal } from '../components/issue/CreateIssueModal'
 import { IssueDetailPanel } from '../components/issue/IssueDetailPanel'
 import { Button } from '../components/ui/Button'
 import type { Issue } from '../types/issue.types'
+import { formatSprintDateRange } from '../utils/date'
 
 export function BoardPage() {
   const { projectId } = useParams()
@@ -31,9 +32,12 @@ export function BoardPage() {
     setSelectedIssue(issue)
   }
 
+
   const activeSprint = sprints.find((s) => s.sprint_status === 'active')
 
   const boardIssues = activeSprint ? issues.filter((i) => i.sprint_id === activeSprint.sprint_id) : issues
+
+  const dateRange = activeSprint ? formatSprintDateRange(activeSprint.start_date, activeSprint.end_date) : null
 
   if (isLoading || sprintsLoading) return <div>Loading board...</div>
   if (isError) return <div className="p-6 text-red-500">Failed to load issues.</div>
@@ -47,7 +51,7 @@ export function BoardPage() {
           </h2>
           <p className="text-xs text-jira-text-subtle">
             {activeSprint
-              ? 'Active sprint board'
+              ? dateRange ?? 'Active sprint'
               : 'No active sprint — showing all project issues'}
           </p>
         </div>
