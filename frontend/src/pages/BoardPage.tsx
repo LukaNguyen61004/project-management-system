@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { issueApi } from '../api/issue.api'
 import { sprintApi } from '../api/sprint.api'
@@ -15,6 +15,7 @@ export function BoardPage() {
   const pid = Number(projectId)
   const [showCreate, setShowCreate] = useState(false)
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const { data: issues = [], isLoading, isError } = useQuery({
     queryKey: ['issues', pid],
@@ -31,6 +32,16 @@ export function BoardPage() {
   const handleIssueClick = (issue: Issue) => {
     setSelectedIssue(issue)
   }
+
+  useEffect(() => {
+    const issueId = Number(searchParams.get('issue'))
+    if (!issueId || issues.length === 0) return
+    const found = issues.find((i) => i.issue_id === issueId)
+    if (found) {
+      setSelectedIssue(found)
+      setSearchParams({}, { replace: true })
+    }
+  }, [searchParams, issues, setSearchParams])
 
 
   const activeSprint = sprints.find((s) => s.sprint_status === 'active')
