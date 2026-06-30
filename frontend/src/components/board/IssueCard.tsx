@@ -2,11 +2,12 @@ import type { Issue } from "../../types/issue.types";
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { cn } from '../../utils/cn'
+import { IssueWarningBadge } from '../issue/IssueWarningBadge'
 
 interface IssueCardProps {
-    issue: Issue,
-    onClick?: () => void,
-    isDragging?: boolean
+  issue: Issue,
+  onClick?: () => void,
+  isDragging?: boolean
 }
 
 interface SortableIssueCardProps {
@@ -15,29 +16,32 @@ interface SortableIssueCardProps {
 }
 
 const PRIORITY_COLOR: Record<Issue['issue_priority'], string> = {
-    low: 'text-gray-500',
-    medium: 'text-blue-500',
-    high: 'text-orange-500',
-    critical: 'text-red-500',
+  low: 'text-gray-500',
+  medium: 'text-blue-500',
+  high: 'text-orange-500',
+  critical: 'text-red-500',
 }
 
 export function IssueCard({ issue, onClick, isDragging }: IssueCardProps) {
-    return (
-        <div onClick={onClick} className={cn('bg-white rounded border border-jira-border p-3 cursor-pointer hover:shadow-md transition-shadow', isDragging && 'shadow-lg rotate-1 opacity-90')}>
-            <p className="text-xs text-jira-text-subtle font-medium mb-1">
-                {issue.issue_key}
-            </p>
+  return (
+    <div onClick={onClick} className={cn('bg-white rounded border border-jira-border p-3 cursor-pointer hover:shadow-md transition-shadow', isDragging && 'shadow-lg rotate-1 opacity-90')}>
+      <p className="text-xs text-jira-text-subtle font-medium mb-1">
+        {issue.issue_key}
+      </p>
 
-            <p className="text-sm text-jira-text font-medium leading-snug mb-2">
-                {issue.issue_name}
-            </p>
+      <p className="text-sm text-jira-text font-medium leading-snug mb-2">
+        {issue.issue_name}
+      </p>
 
-            <span className={`text-xs font-medium uppercase ${PRIORITY_COLOR[issue.issue_priority]}`}>
-                {issue.issue_priority}
-            </span>
+      <div className="flex items-center justify-between gap-2">
+        <span className={`text-xs font-medium uppercase ${PRIORITY_COLOR[issue.issue_priority]}`}>
+          {issue.issue_priority}
+        </span>
+        <IssueWarningBadge issue={issue} />
+      </div>
 
-        </div>
-    )
+    </div>
+  )
 }
 
 export function SortableIssueCard({ issue, onClick }: SortableIssueCardProps) {

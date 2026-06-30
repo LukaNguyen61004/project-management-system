@@ -5,10 +5,12 @@ import { notificationApi } from '../../api/notification.api'
 import { NotificationDropdown } from './NotificationDropdown'
 import type { Notification } from '../../types/notification.types'
 import { InvitationActionModal } from './InvitationActionModal'
+import { useNavigate } from 'react-router-dom'
 
 export function NotificationBell() {
     const queryClient = useQueryClient()
     const [open, setOpen] = useState(false)
+    const navigate = useNavigate()
     const [invitationNotification, setInvitationNotification] = useState<Notification | null>(null)
 
     const { data: notifications = [] } = useQuery({
@@ -34,8 +36,22 @@ export function NotificationBell() {
     })
 
     const handleNotificationClick = (notification: Notification) => {
+        if (notification.notifi_type === 'stale_issue_warning') {
+            setOpen(false)
+            if (!notification.is_read) {
+                markReadMutation.mutate(notification.notifi_id)
+            }
+            const pid = notification.related_project_id
+            const iid = notification.related_issue_id
+            if (pid && iid) {
+                navigate(`/projects/${pid}/backlog?issue=${iid}`)
+            }
+            return
+        }
+        
         if (notification.notifi_type === 'project_invitation') {
             setOpen(false)
+
             setInvitationNotification(notification)
             return
         }

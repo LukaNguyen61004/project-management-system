@@ -1,7 +1,7 @@
 
 import { createActivityLogService } from "./activityLog.service.js";
 import { ActivityActionType, NotificationType } from "@prisma/client";
-import { findIssueById } from "../repositories/issue.repository.js";
+import { findIssueById, touchLastActivity } from "../repositories/issue.repository.js";
 import { createComment, deleteComment, getCommentById, getIssueComments, updateComment } from "../repositories/comment.repository.js";
 import type { CreateCommentInput, UpdateCommentInput } from "../validatons/comment.validation.js";
 import { findProjectMember } from "../repositories/project.repository.js";
@@ -23,6 +23,8 @@ export const createCommentService = async (issueId: number, currentUserId: numbe
 
 
     const comment = await createComment(issue.issue_id, currentUser.user_id, data);
+
+    await touchLastActivity(issueId)
 
     await createActivityLogService({
         user_id: currentUser.user_id,
@@ -94,6 +96,8 @@ export const updateCommentService = async (issueId: number, commentId: number, c
 
     const updated = await updateComment(comment.comment_id, data);
 
+    await touchLastActivity(issueId)
+
     await createActivityLogService({
         user_id: currentUser.user_id,
         project_id: issue.project_id,
@@ -133,6 +137,8 @@ export const deleteCommentService = async (issueId: number, commentId: number, c
 
 
     await deleteComment(comment.comment_id);
+    
+    await touchLastActivity(issueId)
 
     await createActivityLogService({
         user_id: currentUser.user_id,

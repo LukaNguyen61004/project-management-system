@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import type { Issue } from '../types/issue.types'
@@ -20,6 +20,7 @@ export function BacklogPage() {
   const [showCreateSprint, setShowCreateSprint] = useState(false)
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null)
   const [editingSprint, setEditingSprint] = useState<Sprint | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const { data: issues = [], isLoading, isError } = useQuery({
     queryKey: ['issues', pid],
@@ -32,6 +33,16 @@ export function BacklogPage() {
     queryFn: () => sprintApi.getByProject(pid).then((r) => r.data.data),
     enabled: !!pid,
   })
+
+  useEffect(() => {
+    const issueId = Number(searchParams.get('issue'))
+    if (!issueId || issues.length === 0) return
+    const found = issues.find((i) => i.issue_id === issueId)
+    if (found) {
+      setSelectedIssue(found)
+      setSearchParams({}, { replace: true })
+    }
+  }, [searchParams, issues, setSearchParams])
 
   if (isLoading || sprintsLoading) {
     return <div className="p-6 text-jira-text-subtle">Loading backlog...</div>

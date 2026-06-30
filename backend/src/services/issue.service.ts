@@ -1,4 +1,4 @@
-import { creatIssue, getNextIssueNumber, getProjectIssues, findIssueById, updateIssue, changeIssueStatus, assignIssue, changeIssuePriority, updateIssueSprint, updateIssueEpic } from "../repositories/issue.repository.js";
+import { creatIssue, getNextIssueNumber, getProjectIssues, findIssueById, updateIssue, changeIssueStatus, assignIssue, changeIssuePriority, updateIssueSprint, updateIssueEpic, touchLastActivity } from "../repositories/issue.repository.js";
 import { deleteIssue, type CreateIssueData } from "../repositories/issue.repository.js"
 import type { AssignIssueInput, ChangIssuePriorityInput, ChangIssueStatusInput, CreateIssueInput, UpdateIssueInput, UpdateIssueSprintInput } from "../validatons/issue.validation.js";
 import { findProjectById, findProjectMember } from "../repositories/project.repository.js";
@@ -8,6 +8,7 @@ import { createActivityLogService } from "./activityLog.service.js";
 import { ActivityActionType, NotificationType } from "@prisma/client";
 import { findEpicById } from "../repositories/epic.repository.js";
 import { createNotificationService } from "./notification.service.js";
+
 
 
 export const createIssueService = async (projectId: number, reporterId: number, data: CreateIssueInput) => {
@@ -158,6 +159,7 @@ export const updateIssueService = async (issueId: number, currentUserId: number,
             new_value: data.issue_type,
         });
     }
+    await touchLastActivity(issueId);
 
     return update;
 }
@@ -203,6 +205,8 @@ export const changeIssueStatusService = async (issueId: number, data: ChangIssue
     }
     const updateStatus = await changeIssueStatus(issueId, data.issue_status);
 
+    await touchLastActivity(issueId)
+
     await createActivityLogService({
         user_id: currentUserId,
         project_id: issue.project_id,
@@ -212,6 +216,8 @@ export const changeIssueStatusService = async (issueId: number, data: ChangIssue
         old_value: issue.issue_status,
         new_value: data.issue_status,
     });
+
+    
 
     return updateStatus;
 }
@@ -246,6 +252,8 @@ export const assignIssueService = async (issueId: number, data: AssignIssueInput
     }
     const assigned = await assignIssue(issueId, data.assignee_id);
 
+    await touchLastActivity(issueId)
+
     await createNotificationService(
         data.assignee_id,
         currentUserId,
@@ -265,6 +273,8 @@ export const assignIssueService = async (issueId: number, data: AssignIssueInput
         old_value: issue.assignee_id?.toString(),
         new_value: data.assignee_id.toString(),
     });
+
+    
 
     return assigned;
 }
@@ -287,6 +297,8 @@ export const changeIssuePriorityService = async (issueId: number, data: ChangIss
     }
     const updated = await changeIssuePriority(issueId, data.issue_priority);
 
+    await touchLastActivity(issueId)
+
     await createActivityLogService({
         user_id: currentUserId,
         project_id: issue.project_id,
@@ -296,6 +308,8 @@ export const changeIssuePriorityService = async (issueId: number, data: ChangIss
         old_value: issue.issue_priority,
         new_value: data.issue_priority,
     });
+
+
 
     return updated;
 }
@@ -321,7 +335,9 @@ export const updateIssueSprintService = async (issueId: number, currentUserId: n
             throw new Error("Issue is not assigned any sprint");
         }
 
-        return updateIssueSprint(issueId, null);
+        const removed = await updateIssueSprint(issueId, null);
+        await touchLastActivity(issueId);
+        return removed;
     }
 
     const sprint = await findSprintById(sprint_id);
@@ -337,6 +353,8 @@ export const updateIssueSprintService = async (issueId: number, currentUserId: n
         throw new Error("Issue is already moved to this sprint");
     }
     const updated = await updateIssueSprint(issueId, sprint_id);
+
+    await touchLastActivity(issueId)
 
     await createActivityLogService({
         user_id: currentUserId,
@@ -399,3 +417,5 @@ export const updateIssueEpicService = async (issueId: number, epicId: number | n
 
     return updatedIssue;
 };
+
+

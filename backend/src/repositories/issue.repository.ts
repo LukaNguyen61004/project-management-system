@@ -225,3 +225,24 @@ export const updateIssueEpic = async ( issueId: number, epicId: number | null) =
         },
     });
 };
+
+
+export const touchLastActivity = async(issueId: number)=>{
+    return prisma.issue.update({
+        where:{
+            issue_id: issueId,
+        },
+        data:{
+            last_activity_at: new Date(),
+        }
+    })
+}
+
+export const incrementWarningCount = async(issueId: number) =>{
+    return prisma.issue.update({
+        where:{
+            issue_id: issueId,
+        },
+        data:{warning_count: {increment:1}},
+    })
+}

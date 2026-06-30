@@ -13,6 +13,8 @@ import { commentApi } from '../../api/comment.api'
 import { formatDistanceToNow } from 'date-fns'
 import { cn } from '../../utils/cn'
 import { useAuthStore } from '../../store/auth.store'
+import { AlertTriangle } from 'lucide-react'
+import { getWarningLabel, isIssueWarned } from '../../utils/issueWarning'
 
 
 interface IssueDetailPanelProps {
@@ -174,6 +176,13 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
         </div>
 
         <div className="p-6 space-y-6">
+          {isIssueWarned(currentIssue) && (
+          <div className="flex items-start gap-2 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+            <span>{getWarningLabel(currentIssue)}</span>
+          </div>
+        )}
+
           <Input
             label="Summary"
             value={title}
