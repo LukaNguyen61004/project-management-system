@@ -1,5 +1,6 @@
 import { LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '../../store/auth.store'
 import { authApi } from '../../api/auth.api'
 
@@ -7,6 +8,7 @@ export function UserMenu() {
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const handleLogout = async () => {
     try {
@@ -15,7 +17,8 @@ export function UserMenu() {
       // vẫn logout local nếu API lỗi
     }
     logout()
-    navigate('/login')
+    queryClient.clear()
+    navigate('/login', { replace: true })
   }
 
   const initials =
