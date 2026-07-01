@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { authApi } from '../api/auth.api'
 import { useAuthStore } from '../store/auth.store'
 import { Input } from '../components/ui/Input'
@@ -13,6 +13,7 @@ import { getPostLoginPath } from '../utils/getPostLoginPath'
 export function LoginPage() {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
+    const queryClient = useQueryClient()
     const setAuth = useAuthStore((s) => s.setAuth)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -24,7 +25,8 @@ export function LoginPage() {
         onSuccess: (res) => {
             const { safeUser, accessToken, refreshToken } = res.data.data
             setAuth(safeUser, accessToken, refreshToken)
-            navigate(getPostLoginPath(searchParams.get('redirect')))
+            queryClient.clear()
+            navigate(getPostLoginPath(searchParams.get('redirect')), { replace: true })
         },
         onError: (err) => {
             setError(getApiErrorMessage(err, 'Login failed'))
