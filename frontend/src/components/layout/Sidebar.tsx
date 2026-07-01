@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useParams } from "react-router-dom";
-import { LayoutGrid, ListTodo, Settings, ChevronLeft, FolderKanban, Icon, } from 'lucide-react'
+import { LayoutGrid, ListTodo, Settings, ChevronLeft, FolderKanban, } from 'lucide-react'
 
 export function Sidebar() {
     const { projectId } = useParams();
