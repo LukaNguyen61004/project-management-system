@@ -8,11 +8,11 @@ import { Button } from '../components/ui/Button'
 import { FolderKanban } from 'lucide-react'
 import { getApiErrorMessage } from '../utils/apiError'
 import { useGoogleLogin } from '../hooks/useGoogleLogin'
+import { getPostLoginPath } from '../utils/getPostLoginPath'
 
 export function LoginPage() {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
-    const redirect = searchParams.get('redirect') || '/projects'
     const setAuth = useAuthStore((s) => s.setAuth)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -24,7 +24,7 @@ export function LoginPage() {
         onSuccess: (res) => {
             const { safeUser, accessToken, refreshToken } = res.data.data
             setAuth(safeUser, accessToken, refreshToken)
-            navigate(redirect)
+            navigate(getPostLoginPath(searchParams.get('redirect')))
         },
         onError: (err) => {
             setError(getApiErrorMessage(err, 'Login failed'))
