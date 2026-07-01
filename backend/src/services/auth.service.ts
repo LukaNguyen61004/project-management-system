@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import admin from "../lib/firebaseAdmin.js";
+import admin, { isFirebaseAdminReady } from "../lib/firebaseAdmin.js";
 import { env } from "../config/env.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import { findUserByEmail, createUser, findUserById, updateRefreshToken } from "../repositories/auth.repository.js";
@@ -114,7 +114,10 @@ export const loginService = async (user_email: string, user_password: string) =>
 };
 
 export const firebaseGoogleLoginService = async (idToken: string) => {
-    //Check xem token that hay gia, con han ko va dc xac thuc chua
+    if (!isFirebaseAdminReady()) {
+        throw new Error("Google login is not configured on this server");
+    }
+
     const decode = await admin.auth().verifyIdToken(idToken);
 
     //lay thong tin user
