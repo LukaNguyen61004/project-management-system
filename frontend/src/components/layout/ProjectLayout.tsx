@@ -9,7 +9,7 @@ export function ProjectLayout() {
     const { projectId } = useParams();
     const pid = Number(projectId);
 
-    const { data: project, isLoading } = useQuery({
+    const { data: project } = useQuery({
         queryKey: ['project', pid],
         queryFn: () => projectApi.getById(pid).then((r) => r.data.project),
         enabled: !!pid,
