@@ -1,11 +1,26 @@
 import {Router} from "express";
-import { registerController } from "../controllers/auth.controller.js";
+import { authMiddleware } from "../middlewares/auth.middleware.js";
+import { registerController, loginController, firebaseGoogleLoginController, 
+         getCurrentUserController, refreshTokenController, logoutController } from "../controllers/auth.controller.js";
+
 const router= Router();
 
 router.get("/test", (req,res)=>{
     res.send("Auth route working");
 });
 
-router.post("/register", registerController)
+router.post("/register", registerController);
+
+router.post("/login", loginController);
+
+router.post("/google", firebaseGoogleLoginController);
+
+router.get("/me",authMiddleware, getCurrentUserController);
+
+router.post("/refresh-token", refreshTokenController);
+
+router.post("/logout", authMiddleware, logoutController);
+
+
 
 export default router;
