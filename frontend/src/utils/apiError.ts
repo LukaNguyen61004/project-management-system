@@ -1,7 +1,7 @@
 import { isAxiosError } from 'axios'
 import { FirebaseError } from 'firebase/app'
 
-type ZodIssue = { message?: string }
+
 
 function parseZodIssues(value: unknown): string | null {
   if (Array.isArray(value)) {

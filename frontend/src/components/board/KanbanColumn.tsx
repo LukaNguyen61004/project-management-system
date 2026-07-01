@@ -1,7 +1,6 @@
 import type { Issue } from '../../types/issue.types'
 import type { IssueStatus } from '../../types/enums'
 import { STATUS_COLUMN_COLORS } from '../../utils/constants'
-import { IssueCard } from './IssueCard'
 import { cn } from '../../utils/cn'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'

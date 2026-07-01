@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { FolderKanban } from "lucide-react";
-import type { Project } from "../../types/project.type"
+import type { Project } from "../../types/project.types"
 
 interface ProjectCardProps {
     project: Project
