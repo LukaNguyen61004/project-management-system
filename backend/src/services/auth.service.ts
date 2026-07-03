@@ -3,7 +3,8 @@ import jwt from "jsonwebtoken";
 import admin, { isFirebaseAdminReady } from "../lib/firebaseAdmin.js";
 import { env } from "../config/env.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
-import { findUserByEmail, createUser, findUserById, updateRefreshToken } from "../repositories/auth.repository.js";
+import { findUserByEmail, createUser, findUserById, updateRefreshToken, updateUserProfile } from "../repositories/auth.repository.js";
+import type { UpdateProfileInput } from "../validatons/auth.validation.js";
 
 export const refreshTokenService = async (refreshToken: string) => {
     try {
@@ -181,4 +182,29 @@ export const logoutService = async (userId: number)=>{
     }
 }
 
+
+export const updateProfileService = async (
+    userId: number,
+    data: UpdateProfileInput
+) => {
+    const user = await findUserById(userId);
+    if (!user) {
+        throw new Error("User not found");
+    }
+
+    const updateData: { user_name?: string; user_avatar_url?: string | null } = {}
+
+    if (data.user_name !== undefined) {
+        updateData.user_name = data.user_name
+    }
+
+    if (data.user_avatar_url !== undefined) {
+        updateData.user_avatar_url = data.user_avatar_url === "" ? null : data.user_avatar_url
+    }
+
+    const updated = await updateUserProfile(userId, updateData);
+
+    const { user_password_hash, refresh_token, ...safeUser } = updated;
+    return safeUser;
+};
 

@@ -9,6 +9,7 @@ interface AuthState {
   isAuthenticated: boolean
   setAuth: (user: User, accessToken: string, refreshToken: string) => void
   setAuthGoogle : (user: User, accessToken: string) => void
+  updateUser: (user: User) => void
   logout: () => void
 }
 
@@ -25,6 +26,8 @@ export const useAuthStore = create<AuthState>()(
 
       setAuthGoogle: (user, accessToken) =>
         set({ user, accessToken, refreshToken: null, isAuthenticated: true }),
+      
+      updateUser: (user) => set({ user }),
 
       logout: () =>
         set({

@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import { registerSchema, loginSchema, googleLoginSchema } from "../validatons/auth.validation.js";
-import { registerService, loginService, firebaseGoogleLoginService, getCurrentUserService, refreshTokenService, logoutService } from "../services/auth.service.js";
+import { registerSchema, loginSchema, googleLoginSchema, updateProfileSchema } from "../validatons/auth.validation.js";
+import { registerService, loginService, firebaseGoogleLoginService, getCurrentUserService, refreshTokenService, logoutService, updateProfileService } from "../services/auth.service.js";
 
 
 export const registerController = async (req: Request, res: Response) => {
@@ -132,5 +132,26 @@ export const logoutController = async (req: Request, res: Response) => {
     }
 }
 
+export const updateProfileController = async (req: Request, res: Response) => {
+    try {
+        if (!req.user) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const validatedData = updateProfileSchema.parse(req.body);
+        const user = await updateProfileService(req.user.userId, validatedData);
+
+        res.status(200).json({
+            success: true,
+            message: "Profile updated successfully",
+            data: user,
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            error: error instanceof Error ? error.message : "Unknown error",
+        });
+    }
+};
 
 

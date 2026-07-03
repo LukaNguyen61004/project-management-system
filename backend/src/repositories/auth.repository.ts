@@ -38,3 +38,17 @@ export const updateRefreshToken = async ( userId: number, refreshToken: string |
     });
   };
 
+export const updateUserProfile = async (
+    userId: number,
+    data: { user_name?: string; user_avatar_url?: string | null }
+) => {
+    return prisma.user.update({
+        where: { user_id: userId },
+        data: {
+            ...(data.user_name !== undefined && { user_name: data.user_name }),
+            ...(data.user_avatar_url !== undefined && {
+                user_avatar_url: data.user_avatar_url || null,
+            }),
+        },
+    });
+};
