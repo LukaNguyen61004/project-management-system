@@ -23,13 +23,7 @@ export function UserMenu() {
     navigate('/login', { replace: true })
   }
 
-  const initials =
-    user?.user_name
-      ?.split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2) || '?'
+  
 
   return (
     <div className="flex items-center gap-3">
