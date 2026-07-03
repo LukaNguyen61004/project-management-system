@@ -8,6 +8,7 @@ import activityLogRouters from "./activityLog.routes.js"
 import commentRouter from "./comment.router.js"
 import epicRouter from "./epic.routes.js"
 import notificationRouter from "./notification.routes.js"
+import attachmentRouter from "./attachment.routes.js"
 
 const router= Router();
 
@@ -16,6 +17,8 @@ router.use("/auth", authRoutes);
 router.use("/projects", projectRouters);
 
 router.use("/issues", issueRouters);
+
+router.use("/attachments", attachmentRouter);
 
 router.use("/sprints", sprintRouters);
 
@@ -26,7 +29,6 @@ router.use("/comments", commentRouter);
 router.use("/epics",epicRouter);
 
 router.use("/notifications", notificationRouter);
-
 
 
 export default router;
