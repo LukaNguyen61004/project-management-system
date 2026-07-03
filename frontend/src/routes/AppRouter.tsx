@@ -8,6 +8,7 @@ import { BacklogPage } from '../pages/BacklogPage'
 import { ProjectLayout } from '../components/layout/ProjectLayout'
 import { ProjectSettingPage } from '../pages/ProjectSettingPage'
 import { InviteAcceptPage } from '../pages/InviteAcceptPage'
+import { ProfilePage } from '../pages/ProfilePage'
 
 export function AppRouter() {
   return (
@@ -15,6 +16,14 @@ export function AppRouter() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/invite"
           element={

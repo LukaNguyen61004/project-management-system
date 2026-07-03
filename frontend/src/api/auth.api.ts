@@ -21,6 +21,9 @@ export const authApi = {
 
   getMe: () => apiClient.get<{ data: User }>('/auth/me'),
 
+  updateProfile: (data: { user_name?: string; user_avatar_url?: string }) =>
+    apiClient.patch<{ success: boolean; data: User }>('/auth/me', data),
+
   logout: () =>
     apiClient.post<{ success: boolean; data: { message: string } }>('/auth/logout')
 }
