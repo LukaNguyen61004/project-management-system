@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '../../store/auth.store'
 import { authApi } from '../../api/auth.api'
+import { Avatar } from '../ui/Avatar'
+import { Link } from 'react-router-dom'
 
 export function UserMenu() {
   const user = useAuthStore((s) => s.user)
@@ -31,20 +33,21 @@ export function UserMenu() {
 
   return (
     <div className="flex items-center gap-3">
-      <div className="w-8 h-8 rounded-full bg-jira-blue flex items-center justify-center text-white text-xs font-medium">
-        {user?.user_avatar_url ? (
-          <img
-            src={user.user_avatar_url}
-            alt={user.user_name || 'User'}
-            className="w-8 h-8 rounded-full object-cover"
-          />
-        ) : (
-          initials
-        )}
-      </div>
-      <span className="text-sm text-jira-text hidden sm:block max-w-[160px] truncate">
-        {user?.user_name || user?.user_email}
-      </span>
+      <Link
+        to="/profile"
+        className="flex items-center gap-3 hover:opacity-80 rounded-lg px-1 py-0.5"
+        title="Your profile"
+      >
+        <Avatar
+          name={user?.user_name || user?.user_email}
+          src={user?.user_avatar_url}
+          size="md"
+        />
+        <span className="text-sm text-jira-text hidden sm:block max-w-[160px] truncate">
+          {user?.user_name || user?.user_email}
+        </span>
+      </Link>
+
       <button
         type="button"
         onClick={handleLogout}
