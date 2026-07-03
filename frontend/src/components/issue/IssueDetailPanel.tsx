@@ -15,6 +15,7 @@ import { cn } from '../../utils/cn'
 import { useAuthStore } from '../../store/auth.store'
 import { AlertTriangle } from 'lucide-react'
 import { getWarningLabel, isIssueWarned } from '../../utils/issueWarning'
+import { IssueAttachments } from './IssueAttachments'
 
 
 interface IssueDetailPanelProps {
@@ -177,11 +178,11 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
 
         <div className="p-6 space-y-6">
           {isIssueWarned(currentIssue) && (
-          <div className="flex items-start gap-2 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-            <span>{getWarningLabel(currentIssue)}</span>
-          </div>
-        )}
+            <div className="flex items-start gap-2 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+              <span>{getWarningLabel(currentIssue)}</span>
+            </div>
+          )}
 
           <Input
             label="Summary"
@@ -297,6 +298,10 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
             {updateMutation.isPending ? 'Saving...' : 'Save changes'}
           </Button>
 
+          {issueId && (
+            <IssueAttachments issueId={issueId} projectId={projectId} />
+          )}
+          
           <div className="pt-4 border-t border-jira-border">
             <h3 className="text-sm font-semibold text-jira-text-subtle mb-3">
               Comments ({comments.length})

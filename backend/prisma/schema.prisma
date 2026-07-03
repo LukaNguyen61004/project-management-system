@@ -38,6 +38,12 @@ enum IssuePriority {
   critical
 }
 
+enum AttachmentType {
+  image
+  file   
+  link
+}
+
 enum SprintStatus {
   planned
   active
@@ -118,6 +124,8 @@ model User {
   invitations_sent ProjectInvitation[]
 
   activity_logs ActivityLog[]
+
+  issue_attachments IssueAttachment[]
 }
 
 model Project {
@@ -272,6 +280,8 @@ model Issue {
 
   activity_logs ActivityLog[]
 
+  attachments IssueAttachment[]
+
   @@index([issue_key])
   @@index([project_id])
   @@index([sprint_id])
@@ -282,6 +292,20 @@ model Issue {
   @@index([issue_priority])
   @@index([last_activity_at])
 }
+
+model IssueAttachment {
+  attachment_id   Int            @id @default(autoincrement())
+  issue_id        Int
+  user_id         Int
+  attachment_type AttachmentType
+  file_name       String         
+  file_url        String         
+  created_at      DateTime       @default(now())
+  issue Issue @relation(fields: [issue_id], references: [issue_id], onDelete: Cascade)
+  user  User  @relation(fields: [user_id], references: [user_id])
+  @@index([issue_id])
+}
+
 
 model Comment {
   comment_id Int @id @default(autoincrement())
