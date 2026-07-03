@@ -19,4 +19,20 @@ export const googleLoginSchema = z.object({
     idToken : z.string(),
 });
 
+export const updateProfileSchema = z.object({
+    user_name: z
+        .string()
+        .trim()
+        .min(2, "Name must be at least 2 characters")
+        .max(50)
+        .optional(),
+    user_avatar_url: z
+        .string()
+        .trim()
+        .url("Invalid avatar URL")
+        .optional()
+        .or(z.literal("")),
+});
+
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 

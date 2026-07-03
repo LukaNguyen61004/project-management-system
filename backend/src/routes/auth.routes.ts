@@ -1,7 +1,7 @@
 import {Router} from "express";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { registerController, loginController, firebaseGoogleLoginController, 
-         getCurrentUserController, refreshTokenController, logoutController } from "../controllers/auth.controller.js";
+         getCurrentUserController, refreshTokenController, logoutController, updateProfileController } from "../controllers/auth.controller.js";
 
 const router= Router();
 
@@ -20,6 +20,8 @@ router.get("/me",authMiddleware, getCurrentUserController);
 router.post("/refresh-token", refreshTokenController);
 
 router.post("/logout", authMiddleware, logoutController);
+
+router.patch("/me", authMiddleware, updateProfileController);
 
 
 
