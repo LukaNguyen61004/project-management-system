@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ExternalLink, ImagePlus, Link2, Trash2, FileText, Paperclip } from 'lucide-react'
+import { ExternalLink, Link2, Trash2, FileText, Paperclip } from 'lucide-react'
 import { attachmentApi } from '../../api/attachment.api'
 import { uploadIssueFile } from '../../utils/uploadIssueFile'
 import { Button } from '../ui/Button'
