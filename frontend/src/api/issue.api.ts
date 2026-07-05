@@ -37,7 +37,7 @@ export const issueApi = {
   delete: (issueId: number) =>
     apiClient.delete(`/issues/${issueId}`),
 
-  assign: (issueId: number, assignee_id: number) =>
+  assign: (issueId: number, assignee_id: number | null) =>
     apiClient.patch(`/issues/${issueId}/assign`, { assignee_id }),
 
   updateSprint: (issueId: number, sprint_id : number | null) =>

@@ -217,7 +217,7 @@ export const changeIssueStatusService = async (issueId: number, data: ChangIssue
         new_value: data.issue_status,
     });
 
-    
+
 
     return updateStatus;
 }
@@ -229,10 +229,30 @@ export const assignIssueService = async (issueId: number, data: AssignIssueInput
         throw new Error("Issue not found");
     }
 
+
     const currentMember = await findProjectMember(issue.project_id, currentUserId);
 
     if (!currentMember) {
         throw new Error("You are not a member of this project");
+    }
+
+    if (data.assignee_id === null) {
+        if (issue.assignee_id === null) {
+            throw new Error("Issue is already unassigned");
+        }
+        const unassigned = await assignIssue(issue.issue_id, null);
+        await touchLastActivity(issueId);
+        await createActivityLogService({
+            user_id: currentUserId,
+            project_id: issue.project_id,
+            issue_id: issue.issue_id,
+            action_type: ActivityActionType.ISSUE_ASSIGNED,
+            field_name: "assignee_id",
+            old_value: issue.assignee_id.toString(),
+
+        });
+
+        return unassigned;
     }
 
     const assignee = await findUserById(data.assignee_id);
@@ -274,7 +294,6 @@ export const assignIssueService = async (issueId: number, data: AssignIssueInput
         new_value: data.assignee_id.toString(),
     });
 
-    
 
     return assigned;
 }
