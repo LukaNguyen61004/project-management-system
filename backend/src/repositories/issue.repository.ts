@@ -179,7 +179,7 @@ export const changeIssueStatus = async (issueId: number, status: IssueStatus) =>
     });
 }
 
-export const assignIssue = async (issueId: number, assigneeId: number) => {
+export const assignIssue = async (issueId: number, assigneeId: number | null) => {
     return prisma.issue.update({
         where: {
             issue_id: issueId,
