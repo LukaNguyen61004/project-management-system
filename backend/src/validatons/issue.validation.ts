@@ -55,7 +55,8 @@ export const assignIssueSchema = z.object({
     assignee_id: z
          .number()
          .int()
-         .positive(),
+         .positive()
+         .nullable(),
 })
 
 export type AssignIssueInput = z.infer<typeof assignIssueSchema>;

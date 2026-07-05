@@ -117,7 +117,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
   })
 
   const assignMutation = useMutation({
-    mutationFn: (assignee_id: number) => {
+    mutationFn: (assignee_id: number | null) => {
       if (!issueId) throw new Error('No issue')
       return issueApi.assign(issueId, assignee_id)
     },
@@ -254,8 +254,8 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
               <select
                 value={String(currentIssue.assignee_id ?? '')}
                 onChange={(e) => {
-                  const id = Number(e.target.value)
-                  if (id) assignMutation.mutate(id)
+                  const value =e.target.value
+                  assignMutation.mutate(value === '' ? null : Number(value))
                 }}
                 className={selectClass}
               >
