@@ -214,6 +214,9 @@ model Sprint {
 
   sprint_created_at DateTime @default(now())
   sprint_updated_at DateTime @updatedAt
+  
+  sprint_summary            String?   @db.Text
+  sprint_summary_created_at DateTime?
 
   project Project @relation(fields: [project_id], references: [project_id])
 
