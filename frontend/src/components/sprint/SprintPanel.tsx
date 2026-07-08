@@ -1,12 +1,16 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle, ChevronDown, ChevronRight, Pencil, Play } from 'lucide-react'
+import { CheckCircle, ChevronDown, ChevronRight, Pencil, Play, Sparkles } from 'lucide-react'
 import type { Sprint } from '../../types/sprint.types'
 import { sprintApi } from '../../api/sprint.api'
 import { Button } from '../ui/Button'
 import { cn } from '../../utils/cn'
 import { SprintDropZone } from './SprintDropZone'
 import { sprintDropId } from './sprintDnd'
+import { SprintSummaryModal } from './SprintSummaryModal'
+import type { SprintSummaryResult } from '../../api/ai.api'
+import { aiApi } from '../../api/ai.api'
+
 
 interface SprintPanelProps {
   sprint: Sprint
@@ -31,6 +35,9 @@ export function SprintPanel({
 }: SprintPanelProps) {
   const [open, setOpen] = useState(defaultOpen)
   const queryClient = useQueryClient()
+  const [summaryOpen, setSummaryOpen] = useState(false)
+  const [summaryData, setSummaryData] = useState<SprintSummaryResult | null>(null)
+  const [summaryLoading, setSummaryLoading] = useState(false)
 
   const statusMutation = useMutation({
     mutationFn: (sprint_status: 'planned' | 'active' | 'completed') =>
@@ -40,6 +47,37 @@ export function SprintPanel({
       queryClient.invalidateQueries({ queryKey: ['issues'] })
     },
   })
+
+  const handleComplete = async () => {
+    try {
+      // 1. Complete sprint
+      await statusMutation.mutateAsync('completed')
+      // 2. Gọi AI summary
+      setSummaryOpen(true)
+      setSummaryLoading(true)
+      const res = await aiApi.summarizeSprint(sprint.sprint_id)
+      setSummaryData(res.data.data)
+    } catch {
+      // Complete OK nhưng AI fail → vẫn mở modal báo lỗi
+      setSummaryOpen(true)
+      setSummaryData(null)
+    } finally {
+      setSummaryLoading(false)
+    }
+  }
+
+  const handleViewSummary = async () => {
+    setSummaryOpen(true)
+    setSummaryLoading(true)
+    try {
+      const res = await aiApi.summarizeSprint(sprint.sprint_id)
+      setSummaryData(res.data.data)
+    } catch {
+      setSummaryData(null)
+    } finally {
+      setSummaryLoading(false)
+    }
+  }
 
   return (
     <div className="bg-white rounded-lg border border-jira-border mb-4">
@@ -84,13 +122,17 @@ export function SprintPanel({
             </Button>
           )}
           {sprint.sprint_status === 'active' && (
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => statusMutation.mutate('completed')}
-            >
+            <Button size="sm" variant="secondary" onClick={handleComplete}
+              disabled={statusMutation.isPending || summaryLoading}>
               <CheckCircle size={14} />
               Complete
+            </Button>
+          )}
+
+          {sprint.sprint_status === 'completed' && (
+            <Button size="sm" variant="secondary" onClick={handleViewSummary}>
+              <Sparkles size={14} />
+              Summary
             </Button>
           )}
         </div>
@@ -105,6 +147,15 @@ export function SprintPanel({
           {children}
         </SprintDropZone>
       )}
+
+      <SprintSummaryModal
+        open={summaryOpen}
+        onClose={() => setSummaryOpen(false)}
+        sprintName={sprint.sprint_name}
+        data={summaryData}
+        loading={summaryLoading}
+      />
+
     </div>
   )
 }
