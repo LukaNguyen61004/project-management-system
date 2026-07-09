@@ -34,12 +34,15 @@ export const issueApi = {
   update: (issueId: number, data: UpdateIssueInput) =>
     apiClient.patch<{ success: boolean; issue: Issue }>(`/issues/${issueId}`, data),
 
+  updateEpic: (issueId: number, epic_id: number | null) =>
+    apiClient.patch(`/issues/${issueId}/epic`, { epic_id }),
+
   delete: (issueId: number) =>
     apiClient.delete(`/issues/${issueId}`),
 
   assign: (issueId: number, assignee_id: number | null) =>
     apiClient.patch(`/issues/${issueId}/assign`, { assignee_id }),
 
-  updateSprint: (issueId: number, sprint_id : number | null) =>
+  updateSprint: (issueId: number, sprint_id: number | null) =>
     apiClient.patch(`/issues/${issueId}/sprint`, { sprint_id })
 }

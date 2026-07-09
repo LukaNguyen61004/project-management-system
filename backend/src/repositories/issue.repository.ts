@@ -82,6 +82,13 @@ export const getProjectIssues = async (projectId: number) => {
                     sprint_id: true,
                     sprint_name:true,
                 }
+            },
+            epic: {
+                select: {
+                    epic_id:true,
+                    epic_name:true,
+                    epic_color:true,
+                }
             }
         },
         orderBy: {

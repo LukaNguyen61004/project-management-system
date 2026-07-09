@@ -1,20 +1,21 @@
 import { useEffect, useState } from 'react'
+import { formatDistanceToNow } from 'date-fns'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Send, X, Pencil, Trash2 } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 import type { Issue } from '../../types/issue.types'
 import type { IssuePriority, IssueStatus, IssueType } from '../../types/enums'
 import { issueApi } from '../../api/issue.api'
 import { projectApi } from '../../api/project.api'
-import { ISSUE_PRIORITIES, ISSUE_STATUSES, ISSUE_TYPES } from '../../utils/constants'
+import { commentApi } from '../../api/comment.api'
+import { epicApi } from '../../api/epic.api'
 import { Input } from '../ui/Input'
 import { Button } from '../ui/Button'
 import { Avatar } from '../ui/Avatar'
-import { commentApi } from '../../api/comment.api'
-import { formatDistanceToNow } from 'date-fns'
+import { ISSUE_PRIORITIES, ISSUE_STATUSES, ISSUE_TYPES } from '../../utils/constants'
 import { cn } from '../../utils/cn'
-import { useAuthStore } from '../../store/auth.store'
-import { AlertTriangle } from 'lucide-react'
 import { getWarningLabel, isIssueWarned } from '../../utils/issueWarning'
+import { useAuthStore } from '../../store/auth.store'
 import { IssueAttachments } from './IssueAttachments'
 
 
@@ -58,6 +59,12 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
     queryKey: ['comments', issueId],
     queryFn: () => commentApi.getByIssue(issueId!).then((r) => r.data.data),
     enabled: !!issueId,
+  })
+
+  const { data: epics = [] } = useQuery({
+    queryKey: ['epics', projectId],
+    queryFn: () => epicApi.getByProject(projectId).then((r) => r.data.data),
+    enabled: !!issueId && !!projectId,
   })
 
   const currentIssue = detail || issue
@@ -157,6 +164,17 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
     },
   })
 
+  const epicMutation = useMutation({
+    mutationFn: (epic_id: number | null) => {
+      if (!issueId) throw new Error('No issue')
+      return issueApi.updateEpic(issueId, epic_id)
+    },
+    onSuccess: () => {
+      invalidate()
+      queryClient.invalidateQueries({ queryKey: ['epics', projectId] })
+    },
+  })
+
   if (!issue || !currentIssue) return null
 
   return (
@@ -250,11 +268,30 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
             </div>
 
             <div>
+              <label className="text-sm font-medium text-jira-text">Epic</label>
+              <select
+                value={String(currentIssue.epic_id ?? '')}
+                onChange={(e) => {
+                  const v = e.target.value
+                  epicMutation.mutate(v === '' ? null : Number(v))
+                }}
+                className={selectClass}
+              >
+                <option value="">No epic</option>
+                {epics.map((e) => (
+                  <option key={e.epic_id} value={e.epic_id}>
+                    {e.epic_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
               <label className="text-sm font-medium text-jira-text">Assignee</label>
               <select
                 value={String(currentIssue.assignee_id ?? '')}
                 onChange={(e) => {
-                  const value =e.target.value
+                  const value = e.target.value
                   assignMutation.mutate(value === '' ? null : Number(value))
                 }}
                 className={selectClass}
@@ -301,7 +338,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
           {issueId && (
             <IssueAttachments issueId={issueId} projectId={projectId} />
           )}
-          
+
           <div className="pt-4 border-t border-jira-border">
             <h3 className="text-sm font-semibold text-jira-text-subtle mb-3">
               Comments ({comments.length})

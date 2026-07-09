@@ -25,15 +25,15 @@ export interface Issue {
     review_reject_count: number
     issue_created_at: string
     issue_updated_at: string
-    
+    epic?: { epic_id: number; epic_name: string; epic_color: string } | null
     reporter?: UserSummary
     assignee?: UserSummary | null
     sprint?: { sprint_id: number; sprint_name: string } | null
 }
 
 export interface UpdateIssueInput {
-  issue_name?: string
-  issue_description?: string
-  issue_type?: IssueType
+    issue_name?: string
+    issue_description?: string
+    issue_type?: IssueType
 }
 

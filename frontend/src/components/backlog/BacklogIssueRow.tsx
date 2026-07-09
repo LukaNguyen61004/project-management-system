@@ -2,6 +2,7 @@ import type { Issue } from '../../types/issue.types'
 import { Avatar } from '../ui/Avatar'
 import { IssueTypeIcon } from '../issue/IssueTypeIcon'
 import { IssueWarningBadge } from '../issue/IssueWarningBadge'
+import { EpicBadge } from '../epic/EpicBadge'
 
 
 interface BacklogIssueRowProps {
@@ -14,7 +15,10 @@ export function BacklogIssueRow({ issue }: BacklogIssueRowProps) {
       <IssueTypeIcon type={issue.issue_type} />
       <span className="text-xs text-jira-text-subtle w-20 shrink-0">{issue.issue_key}</span>
       <span className="text-sm text-jira-text flex-1 truncate">{issue.issue_name}</span>
-      <IssueWarningBadge issue={issue}/>
+      {issue.epic && (
+        <EpicBadge name={issue.epic.epic_name} color={issue.epic.epic_color} />
+      )}
+      <IssueWarningBadge issue={issue} />
       {issue.assignee && (
         <Avatar
           name={issue.assignee.user_name}

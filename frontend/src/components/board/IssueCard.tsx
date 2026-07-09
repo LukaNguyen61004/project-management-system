@@ -3,6 +3,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { cn } from '../../utils/cn'
 import { IssueWarningBadge } from '../issue/IssueWarningBadge'
+import { EpicBadge } from "../epic/EpicBadge";
 
 interface IssueCardProps {
   issue: Issue,
@@ -32,6 +33,10 @@ export function IssueCard({ issue, onClick, isDragging }: IssueCardProps) {
       <p className="text-sm text-jira-text font-medium leading-snug mb-2">
         {issue.issue_name}
       </p>
+
+      {issue.epic && (
+        <EpicBadge name={issue.epic.epic_name} color={issue.epic.epic_color} />
+      )}
 
       <div className="flex items-center justify-between gap-2">
         <span className={`text-xs font-medium uppercase ${PRIORITY_COLOR[issue.issue_priority]}`}>
