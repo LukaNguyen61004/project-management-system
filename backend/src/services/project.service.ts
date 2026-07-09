@@ -154,7 +154,7 @@ export const acceptInvitationService = async (token: string, currentUserId: numb
     await createNotificationService(
         invitation.invited_by,
         currentUserId,
-        NotificationType.project_invitation,
+        NotificationType.project_member_joined,
         "New member joined",
         `${currentUser.user_name} joined the project`,
         undefined,
