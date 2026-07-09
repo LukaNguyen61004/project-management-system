@@ -6,12 +6,14 @@ import type { Issue } from '../types/issue.types'
 import type { Sprint } from '../types/sprint.types'
 import { issueApi } from '../api/issue.api'
 import { sprintApi } from '../api/sprint.api'
+import { epicApi } from '../api/epic.api'
 import { BacklogList } from '../components/backlog/BacklogList'
 import { CreateIssueModal } from '../components/issue/CreateIssueModal'
 import { IssueDetailPanel } from '../components/issue/IssueDetailPanel'
 import { CreateSprintModal } from '../components/sprint/CreateSprintModal'
 import { EditSprintModal } from '../components/sprint/EditSprintModal'
 import { Button } from '../components/ui/Button'
+import { CreateEpicModal } from '../components/epic/CreateEpicModal'
 
 export function BacklogPage() {
   const { projectId } = useParams()
@@ -20,6 +22,7 @@ export function BacklogPage() {
   const [showCreateSprint, setShowCreateSprint] = useState(false)
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null)
   const [editingSprint, setEditingSprint] = useState<Sprint | null>(null)
+  const [showCreateEpic, setShowCreateEpic] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
 
   const { data: issues = [], isLoading, isError } = useQuery({
@@ -31,6 +34,12 @@ export function BacklogPage() {
   const { data: sprints = [], isLoading: sprintsLoading } = useQuery({
     queryKey: ['sprints', pid],
     queryFn: () => sprintApi.getByProject(pid).then((r) => r.data.data),
+    enabled: !!pid,
+  })
+
+  const { data: epics = [] } = useQuery({
+    queryKey: ['epics', pid],
+    queryFn: () => epicApi.getByProject(pid).then((r) => r.data.data),
     enabled: !!pid,
   })
 
@@ -57,6 +66,9 @@ export function BacklogPage() {
           <p className="text-xs text-jira-text-subtle">{issues.length} issues</p>
         </div>
         <div className="flex gap-2">
+          <Button size="sm" variant="secondary" onClick={() => setShowCreateEpic(true)}>
+            <Plus size={14} /> Create epic
+          </Button>
           <Button size="sm" variant="secondary" onClick={() => setShowCreateSprint(true)}>
             <Plus size={14} /> Create sprint
           </Button>
@@ -65,6 +77,26 @@ export function BacklogPage() {
           </Button>
         </div>
       </div>
+      
+      {epics.length > 0 && (
+        <div className="px-4 py-3 bg-white border-b border-jira-border flex flex-wrap gap-2">
+          {epics.map((e) => (
+            <span
+              key={e.epic_id}
+              className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded border border-jira-border"
+            >
+              <span
+                className="w-2.5 h-2.5 rounded-full"
+                style={{ backgroundColor: e.epic_color }}
+              />
+              {e.epic_name}
+              <span className="text-jira-text-subtle">
+                ({e._count?.issues ?? 0})
+              </span>
+            </span>
+          ))}
+        </div>
+      )}
 
       <BacklogList
         projectId={pid}
@@ -98,6 +130,12 @@ export function BacklogPage() {
         sprint={editingSprint}
         projectId={pid}
         onClose={() => setEditingSprint(null)}
+      />
+
+      <CreateEpicModal
+        open={showCreateEpic}
+        projectId={pid}
+        onClose={() => setShowCreateEpic(false)}
       />
     </>
   )
