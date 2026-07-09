@@ -49,6 +49,17 @@ export function NotificationBell() {
             return
         }
         
+        const isMemberJoined =
+            notification.notifi_type === 'project_member_joined' ||
+            (notification.notifi_type === 'project_invitation' &&
+                notification.notifi_title === 'New member joined')
+
+        if (isMemberJoined) {
+            setOpen(false)
+            if (!notification.is_read) markReadMutation.mutate(notification.notifi_id)
+            return
+        }
+
         if (notification.notifi_type === 'project_invitation') {
             setOpen(false)
 
