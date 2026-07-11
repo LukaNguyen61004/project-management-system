@@ -14,6 +14,10 @@ import { CreateSprintModal } from '../components/sprint/CreateSprintModal'
 import { EditSprintModal } from '../components/sprint/EditSprintModal'
 import { Button } from '../components/ui/Button'
 import { CreateEpicModal } from '../components/epic/CreateEpicModal'
+import { EMPTY_ISSUE_FILTERS } from '../types/issueFilter.types'
+import { projectApi } from '../api/project.api'
+import { useIssueFilters } from '../hooks/useIssueFilters'
+import { IssueFilterBar } from '../components/issue/IssueFilterBar'
 
 export function BacklogPage() {
   const { projectId } = useParams()
@@ -23,6 +27,8 @@ export function BacklogPage() {
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null)
   const [editingSprint, setEditingSprint] = useState<Sprint | null>(null)
   const [showCreateEpic, setShowCreateEpic] = useState(false)
+  const [filters, setFilters] = useState(EMPTY_ISSUE_FILTERS)
+
   const [searchParams, setSearchParams] = useSearchParams()
 
   const { data: issues = [], isLoading, isError } = useQuery({
@@ -42,6 +48,14 @@ export function BacklogPage() {
     queryFn: () => epicApi.getByProject(pid).then((r) => r.data.data),
     enabled: !!pid,
   })
+
+  const { data: members = [] } = useQuery({
+    queryKey: ['members', pid],
+    queryFn: () => projectApi.getMembers(pid).then((r) => r.data.members),
+    enabled: !!pid,
+  })
+
+  const filteredIssues = useIssueFilters(issues, filters)
 
   useEffect(() => {
     const issueId = Number(searchParams.get('issue'))
@@ -77,7 +91,7 @@ export function BacklogPage() {
           </Button>
         </div>
       </div>
-      
+
       {epics.length > 0 && (
         <div className="px-4 py-3 bg-white border-b border-jira-border flex flex-wrap gap-2">
           {epics.map((e) => (
@@ -98,9 +112,20 @@ export function BacklogPage() {
         </div>
       )}
 
+      <IssueFilterBar
+        filters={filters}
+        onChange={setFilters}
+        members={members}
+        epics={epics}
+        totalCount={issues.length}
+        filteredCount={filteredIssues.length}
+      />
+
+
+
       <BacklogList
         projectId={pid}
-        issues={issues}
+        issues={filteredIssues}
         sprints={sprints}
         onIssueClick={setSelectedIssue}
         onEditSprint={setEditingSprint}
