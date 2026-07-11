@@ -61,6 +61,14 @@ export function BacklogList({
     moveMutation.mutate({ issueId, sprintId: targetSprintId })
   }
 
+  if (issues.length === 0) {
+    return (
+      <p className="text-sm text-jira-text-subtle text-center py-16">
+        No issues match your filters
+      </p>
+    )
+  }
+
   return (
     <DndContext
       sensors={sensors}
