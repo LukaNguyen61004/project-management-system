@@ -3,18 +3,24 @@ import { useParams, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { issueApi } from '../api/issue.api'
 import { sprintApi } from '../api/sprint.api'
+import { epicApi } from '../api/epic.api'
+import { projectApi } from '../api/project.api'
 import { KanbanBoard } from '../components/board/KanbanBoard'
 import { CreateIssueModal } from '../components/issue/CreateIssueModal'
 import { IssueDetailPanel } from '../components/issue/IssueDetailPanel'
+import { IssueFilterBar } from '../components/issue/IssueFilterBar'
 import { Button } from '../components/ui/Button'
 import type { Issue } from '../types/issue.types'
 import { formatSprintDateRange } from '../utils/date'
+import { useIssueFilters } from '../hooks/useIssueFilters'
+import { EMPTY_ISSUE_FILTERS } from '../types/issueFilter.types'
 
 export function BoardPage() {
   const { projectId } = useParams()
   const pid = Number(projectId)
   const [showCreate, setShowCreate] = useState(false)
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null)
+  const [filters, setFilters] = useState(EMPTY_ISSUE_FILTERS)
   const [searchParams, setSearchParams] = useSearchParams()
 
   const { data: issues = [], isLoading, isError } = useQuery({
@@ -26,6 +32,18 @@ export function BoardPage() {
   const { data: sprints = [], isLoading: sprintsLoading } = useQuery({
     queryKey: ['sprints', pid],
     queryFn: () => sprintApi.getByProject(pid).then((r) => r.data.data),
+    enabled: !!pid,
+  })
+
+  const { data: epics = [] } = useQuery({
+    queryKey: ['epics', pid],
+    queryFn: () => epicApi.getByProject(pid).then((r) => r.data.data),
+    enabled: !!pid,
+  })
+
+  const { data: members = [] } = useQuery({
+    queryKey: ['members', pid],
+    queryFn: () => projectApi.getMembers(pid).then((r) => r.data.members),
     enabled: !!pid,
   })
 
@@ -43,12 +61,17 @@ export function BoardPage() {
     }
   }, [searchParams, issues, setSearchParams])
 
-
   const activeSprint = sprints.find((s) => s.sprint_status === 'active')
 
-  const boardIssues = activeSprint ? issues.filter((i) => i.sprint_id === activeSprint.sprint_id) : issues
+  const boardIssues = activeSprint
+    ? issues.filter((i) => i.sprint_id === activeSprint.sprint_id)
+    : issues
 
-  const dateRange = activeSprint ? formatSprintDateRange(activeSprint.start_date, activeSprint.end_date) : null
+  const filteredBoardIssues = useIssueFilters(boardIssues, filters)
+
+  const dateRange = activeSprint
+    ? formatSprintDateRange(activeSprint.start_date, activeSprint.end_date)
+    : null
 
   if (isLoading || sprintsLoading) return <div>Loading board...</div>
   if (isError) return <div className="p-6 text-red-500">Failed to load issues.</div>
@@ -69,9 +92,18 @@ export function BoardPage() {
         <Button size="sm" onClick={() => setShowCreate(true)}>+ Create issue</Button>
       </div>
 
+      <IssueFilterBar
+        filters={filters}
+        onChange={setFilters}
+        members={members}
+        epics={epics}
+        totalCount={boardIssues.length}
+        filteredCount={filteredBoardIssues.length}
+      />
+
       <KanbanBoard
         projectId={pid}
-        issues={boardIssues}
+        issues={filteredBoardIssues}
         onIssueClick={handleIssueClick}
       />
 
