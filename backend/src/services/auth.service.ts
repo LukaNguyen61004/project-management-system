@@ -155,10 +155,16 @@ export const firebaseGoogleLoginService = async (idToken: string) => {
         refreshToken
     );
 
+    const {
+        user_password_hash,
+        refresh_token,
+        ...safeUser
+    } = user;
 
     return {
-        user,
+        safeUser,
         accessToken,
+        refreshToken,
     }
 }
 

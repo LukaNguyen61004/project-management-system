@@ -1,11 +1,12 @@
 import type { Request, Response } from "express";
 import { summarizeSprintService } from "../services/ai.service.js";
+import { sendError } from "../helper/httpError.js";
 
 export const summarizeSprintController = async (req: Request, res: Response) => {
   try {
     const sprintId = Number(req.params.sprintId);
     if (isNaN(sprintId)) {
-      return res.status(400).json({ success: false, error: "Invalid sprint id" });
+      return sendError(res, new Error("Invalid sprint id"), 400);
     }
 
     const userId = req.user!.userId;
@@ -16,9 +17,6 @@ export const summarizeSprintController = async (req: Request, res: Response) => 
       data: result,
     });
   } catch (error) {
-    return res.status(400).json({
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
+    return sendError(res, error, 400);
   }
 };
