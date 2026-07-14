@@ -7,8 +7,6 @@ import { createActivityLogService } from "./activityLog.service.js";
 import { notifyProjectMembers } from "../helper/notification.helper.js";
 
 
-
-
 export const createSprintService = async (projectId: number, currentUserId: number, data: CreateSprintInput) => {
     const project = await findProjectById(projectId);
 
@@ -115,11 +113,6 @@ export const updateSprintService = async (sprintId: number, currentUserId: numbe
         throw new Error(" You are not member of this project");
     }
 
-    if (currentMember.role !== "admin") {
-        throw new Error(
-            "Insufficient permissions"
-        );
-    }
 
     if (data.sprint_name) {
         const checkDuplicate = await findSprintByName(sprint.project_id, data.sprint_name);

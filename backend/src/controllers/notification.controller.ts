@@ -1,10 +1,10 @@
 import type { Request, Response } from "express";
-import { getNotificationsService,  markAsReadService,  markAllAsReadService} from "../services/notification.service.js";
+import { getNotificationsService, markAsReadService, markAllAsReadService } from "../services/notification.service.js";
+import { sendError } from "../helper/httpError.js";
 
-export const getNotificationsController = async (req: Request,  res: Response) => {
+export const getNotificationsController = async (req: Request, res: Response) => {
     try {
         const receiverId = req.user!.userId;
-
         const notifications = await getNotificationsService(receiverId);
 
         return res.status(200).json({
@@ -12,16 +12,13 @@ export const getNotificationsController = async (req: Request,  res: Response) =
             data: notifications,
         });
     } catch (error) {
-        return res.status(500).json({
-            error: error instanceof Error ? error.message : "Unknown error",
-        });
+        return sendError(res, error);
     }
 };
 
-export const markAsReadController = async (req: Request,  res: Response) => {
+export const markAsReadController = async (req: Request, res: Response) => {
     try {
         const notificationId = Number(req.params.notifiId);
-
         const notification = await markAsReadService(notificationId);
 
         return res.status(200).json({
@@ -29,24 +26,19 @@ export const markAsReadController = async (req: Request,  res: Response) => {
             data: notification,
         });
     } catch (error) {
-        return res.status(500).json({
-            error: error instanceof Error ? error.message : "Unknown error",
-        });
+        return sendError(res, error);
     }
 };
 
 export const markAllAsReadController = async (req: Request, res: Response) => {
     try {
         const receiverId = req.user!.userId;
-
         await markAllAsReadService(receiverId);
 
         return res.status(200).json({
             message: "All notifications marked as read successfully",
         });
     } catch (error) {
-        return res.status(500).json({
-            error: error instanceof Error ? error.message : "Unknown error",
-        });
+        return sendError(res, error);
     }
 };

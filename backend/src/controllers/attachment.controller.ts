@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { createAttachmentSchema } from "../validatons/attachment.validation.js";
-import { createAttachmentService, deleteAttachmentService, getIssueAttachmentsService, } from "../services/attachment.service.js";
+import { createAttachmentService, deleteAttachmentService, getIssueAttachmentsService } from "../services/attachment.service.js";
+import { sendError } from "../helper/httpError.js";
 
 export const getIssueAttachmentsController = async (req: Request, res: Response) => {
     try {
@@ -12,12 +13,10 @@ export const getIssueAttachmentsController = async (req: Request, res: Response)
             data: attachments,
         });
     } catch (error) {
-        return res.status(400).json({
-            success: false,
-            error: error instanceof Error ? error.message : "Unknown error",
-        });
+        return sendError(res, error, 400);
     }
 };
+
 export const createAttachmentController = async (req: Request, res: Response) => {
     try {
         const validatedData = createAttachmentSchema.parse(req.body);
@@ -34,12 +33,10 @@ export const createAttachmentController = async (req: Request, res: Response) =>
             data: attachment,
         });
     } catch (error) {
-        return res.status(400).json({
-            success: false,
-            error: error instanceof Error ? error.message : "Unknown error",
-        });
+        return sendError(res, error, 400);
     }
 };
+
 export const deleteAttachmentController = async (req: Request, res: Response) => {
     try {
         const attachmentId = Number(req.params.attachmentId);
@@ -50,9 +47,6 @@ export const deleteAttachmentController = async (req: Request, res: Response) =>
             ...result,
         });
     } catch (error) {
-        return res.status(400).json({
-            success: false,
-            error: error instanceof Error ? error.message : "Unknown error",
-        });
+        return sendError(res, error, 400);
     }
 };

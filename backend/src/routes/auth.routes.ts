@@ -2,18 +2,18 @@ import {Router} from "express";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { registerController, loginController, firebaseGoogleLoginController, 
          getCurrentUserController, refreshTokenController, logoutController, updateProfileController } from "../controllers/auth.controller.js";
-
+import { authRateLimit } from "../middlewares/rateLimit.middleware.js";
 const router= Router();
 
 router.get("/test", (req,res)=>{
     res.send("Auth route working");
 });
 
-router.post("/register", registerController);
+router.post("/register", authRateLimit,registerController);
 
-router.post("/login", loginController);
+router.post("/login",authRateLimit, loginController);
 
-router.post("/google", firebaseGoogleLoginController);
+router.post("/google", authRateLimit, firebaseGoogleLoginController);
 
 router.get("/me",authMiddleware, getCurrentUserController);
 

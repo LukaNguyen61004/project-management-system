@@ -15,11 +15,18 @@ export interface LoginResponse {
   data: {
     safeUser: User
     accessToken: string
-    refreshToken: string
   }
 }
 
 export interface RegisterResponse {
   message: string
   user: User
+}
+
+export interface GoogleLoginResponse {
+  message: string
+  data: {
+    safeUser: User
+    accessToken: string
+  }
 }
