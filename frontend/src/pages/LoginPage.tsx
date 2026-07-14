@@ -23,8 +23,8 @@ export function LoginPage() {
         mutationFn: (data: { email: string; password: string }) =>
             authApi.login(data.email, data.password),
         onSuccess: (res) => {
-            const { safeUser, accessToken, refreshToken } = res.data.data
-            setAuth(safeUser, accessToken, refreshToken)
+            const { safeUser, accessToken } = res.data.data
+            setAuth(safeUser, accessToken)
             queryClient.clear()
             navigate(getPostLoginPath(searchParams.get('redirect')), { replace: true })
         },

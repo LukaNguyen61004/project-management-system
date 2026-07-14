@@ -35,6 +35,14 @@ export function RegisterPage() {
       setError('Password must be at least 8 characters')
       return
     }
+    if (!/[A-Za-z]/.test(password)) {
+      setError('Password must contain a letter')
+      return
+    }
+    if (!/[0-9]/.test(password)) {
+      setError('Password must contain a number')
+      return
+    }
     mutation.mutate({ email, password })
   }
 
@@ -63,14 +71,19 @@ export function RegisterPage() {
             placeholder="you@example.com"
             required
           />
-          <Input
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-          />
+          <div>
+            <Input
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+            />
+            <p className="mt-1 text-xs text-jira-text-subtle">
+              At least 8 characters, must include a letter and a number
+            </p>
+          </div>
           <Input
             label="Confirm password"
             type="password"
