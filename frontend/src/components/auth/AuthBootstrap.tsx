@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-import { useAuthStore } from '../store/auth.store'
-import { authApi } from '../api/auth.api'
+import { useAuthStore } from '../../store/auth.store'
+import { authApi } from '../../api/auth.api'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
