@@ -16,6 +16,7 @@ export const createActivityLog =async (data: CreateActivityLog) =>{
             field_name: data.field_name ?? null,
             old_value: data.old_value ?? null,
             new_value: data.new_value ?? null,
+            reason: data.reason ?? null,
         },
     });
 }
@@ -62,4 +63,36 @@ export const countProjectActivity = async(projectId: number)=>{
             project_id: projectId,
         },
     });
+};
+
+export const findScheduleChangesForSprint = async (
+  projectId: number,
+  sprintId: number,
+  issueIds: number[]
+) => {
+  return prisma.activityLog.findMany({
+    where: {
+      project_id: projectId,
+      OR: [
+        {
+          sprint_id: sprintId,
+          field_name: { in: ["start_date", "end_date"] },
+        },
+        {
+          issue_id: { in: issueIds },
+          field_name: { in: ["due_date", "estimate"] },
+        },
+      ],
+    },
+    orderBy: { created_at: "asc" },
+    select: {
+      field_name: true,
+      old_value: true,
+      new_value: true,
+      reason: true,
+      created_at: true,
+      issue_id: true,
+      sprint_id: true,
+    },
+  });
 };

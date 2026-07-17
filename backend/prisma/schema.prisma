@@ -267,6 +267,9 @@ model Issue {
   issue_created_at DateTime @default(now())
   issue_updated_at DateTime @updatedAt
 
+  due_date  DateTime?
+  estimate  Int?
+
   project Project @relation(fields: [project_id], references: [project_id])
 
   sprint Sprint? @relation(fields: [sprint_id], references: [sprint_id])
@@ -417,6 +420,8 @@ model ActivityLog {
   new_value String?
 
   created_at DateTime @default(now())
+
+  reason    String?
 
   user User @relation(fields: [user_id], references: [user_id])
 

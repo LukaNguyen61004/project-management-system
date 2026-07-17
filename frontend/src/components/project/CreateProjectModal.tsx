@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { projectApi } from "../../api/project.api";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { toast } from "sonner";
 import { Modal } from "../ui/Modal";
 import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
@@ -33,12 +34,15 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                 project_description: data.description || undefined,
             }),
         onSuccess: () => {
+            toast.success('Đã tạo project')
             queryClient.invalidateQueries({ queryKey: ['projects'] })
             resetForm()
             onClose()
         },
         onError: (error) => {
-            setError(getApiErrorMessage(error, 'Failed to create project'))
+            const msg = getApiErrorMessage(error, 'Failed to create project')
+            setError(msg)
+            toast.error(msg)
         }
     }
     )

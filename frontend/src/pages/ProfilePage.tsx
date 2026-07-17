@@ -10,6 +10,7 @@ import { Button } from '../components/ui/Button'
 import { Avatar } from '../components/ui/Avatar'
 import { uploadAvatar } from '../utils/uploadAvatar'
 import { getApiErrorMessage } from '../utils/apiError'
+import { toast } from 'sonner'
 
 export function ProfilePage() {
   const navigate = useNavigate()
@@ -42,11 +43,16 @@ export function ProfilePage() {
         user_avatar_url: avatarUrl || undefined,
       }),
     onSuccess: (res) => {
+      toast.success('Đã lưu profile')
       updateUser(res.data.data)
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       navigate('/projects')
     },
-    onError: (err) => setError(getApiErrorMessage(err, 'Failed to save profile')),
+    onError: (err) => {
+      const msg = getApiErrorMessage(err, 'Failed to save profile')
+      setError(msg)
+      toast.error(msg)
+    },
   })
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,8 +63,11 @@ export function ProfilePage() {
     try {
       const url = await uploadAvatar(currentUser.user_id, file)
       setAvatarUrl(url)
+      toast.success('Đã upload avatar')
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Failed to upload avatar'))
+      const msg = getApiErrorMessage(err, 'Failed to upload avatar')
+      setError(msg)
+      toast.error(msg)
     } finally {
       setUploading(false)
       e.target.value = ''

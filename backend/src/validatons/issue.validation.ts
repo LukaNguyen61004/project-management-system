@@ -40,6 +40,24 @@ export const updateIssueSchema = z.object({
     issue_type: z
         .nativeEnum(IssueType)
         .optional(),
+    due_date: z
+        .string()
+        .datetime()
+        .nullable()
+        .optional(),
+    estimate: z
+        .number()
+        .int()
+        .min(0)
+        .max(100)
+        .nullable()
+        .optional(),
+    reason: z
+        .string()
+        .trim()
+        .min(3)
+        .max(500)
+        .optional(),
 })
 export type UpdateIssueInput = z.infer<typeof updateIssueSchema>;
 
@@ -53,10 +71,10 @@ export type ChangIssueStatusInput = z.infer<typeof changeIssueStatusSchema>;
 
 export const assignIssueSchema = z.object({
     assignee_id: z
-         .number()
-         .int()
-         .positive()
-         .nullable(),
+        .number()
+        .int()
+        .positive()
+        .nullable(),
 })
 
 export type AssignIssueInput = z.infer<typeof assignIssueSchema>;
@@ -65,15 +83,15 @@ export const changeIssuePrioritySchema = z.object({
     issue_priority: z.nativeEnum(IssuePriority),
 })
 
-export type ChangIssuePriorityInput = z.infer< typeof changeIssuePrioritySchema>;
+export type ChangIssuePriorityInput = z.infer<typeof changeIssuePrioritySchema>;
 
 export const updateIssueSprintSchema = z.object({
     sprint_id: z
-    .number()
-    .int()
-    .positive()
-    .nullable(),
-}) 
+        .number()
+        .int()
+        .positive()
+        .nullable(),
+})
 
 export type UpdateIssueSprintInput = z.infer<typeof updateIssueSprintSchema>;
 

@@ -48,6 +48,8 @@ const ERROR_STATUS_MAP: Record<string, number> = {
   "Issue and sprint aren't in the same project": 400,
   "Issue is already moved to this sprint": 400,
   "Sprint must be completed before generating summary": 400,
+  "Reason is required when changing due date or estimate": 400,
+  "Reason is required when changing sprint dates": 400,
   "AI is not configured (missing GEMINI_API_KEY)": 400,
   "Refresh token required": 400,
   "Invitation already accepted": 400,
