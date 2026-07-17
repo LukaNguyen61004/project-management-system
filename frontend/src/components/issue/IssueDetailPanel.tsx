@@ -17,6 +17,9 @@ import { cn } from '../../utils/cn'
 import { getWarningLabel, isIssueWarned } from '../../utils/issueWarning'
 import { useAuthStore } from '../../store/auth.store'
 import { IssueAttachments } from './IssueAttachments'
+import { dateInputToISO, isoToDateInput } from '../../utils/date'
+import { getApiErrorMessage } from '../../utils/apiError'
+import { toast } from 'sonner'
 
 
 interface IssueDetailPanelProps {
@@ -36,6 +39,10 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [type, setType] = useState<IssueType>('task')
+  const [dueDate, setDueDate] = useState('')
+  const [estimate, setEstimate] = useState('')
+ 
+  const [saveError, setSaveError] = useState('')
   const [commentText, setCommentText] = useState('')
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
   const [editText, setEditText] = useState('')
@@ -74,8 +81,21 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
       setTitle(currentIssue.issue_name)
       setDescription(currentIssue.issue_description || '')
       setType(currentIssue.issue_type)
+      setDueDate(isoToDateInput(currentIssue.due_date))
+      setEstimate(currentIssue.estimate != null ? String(currentIssue.estimate) : '')
+      
+      setSaveError('')
     }
-  }, [currentIssue?.issue_id, currentIssue?.issue_name, currentIssue?.issue_description, currentIssue?.issue_type])
+  }, [
+    currentIssue?.issue_id,
+    currentIssue?.issue_name,
+    currentIssue?.issue_description,
+    currentIssue?.issue_type,
+    currentIssue?.due_date,
+    currentIssue?.estimate,
+  ])
+
+  
 
   const invalidate = () => {
     if (!issueId) return
@@ -88,7 +108,11 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
       if (!issueId) throw new Error('No issue')
       return issueApi.changeStatus(issueId, status)
     },
-    onSuccess: invalidate,
+    onSuccess: () => {
+      toast.success('Đã cập nhật status')
+      invalidate()
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Cập nhật status thất bại')),
   })
 
   const priorityMutation = useMutation({
@@ -96,7 +120,11 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
       if (!issueId) throw new Error('No issue')
       return issueApi.changePriority(issueId, priority)
     },
-    onSuccess: invalidate,
+    onSuccess: () => {
+      toast.success('Đã cập nhật priority')
+      invalidate()
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Cập nhật priority thất bại')),
   })
 
   const updateMutation = useMutation({
@@ -106,10 +134,32 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
         issue_name: title,
         issue_description: description || undefined,
         issue_type: type,
+        due_date: dueDate ? dateInputToISO(dueDate)! : null,
+        estimate: estimate === '' ? null : Number(estimate),
       })
     },
-    onSuccess: invalidate,
+    onSuccess: () => {
+      setSaveError('')
+      toast.success('Đã lưu issue')
+      invalidate()
+    },
+    onError: (err) => {
+      const msg = getApiErrorMessage(err, 'Lưu issue thất bại')
+      setSaveError(msg)
+      toast.error(msg)
+    },
   })
+
+  const handleSave = () => {
+    setSaveError('')
+    if (title.length < 3) return
+    
+    if (estimate !== '' && (Number.isNaN(Number(estimate)) || Number(estimate) < 0)) {
+      setSaveError('Story points phải là số >= 0')
+      return
+    }
+    updateMutation.mutate()
+  }
 
   const deleteMutation = useMutation({
     mutationFn: () => {
@@ -117,10 +167,12 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
       return issueApi.delete(issueId)
     },
     onSuccess: () => {
+      toast.success('Đã xóa issue')
       queryClient.invalidateQueries({ queryKey: ['issues'] })
       onDeleted?.()
       onClose()
     },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Xóa issue thất bại')),
   })
 
   const assignMutation = useMutation({
@@ -128,7 +180,11 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
       if (!issueId) throw new Error('No issue')
       return issueApi.assign(issueId, assignee_id)
     },
-    onSuccess: invalidate,
+    onSuccess: () => {
+      toast.success('Đã cập nhật assignee')
+      invalidate()
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Cập nhật assignee thất bại')),
   })
 
   const commentMutation = useMutation({
@@ -138,8 +194,10 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
     },
     onSuccess: () => {
       setCommentText('')
+      toast.success('Đã thêm comment')
       queryClient.invalidateQueries({ queryKey: ['comments', issueId] })
     },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Thêm comment thất bại')),
   })
 
   const updateCommentMutation = useMutation({
@@ -150,8 +208,10 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
     onSuccess: () => {
       setEditingCommentId(null)
       setEditText('')
+      toast.success('Đã cập nhật comment')
       queryClient.invalidateQueries({ queryKey: ['comments', issueId] })
     },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Cập nhật comment thất bại')),
   })
 
   const deleteCommentMutation = useMutation({
@@ -160,8 +220,10 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
       return commentApi.delete(issueId, commentId)
     },
     onSuccess: () => {
+      toast.success('Đã xóa comment')
       queryClient.invalidateQueries({ queryKey: ['comments', issueId] })
     },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Xóa comment thất bại')),
   })
 
   const epicMutation = useMutation({
@@ -170,9 +232,11 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
       return issueApi.updateEpic(issueId, epic_id)
     },
     onSuccess: () => {
+      toast.success('Đã cập nhật epic')
       invalidate()
       queryClient.invalidateQueries({ queryKey: ['epics', projectId] })
     },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Cập nhật epic thất bại')),
   })
 
   if (!issue || !currentIssue) return null
@@ -326,10 +390,36 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
                 )}
               </div>
             </div>
+
+            <div>
+              <label className="text-sm font-medium text-jira-text">Due date</label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className={selectClass}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-jira-text">Story points</label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                value={estimate}
+                onChange={(e) => setEstimate(e.target.value)}
+                className={selectClass}
+                placeholder="e.g. 3"
+              />
+            </div>
           </div>
 
+        
+          {saveError && <p className="text-sm text-red-500">{saveError}</p>}
+
           <Button
-            onClick={() => updateMutation.mutate()}
+            onClick={handleSave}
             disabled={updateMutation.isPending || title.length < 3}
           >
             {updateMutation.isPending ? 'Saving...' : 'Save changes'}

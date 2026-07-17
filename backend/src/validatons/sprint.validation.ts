@@ -31,7 +31,7 @@ export const updateSprintSchema = z.object({
         .min(3)
         .max(100)
         .optional(),
-    
+
     description: z
         .string()
         .max(500)
@@ -45,6 +45,12 @@ export const updateSprintSchema = z.object({
     end_date: z
         .string()
         .datetime()
+        .optional(),
+    reason: z
+        .string()
+        .trim()
+        .min(3)
+        .max(500)
         .optional(),
 })
 

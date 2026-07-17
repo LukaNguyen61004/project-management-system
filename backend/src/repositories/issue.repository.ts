@@ -80,14 +80,14 @@ export const getProjectIssues = async (projectId: number) => {
             sprint: {
                 select: {
                     sprint_id: true,
-                    sprint_name:true,
+                    sprint_name: true,
                 }
             },
             epic: {
                 select: {
-                    epic_id:true,
-                    epic_name:true,
-                    epic_color:true,
+                    epic_id: true,
+                    epic_name: true,
+                    epic_color: true,
                 }
             }
         },
@@ -131,8 +131,8 @@ export const findIssueById = async (issueId: number) => {
             },
 
             sprint: {
-                select :{
-                    sprint_id:true, 
+                select: {
+                    sprint_id: true,
                     sprint_name: true,
                 }
             }
@@ -154,6 +154,14 @@ export const updateIssue = async (issueId: number, data: UpdateIssueInput) => {
 
         ...(data.issue_type !== undefined && {
             issue_type: data.issue_type,
+        }),
+
+        ...(data.estimate !== undefined && {
+            estimate: data.estimate,
+        }),
+        
+        ...(data.due_date !== undefined && {
+            due_date: data.due_date === null ? null : new Date(data.due_date),
         }),
     }
 
@@ -197,32 +205,32 @@ export const assignIssue = async (issueId: number, assigneeId: number | null) =>
     });
 }
 
-export const changeIssuePriority = async(issue_id: number, priority: IssuePriority)=>{
-   return prisma.issue.update({
-    where:{
-        issue_id: issue_id,
+export const changeIssuePriority = async (issue_id: number, priority: IssuePriority) => {
+    return prisma.issue.update({
+        where: {
+            issue_id: issue_id,
 
-    },
-    data: {
-        issue_priority: priority,
-    }
+        },
+        data: {
+            issue_priority: priority,
+        }
 
-   })
+    })
 }
 
-export const updateIssueSprint =async (issueId: number, sprintId: number | null )=>{
-     return prisma.issue.update({
-        where:{
-            issue_id:issueId
-        }, 
-        data:{
+export const updateIssueSprint = async (issueId: number, sprintId: number | null) => {
+    return prisma.issue.update({
+        where: {
+            issue_id: issueId
+        },
+        data: {
             sprint_id: sprintId
         }
-     })
+    })
 
 }
 
-export const updateIssueEpic = async ( issueId: number, epicId: number | null) => {
+export const updateIssueEpic = async (issueId: number, epicId: number | null) => {
     return prisma.issue.update({
         where: {
             issue_id: issueId,
@@ -234,22 +242,22 @@ export const updateIssueEpic = async ( issueId: number, epicId: number | null) =
 };
 
 
-export const touchLastActivity = async(issueId: number)=>{
+export const touchLastActivity = async (issueId: number) => {
     return prisma.issue.update({
-        where:{
+        where: {
             issue_id: issueId,
         },
-        data:{
+        data: {
             last_activity_at: new Date(),
         }
     })
 }
 
-export const incrementWarningCount = async(issueId: number) =>{
+export const incrementWarningCount = async (issueId: number) => {
     return prisma.issue.update({
-        where:{
+        where: {
             issue_id: issueId,
         },
-        data:{warning_count: {increment:1}},
+        data: { warning_count: { increment: 1 } },
     })
 }

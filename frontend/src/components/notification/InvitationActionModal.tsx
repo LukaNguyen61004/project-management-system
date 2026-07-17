@@ -6,6 +6,7 @@ import { notificationApi } from '../../api/notification.api'
 import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
 import { getApiErrorMessage } from '../../utils/apiError'
+import { toast } from 'sonner'
 
 interface InvitationActionModalProps {
   notification: Notification | null
@@ -34,6 +35,7 @@ export function InvitationActionModal({ notification, onClose }: InvitationActio
   const acceptMutation = useMutation({
     mutationFn: () => projectApi.acceptInvitation(invitation!.token),
     onSuccess: (res) => {
+      toast.success('Đã chấp nhận lời mời')
       markRead()
       queryClient.invalidateQueries({ queryKey: ['projects'] })
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
@@ -42,16 +44,19 @@ export function InvitationActionModal({ notification, onClose }: InvitationActio
       const pid = res.data.project?.project_id ?? projectId
       if (pid) navigate(`/projects/${pid}/board`)
     },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Chấp nhận lời mời thất bại')),
   })
 
   const declineMutation = useMutation({
     mutationFn: () => projectApi.declineInvitation(invitation!.token),
     onSuccess: () => {
+      toast.success('Đã từ chối lời mời')
       markRead()
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
       queryClient.invalidateQueries({ queryKey: ['pending-invitations'] })
       onClose()
     },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Từ chối lời mời thất bại')),
   })
 
   const error = acceptMutation.error || declineMutation.error

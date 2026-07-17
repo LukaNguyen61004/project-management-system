@@ -4,6 +4,8 @@ import { epicApi } from '../../api/epic.api'
 import { Modal } from '../ui/Modal'
 import { Input } from '../ui/Input'
 import { Button } from '../ui/Button'
+import { toast } from 'sonner'
+import { getApiErrorMessage } from '../../utils/apiError'
 
 const COLORS = ['#8B5CF6', '#0052CC', '#36B37E', '#FF5630', '#FFAB00', '#6554C0']
 
@@ -22,11 +24,13 @@ export function CreateEpicModal({ open, projectId, onClose }: Props) {
     mutationFn: () =>
       epicApi.create(projectId, { epic_name: name, epic_color: color }),
     onSuccess: () => {
+      toast.success('Đã tạo epic')
       queryClient.invalidateQueries({ queryKey: ['epics', projectId] })
       setName('')
       setColor(COLORS[0])
       onClose()
     },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Tạo epic thất bại')),
   })
 
   return (

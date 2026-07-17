@@ -110,9 +110,18 @@ export const updateIssueService = async (issueId: number, currentUserId: number,
         throw new Error("You are not a member of this project");
     }
 
-    if (data.issue_name === undefined && data.issue_description === undefined && data.issue_type === undefined) {
+    if (
+        data.issue_name === undefined &&
+        data.issue_description === undefined &&
+        data.issue_type === undefined &&
+        data.due_date === undefined &&
+        data.estimate === undefined
+    ) {
         throw new Error("No fields provided for update");
     }
+
+    const dueChanged = data.due_date !== undefined && (data.due_date === null ? issue.due_date !== null : new Date(data.due_date).getTime() !== issue.due_date?.getTime());
+    const estimateChanged = data.estimate !== undefined && data.estimate !== issue.estimate;
 
     const update = await updateIssue(issueId, data);
     if (
@@ -157,6 +166,30 @@ export const updateIssueService = async (issueId: number, currentUserId: number,
             field_name: "issue_type",
             old_value: issue.issue_type,
             new_value: data.issue_type,
+        });
+    }
+
+    if (dueChanged) {
+        await createActivityLogService({
+            user_id: currentUserId,
+            project_id: issue.project_id,
+            issue_id: issue.issue_id,
+            action_type: ActivityActionType.ISSUE_UPDATED,
+            field_name: "due_date",
+            old_value: issue.due_date?.toISOString(),
+            new_value: data.due_date ?? undefined,
+        });
+    }
+
+    if (estimateChanged) {
+        await createActivityLogService({
+            user_id: currentUserId,
+            project_id: issue.project_id,
+            issue_id: issue.issue_id,
+            action_type: ActivityActionType.ISSUE_UPDATED,
+            field_name: "estimate",
+            old_value: issue.estimate != null ? String(issue.estimate) : undefined,
+            new_value: data.estimate != null ? String(data.estimate) : undefined,
         });
     }
     await touchLastActivity(issueId);
@@ -371,6 +404,7 @@ export const updateIssueSprintService = async (issueId: number, currentUserId: n
     if (issue.sprint_id === sprint_id) {
         throw new Error("Issue is already moved to this sprint");
     }
+
     const updated = await updateIssueSprint(issueId, sprint_id);
 
     await touchLastActivity(issueId)

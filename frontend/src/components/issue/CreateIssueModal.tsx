@@ -7,6 +7,7 @@ import { issueApi } from '../../api/issue.api'
 import { ISSUE_TYPES, ISSUE_PRIORITIES } from '../../utils/constants'
 import type { IssueType, IssuePriority } from '../../types/enums'
 import { getApiErrorMessage } from '../../utils/apiError'
+import { toast } from 'sonner'
 
 interface CreateIssueModalProps {
   open: boolean
@@ -33,10 +34,12 @@ export function CreateIssueModal({ open, onClose, projectId }: CreateIssueModalP
         issue_priority: priority,
       }),
     onSuccess: () => {
+      toast.success('Đã tạo issue')
       queryClient.invalidateQueries({ queryKey: ['issues', projectId] })
       resetForm()
       onClose()
     },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Tạo issue thất bại')),
   })
 
   const resetForm = () => {

@@ -5,6 +5,7 @@ import { attachmentApi } from '../../api/attachment.api'
 import { uploadIssueFile } from '../../utils/uploadIssueFile'
 import { Button } from '../ui/Button'
 import { getApiErrorMessage } from '../../utils/apiError'
+import { toast } from 'sonner'
 import { formatDistanceToNow } from 'date-fns'
 
 interface IssueAttachmentsProps {
@@ -42,14 +43,23 @@ export function IssueAttachments({ issueId, projectId }: IssueAttachmentsProps) 
       setLinkUrl('')
       setLinkName('')
       setError('')
+      toast.success('Đã thêm attachment')
       invalidate()
     },
-    onError: (err) => setError(getApiErrorMessage(err, 'Failed to add attachment')),
+    onError: (err) => {
+      const msg = getApiErrorMessage(err, 'Failed to add attachment')
+      setError(msg)
+      toast.error(msg)
+    },
   })
 
   const deleteMutation = useMutation({
     mutationFn: (attachmentId: number) => attachmentApi.delete(attachmentId),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      toast.success('Đã xóa attachment')
+      invalidate()
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Xóa attachment thất bại')),
   })
 
   const handleAddLink = (e: React.FormEvent) => {
@@ -77,7 +87,9 @@ export function IssueAttachments({ issueId, projectId }: IssueAttachmentsProps) 
         file_url: url,
       })
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Failed to upload file'))
+      const msg = getApiErrorMessage(err, 'Failed to upload file')
+      setError(msg)
+      toast.error(msg)
     } finally {
       e.target.value = ''
     }
