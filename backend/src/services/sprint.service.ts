@@ -132,7 +132,30 @@ export const updateSprintService = async (sprintId: number, currentUserId: numbe
         }
     }
 
+    const startChanged =
+        data.start_date !== undefined &&
+        new Date(data.start_date).getTime() !== sprint.start_date?.getTime();
+
+    const endChanged =
+        data.end_date !== undefined &&
+        new Date(data.end_date).getTime() !== sprint.end_date?.getTime();
+
+    const startRescheduled =
+        data.start_date !== undefined &&
+        sprint.start_date != null &&
+        new Date(data.start_date).getTime() !== sprint.start_date.getTime();
+    const endRescheduled =
+        data.end_date !== undefined &&
+        sprint.end_date != null &&
+        new Date(data.end_date).getTime() !== sprint.end_date.getTime();
+
+    if ((startRescheduled || endRescheduled) && !data.reason?.trim()) {
+        throw new Error("Reason is required when changing sprint dates");
+    }
+
     const updatedSprint = await updateSprint(sprintId, data);
+
+
 
     if (data.sprint_name !== undefined && data.sprint_name !== sprint.sprint_name) {
         await createActivityLogService({
@@ -158,31 +181,31 @@ export const updateSprintService = async (sprintId: number, currentUserId: numbe
         });
     }
 
-    if (data.start_date !== undefined && data.start_date !== sprint.start_date?.toISOString()) {
+    if (startChanged) {
         await createActivityLogService({
             user_id: currentUserId,
             project_id: sprint.project_id,
             sprint_id: sprintId,
             action_type: ActivityActionType.SPRINT_UPDATED,
             field_name: "start_date",
-            old_value: sprint.start_date?.toISOString() ?? "",
+            old_value: sprint.start_date?.toISOString(),
             new_value: data.start_date,
+            reason: data.reason,
         });
     }
 
-    if (data.end_date !== undefined && data.end_date !== sprint.end_date?.toISOString()) {
+    if (endChanged) {
         await createActivityLogService({
             user_id: currentUserId,
             project_id: sprint.project_id,
             sprint_id: sprintId,
             action_type: ActivityActionType.SPRINT_UPDATED,
             field_name: "end_date",
-            old_value: sprint.end_date?.toISOString() ?? "",
+            old_value: sprint.end_date?.toISOString(),
             new_value: data.end_date,
+            reason: data.reason,
         });
     }
-
-
 
     return updatedSprint;
 }

@@ -20,6 +20,8 @@ export interface Issue {
     issue_priority: IssuePriority
     reporter_id: number
     assignee_id: number | null
+    due_date: string | null
+    estimate: number | null
     last_activity_at: string
     warning_count: number
     review_reject_count: number
@@ -35,5 +37,8 @@ export interface UpdateIssueInput {
     issue_name?: string
     issue_description?: string
     issue_type?: IssueType
+    due_date?: string | null
+    estimate?: number | null
+    reason?: string
 }
 

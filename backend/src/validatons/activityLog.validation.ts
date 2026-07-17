@@ -30,7 +30,10 @@ export const createActivityLogSchema = z.object({
         .optional(),
     new_value: z
         .string()
-        .optional()
+        .optional(),
+    reason: z
+        .string()
+        .optional(),
 })
 
 export type CreateActivityLog = z.infer<typeof createActivityLogSchema>

@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { Issue } from '../types/issue.types'
 import { issueApi } from '../api/issue.api'
+import { toast } from 'sonner'
+import { getApiErrorMessage } from '../utils/apiError'
 
 export function useMoveIssueToSprint(projectId: number) {
   const queryClient = useQueryClient()
@@ -18,10 +20,14 @@ export function useMoveIssueToSprint(projectId: number) {
       )
       return { previous }
     },
-    onError: (_err, _vars, context) => {
+    onSuccess: (_data, { sprintId }) => {
+      toast.success(sprintId == null ? 'Đã đưa issue về backlog' : 'Đã chuyển issue vào sprint')
+    },
+    onError: (err, _vars, context) => {
       if (context?.previous) {
         queryClient.setQueryData(['issues', projectId], context.previous)
       }
+      toast.error(getApiErrorMessage(err, 'Chuyển sprint thất bại'))
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['issues', projectId] })

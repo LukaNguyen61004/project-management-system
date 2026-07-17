@@ -1,5 +1,5 @@
 import { apiClient } from './client'
-import type { CreateSprintInput, Sprint } from '../types/sprint.types'
+import type { CreateSprintInput, Sprint, UpdateSprintInput } from '../types/sprint.types'
 import type { Issue } from '../types/issue.types'
 import type { SprintStatus } from '../types/enums'
 
@@ -16,7 +16,7 @@ export const sprintApi = {
     create: (projectId: number, data: CreateSprintInput) =>
         apiClient.post(`/sprints/projects/${projectId}/sprints`, data),
 
-    update: (sprintId: number, data: Partial<CreateSprintInput>) =>
+    update: (sprintId: number, data: Partial<UpdateSprintInput>) =>
         apiClient.patch(`/sprints/${sprintId}`, data),
 
     changeStatus: (sprintId: number, sprint_status: SprintStatus) =>

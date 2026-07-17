@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { SprintStatus } from "@prisma/client";
 import { env } from "../config/env.js";
 import { buildSprintSummaryData } from "../helper/sprint-summary.helper.js";
+import { findScheduleChangesForSprint } from "../repositories/activity.repository.js";
 import { findProjectMember } from "../repositories/project.repository.js";
 import { findSprintById, getSprintIssues } from "../repositories/sprint.repository.js";
 import prisma from "../lib/prisma.js";
@@ -20,15 +21,37 @@ export const summarizeSprintService = async (
         throw new Error("Sprint must be completed before generating summary");
     }
 
-    // Đã có summary → trả lại, không gọi AI lại
+    // ---------- Cache: đã có summary → không gọi AI lại ----------
     if (sprint.sprint_summary) {
         const issues = await getSprintIssues(sprintId);
         const summaryData = buildSprintSummaryData(sprint, issues);
-        return { stats: summaryData.stats, summary: sprint.sprint_summary, cached: true };
+        const schedule_changes = await findScheduleChangesForSprint(
+            sprint.project_id,
+            sprintId,
+            issues.map((i) => i.issue_id)
+        );
+
+        return {
+            stats: summaryData.stats,
+            member_progress: summaryData.member_progress,
+            manager_stats: summaryData.manager_stats,
+            schedule_changes,
+            summary: sprint.sprint_summary,
+            cached: true,
+        };
     }
 
     const issues = await getSprintIssues(sprintId);
     const summaryData = buildSprintSummaryData(sprint, issues);
+
+    // Query log đổi ngày / estimate — nằm ở repository
+    const schedule_changes = await findScheduleChangesForSprint(
+        sprint.project_id,
+        sprintId,
+        issues.map((i) => i.issue_id)
+    );
+
+    const payload = { ...summaryData, schedule_changes };
 
     // Sprint không có issue
     if (issues.length === 0) {
@@ -37,7 +60,14 @@ export const summarizeSprintService = async (
             where: { sprint_id: sprintId },
             data: { sprint_summary: summary, sprint_summary_created_at: new Date() },
         });
-        return { stats: summaryData.stats, summary, cached: false };
+        return {
+            stats: summaryData.stats,
+            member_progress: summaryData.member_progress,
+            manager_stats: summaryData.manager_stats,
+            schedule_changes,
+            summary,
+            cached: false,
+        };
     }
 
     if (!env.GEMINI_API_KEY) {
@@ -47,23 +77,29 @@ export const summarizeSprintService = async (
     const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const prompt = `Bạn là Scrum Master. Dựa trên dữ liệu sprint sau, viết tóm tắt bằng tiếng Việt dạng markdown.
+    const prompt = `Bạn là Scrum Master viết báo cáo cho Manager. Tiếng Việt.
 
-DỮ LIỆU (đã tính sẵn, KHÔNG tự đếm lại):
-${JSON.stringify(summaryData, null, 2)}
+DỮ LIỆU (đã tính sẵn, KHÔNG tự đếm lại, KHÔNG bịa reason):
+${JSON.stringify(payload, null, 2)}
 
-CẤU TRÚC BẮT BUỘC:
+CẤU TRÚC BẮT BUỘC (chỉ dùng heading ## như dưới, không thêm # tiêu đề khác):
+## Highlight cho Manager
 ## Tổng quan
-## Đã hoàn thành
 ## Chưa hoàn thành
-## Điểm đáng chú ý
+## Thay đổi lịch / estimate
 ## Gợi ý cho sprint tiếp theo
 
-Quy tắc:
-- Dùng đúng số liệu trong stats
+Quy tắc định dạng (BẮT BUỘC):
+- KHÔNG viết "Kính gửi Manager" hay lời chào
+- KHÔNG dùng bảng markdown (| ... | hoặc |:---)
+- KHÔNG dùng **bold** và *italic*
+- Mỗi ý một dòng, bắt đầu bằng "- " (gạch ngang + space), không dùng dấu *
+- Không lặp lại bảng tiến độ member (UI đã có sẵn)
+- Dùng đúng member_progress, manager_stats, schedule_changes
+- Nếu schedule_changes rỗng → viết "Không có thay đổi được ghi nhận"
 - Liệt kê issue bằng key (vd: PROJ-3)
-- Ngắn gọn, tối đa 300 từ
-- Không bịa thêm issue không có trong dữ liệu`;
+- Tối đa ~550 từ
+- Không bịa issue / reason không có trong dữ liệu`;
 
     const result = await model.generateContent(prompt);
     const summary = result.response.text();
@@ -76,5 +112,12 @@ Quy tắc:
         },
     });
 
-    return { stats: summaryData.stats, summary, cached: false };
+    return {
+        stats: summaryData.stats,
+        member_progress: summaryData.member_progress,
+        manager_stats: summaryData.manager_stats,
+        schedule_changes,
+        summary,
+        cached: false,
+    };
 };

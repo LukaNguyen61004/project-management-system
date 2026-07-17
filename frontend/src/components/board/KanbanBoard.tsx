@@ -16,6 +16,8 @@ import { issueApi } from '../../api/issue.api'
 import { ISSUE_STATUSES } from '../../utils/constants'
 import { KanbanColumn } from './KanbanColumn'
 import { IssueCard } from './IssueCard'
+import { toast } from 'sonner'
+import { getApiErrorMessage } from '../../utils/apiError'
 
 interface KanbanBoardProps {
   projectId: number
@@ -60,10 +62,15 @@ export function KanbanBoard({ projectId, issues, onIssueClick }: KanbanBoardProp
     },
 
     // 2. API lỗi → trả lại data cũ
-    onError: (_err, _vars, context) => {
+    onError: (err, _vars, context) => {
       if (context?.previous) {
         queryClient.setQueryData(['issues', projectId], context.previous)
       }
+      toast.error(getApiErrorMessage(err, 'Đổi status thất bại'))
+    },
+
+    onSuccess: () => {
+      toast.success('Đã cập nhật status')
     },
 
     // 3. Xong (thành công hay lỗi) → sync lại server (nền, không block UI)

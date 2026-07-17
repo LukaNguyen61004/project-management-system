@@ -5,6 +5,7 @@ import { projectApi } from '../api/project.api'
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
 import { getApiErrorMessage } from '../utils/apiError'
+import { toast } from 'sonner'
 import { Mail, UserMinus } from 'lucide-react'
 import { ActivityLogList } from '../components/activityLog/ActivityLogList'
 
@@ -42,23 +43,29 @@ export function ProjectSettingPage() {
         project_description: description || undefined,
       }),
     onSuccess: () => {
+      toast.success('Đã lưu project')
       queryClient.invalidateQueries({ queryKey: ['project', pid] })
       queryClient.invalidateQueries({ queryKey: ['projects'] })
     },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Lưu project thất bại')),
   })
 
   const inviteMutation = useMutation({
     mutationFn: () => projectApi.invite(pid, inviteEmail),
     onSuccess: () => {
+      toast.success('Đã gửi lời mời')
       setInviteEmail('')
-    }
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Gửi lời mời thất bại')),
   })
 
   const removeMutation = useMutation({
     mutationFn: (userId: number) => projectApi.removeMember(pid, userId),
     onSuccess: () => {
+      toast.success('Đã xóa thành viên')
       queryClient.invalidateQueries({ queryKey: ['members', pid] })
     },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Xóa thành viên thất bại')),
   })
 
   const handleSubmit = (e: React.FormEvent) => {

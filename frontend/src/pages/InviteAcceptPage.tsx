@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { projectApi } from '../api/project.api'
 import { Button } from '../components/ui/Button'
 import { getApiErrorMessage } from '../utils/apiError'
+import { toast } from 'sonner'
 
 export function InviteAcceptPage() {
   const [searchParams] = useSearchParams()
@@ -15,6 +16,7 @@ export function InviteAcceptPage() {
   const mutation = useMutation({
     mutationFn: () => projectApi.acceptInvitation(token),
     onSuccess: (res) => {
+      toast.success('Đã tham gia project')
       queryClient.invalidateQueries({ queryKey: ['projects'] })
       queryClient.invalidateQueries({ queryKey: ['members'] })
       const projectId = res.data.project?.project_id
@@ -25,7 +27,9 @@ export function InviteAcceptPage() {
       }
     },
     onError: (err) => {
-      setError(getApiErrorMessage(err, 'Failed to accept invitation'))
+      const msg = getApiErrorMessage(err, 'Failed to accept invitation')
+      setError(msg)
+      toast.error(msg)
     },
   })
 

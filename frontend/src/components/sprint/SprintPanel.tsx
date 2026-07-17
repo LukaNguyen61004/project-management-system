@@ -10,6 +10,8 @@ import { sprintDropId } from './sprintDnd'
 import { SprintSummaryModal } from './SprintSummaryModal'
 import type { SprintSummaryResult } from '../../api/ai.api'
 import { aiApi } from '../../api/ai.api'
+import { toast } from 'sonner'
+import { getApiErrorMessage } from '../../utils/apiError'
 
 
 interface SprintPanelProps {
@@ -42,10 +44,18 @@ export function SprintPanel({
   const statusMutation = useMutation({
     mutationFn: (sprint_status: 'planned' | 'active' | 'completed') =>
       sprintApi.changeStatus(sprint.sprint_id, sprint_status),
-    onSuccess: () => {
+    onSuccess: (_data, sprint_status) => {
+      const label =
+        sprint_status === 'active'
+          ? 'Đã start sprint'
+          : sprint_status === 'completed'
+            ? 'Đã complete sprint'
+            : 'Đã cập nhật sprint'
+      toast.success(label)
       queryClient.invalidateQueries({ queryKey: ['sprints'] })
       queryClient.invalidateQueries({ queryKey: ['issues'] })
     },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Cập nhật sprint thất bại')),
   })
 
   const handleComplete = async () => {
