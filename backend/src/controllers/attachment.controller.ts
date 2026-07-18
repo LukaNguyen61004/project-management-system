@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createAttachmentSchema } from "../validatons/attachment.validation.js";
+import { createAttachmentSchema } from "../validations/attachment.validation.js";
 import { createAttachmentService, deleteAttachmentService, getIssueAttachmentsService } from "../services/attachment.service.js";
 import { sendError } from "../helper/httpError.js";
 

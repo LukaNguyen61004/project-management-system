@@ -74,9 +74,9 @@ export function KanbanBoard({ projectId, issues, onIssueClick }: KanbanBoardProp
     },
 
     // 3. Xong (thành công hay lỗi) → sync lại server (nền, không block UI)
-    /*onSettled: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['issues', projectId] })
-    },*/
+    },
   })
 
   // Chỉ bắt drag sau khi kéo 8px — tránh nhầm với click

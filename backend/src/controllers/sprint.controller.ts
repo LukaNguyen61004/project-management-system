@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { changeSprintStatusSchema, createSprintSchema, updateSprintSchema } from "../validatons/sprint.validation.js";
+import { changeSprintStatusSchema, createSprintSchema, updateSprintSchema } from "../validations/sprint.validation.js";
 import { changeStatusSprintService, createSprintService, getProjectSprintsService, getSprintDetailService, getSprintIssuesService, updateSprintService } from "../services/sprint.service.js";
 import { sendError } from "../helper/httpError.js";
 

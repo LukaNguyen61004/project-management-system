@@ -1,7 +1,7 @@
 import { findIssueById, touchLastActivity } from "../repositories/issue.repository.js";
 import { findProjectMember } from "../repositories/project.repository.js";
 import { createAttachment, getAttachmentById, deleteAttachment, getIssueAttachments } from "../repositories/attachment.repository.js";
-import type { CreateAttrachmentInput } from "../validatons/attachment.validation.js";
+import type { CreateAttrachmentInput } from "../validations/attachment.validation.js";
 
 const assertProjectMember = async (projectId: number, userId: number) => {
     const member = await findProjectMember(projectId, userId);

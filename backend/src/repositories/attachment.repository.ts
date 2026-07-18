@@ -1,6 +1,6 @@
 import prisma from "../lib/prisma.js"
 import type { AttachmentType } from "@prisma/client"
-import type { CreateAttrachmentInput } from "../validatons/attachment.validation.js"
+import type { CreateAttrachmentInput } from "../validations/attachment.validation.js"
 
 export const createAttachment = async (issueId: number, userId: number, data: CreateAttrachmentInput) => {
     return prisma.issueAttachment.create({

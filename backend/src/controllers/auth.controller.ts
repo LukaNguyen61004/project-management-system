@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { registerSchema, loginSchema, googleLoginSchema, updateProfileSchema } from "../validatons/auth.validation.js";
+import { registerSchema, loginSchema, googleLoginSchema, updateProfileSchema } from "../validations/auth.validation.js";
 import { registerService, loginService, firebaseGoogleLoginService, getCurrentUserService, refreshTokenService, logoutService, updateProfileService } from "../services/auth.service.js";
 import { sendError } from "../helper/httpError.js";
 import { setRefreshCookie, clearRefreshCookie } from "../utils/cookie.js";
