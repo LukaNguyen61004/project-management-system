@@ -16,7 +16,6 @@ const ERROR_STATUS_MAP: Record<string, number> = {
   "You are not a member of this project": 403,
   "You are not member of this project": 403,
   "Insufficient permissions": 403,
-  "Only admin can update issue in sprint": 403,
   "Only project owner can delete": 403,
   "Cannot remove project owner": 403,
   " project owner cannot leave": 403,

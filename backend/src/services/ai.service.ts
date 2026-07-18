@@ -7,6 +7,37 @@ import { findProjectMember } from "../repositories/project.repository.js";
 import { findSprintById, getSprintIssues } from "../repositories/sprint.repository.js";
 import prisma from "../lib/prisma.js";
 
+const DATE_FIELDS = new Set(["start_date", "end_date", "due_date"]);
+
+const toDDMMYYYY = (value: string | Date | null) => {
+    if (!value) return value;
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return String(value);
+    const day = String(d.getUTCDate()).padStart(2, "0");
+    const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+    return `${day}/${month}/${d.getUTCFullYear()}`;
+};
+
+// Format ngày trong schedule_changes sang DD/MM/YYYY trước khi đưa cho AI,
+// tránh AI echo lại chuỗi ISO dài (2026-07-14T00:00:00.000Z)
+const formatScheduleChanges = <
+    T extends {
+        field_name: string | null;
+        old_value: string | null;
+        new_value: string | null;
+        created_at: Date;
+    }
+>(changes: T[]) =>
+    changes.map((c) => {
+        const isDateField = DATE_FIELDS.has(c.field_name ?? "");
+        return {
+            ...c,
+            old_value: isDateField ? toDDMMYYYY(c.old_value) : c.old_value,
+            new_value: isDateField ? toDDMMYYYY(c.new_value) : c.new_value,
+            created_at: toDDMMYYYY(c.created_at),
+        };
+    });
+
 export const summarizeSprintService = async (
     sprintId: number,
     userId: number
@@ -51,7 +82,7 @@ export const summarizeSprintService = async (
         issues.map((i) => i.issue_id)
     );
 
-    const payload = { ...summaryData, schedule_changes };
+    const payload = { ...summaryData, schedule_changes: formatScheduleChanges(schedule_changes) };
 
     // Sprint không có issue
     if (issues.length === 0) {
@@ -98,6 +129,7 @@ Quy tắc định dạng (BẮT BUỘC):
 - Dùng đúng member_progress, manager_stats, schedule_changes
 - Nếu schedule_changes rỗng → viết "Không có thay đổi được ghi nhận"
 - Liệt kê issue bằng key (vd: PROJ-3)
+- Mọi ngày tháng PHẢI viết dạng DD/MM/YYYY (vd: 14/07/2026). TUYỆT ĐỐI KHÔNG viết dạng ISO như 2026-07-14T00:00:00.000Z
 - Tối đa ~550 từ
 - Không bịa issue / reason không có trong dữ liệu`;
 
