@@ -4,6 +4,14 @@ type IssueWithUsers = Issue & {
     assignee?: { user_id: number; user_name: string | null } | null // du lieu lay dc co the co tt cua assignee
 }
 
+// DD/MM/YYYY cho AI đọc, thay vì chuỗi ISO dài
+const fmtDate = (d: Date | null | undefined) => {
+    if (!d) return null;
+    const day = String(d.getUTCDate()).padStart(2, "0");
+    const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+    return `${day}/${month}/${d.getUTCFullYear()}`;
+};
+
 export function buildSprintSummaryData(sprint: Sprint, issues: IssueWithUsers[]) {
     const byStatus = {
         done: issues.filter((i) => i.issue_status === "done"),
@@ -32,7 +40,7 @@ export function buildSprintSummaryData(sprint: Sprint, issues: IssueWithUsers[])
         type: i.issue_type,
         assignee: i.assignee?.user_name ?? "Unassigned",
         estimate: i.estimate ?? null,
-        due_date: i.due_date?.toISOString() ?? null,
+        due_date: fmtDate(i.due_date),
         overdue: isOverdue(i),
         review_rejects: i.review_reject_count,
         warnings: i.warning_count,
@@ -78,8 +86,8 @@ export function buildSprintSummaryData(sprint: Sprint, issues: IssueWithUsers[])
         sprint: {
             name: sprint.sprint_name,
             description: sprint.description,
-            start_date: sprint.start_date?.toISOString() ?? null,
-            end_date: sprint.end_date?.toISOString() ?? null,
+            start_date: fmtDate(sprint.start_date),
+            end_date: fmtDate(sprint.end_date),
             duration_days: durationDays,
         },
         stats: {
