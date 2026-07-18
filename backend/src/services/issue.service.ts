@@ -1,6 +1,6 @@
-import { creatIssue, getNextIssueNumber, getProjectIssues, findIssueById, updateIssue, changeIssueStatus, assignIssue, changeIssuePriority, updateIssueSprint, updateIssueEpic, touchLastActivity } from "../repositories/issue.repository.js";
+import { createIssue, getNextIssueNumber, getProjectIssues, findIssueById, updateIssue, changeIssueStatus, assignIssue, changeIssuePriority, updateIssueSprint, updateIssueEpic, touchLastActivity, incrementReviewRejectCount } from "../repositories/issue.repository.js";
 import { deleteIssue, type CreateIssueData } from "../repositories/issue.repository.js"
-import type { AssignIssueInput, ChangIssuePriorityInput, ChangIssueStatusInput, CreateIssueInput, UpdateIssueInput, UpdateIssueSprintInput } from "../validatons/issue.validation.js";
+import type { AssignIssueInput, ChangIssuePriorityInput, ChangIssueStatusInput, CreateIssueInput, UpdateIssueInput, UpdateIssueSprintInput } from "../validations/issue.validation.js";
 import { findProjectById, findProjectMember } from "../repositories/project.repository.js";
 import { findUserById } from "../repositories/auth.repository.js";
 import { findSprintById } from "../repositories/sprint.repository.js";
@@ -56,7 +56,7 @@ export const createIssueService = async (projectId: number, reporterId: number, 
                 data.issue_assignee,
         }),
     }
-    const issue = await creatIssue(issueData);
+    const issue = await createIssue(issueData);
 
     await createActivityLogService({
         user_id: reporterMember.user_id,
@@ -236,6 +236,14 @@ export const changeIssueStatusService = async (issueId: number, data: ChangIssue
     if (issue.issue_status === data.issue_status) {
         throw new Error("Issue already has this status");
     }
+
+    if (
+        issue.issue_status === "in_review" &&
+        (data.issue_status === "todo" || data.issue_status === "in_progress")
+    ) {
+        await incrementReviewRejectCount(issueId);
+    }
+
     const updateStatus = await changeIssueStatus(issueId, data.issue_status);
 
     await touchLastActivity(issueId)

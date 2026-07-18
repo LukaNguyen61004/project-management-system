@@ -190,6 +190,8 @@ model Epic {
 
   issues Issue[]
 
+  activity_logs ActivityLog[]
+
   @@unique([project_id, epic_name])
 
   @@index([project_id])
@@ -411,6 +413,10 @@ model ActivityLog {
 
   sprint_id Int?
 
+  epic_id Int?
+
+  comment_id Int?
+
   action_type ActivityActionType
 
   field_name String?
@@ -430,6 +436,8 @@ model ActivityLog {
   issue Issue? @relation(fields: [issue_id], references: [issue_id])
 
   sprint Sprint? @relation(fields: [sprint_id], references: [sprint_id])
+
+  epic Epic? @relation(fields: [epic_id], references: [epic_id])
 
   @@index([user_id])
   @@index([project_id])

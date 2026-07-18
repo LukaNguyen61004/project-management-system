@@ -3,7 +3,7 @@ import { createActivityLogService } from "./activityLog.service.js";
 import { ActivityActionType, NotificationType } from "@prisma/client";
 import { findIssueById, touchLastActivity } from "../repositories/issue.repository.js";
 import { createComment, deleteComment, getCommentById, getIssueComments, updateComment } from "../repositories/comment.repository.js";
-import type { CreateCommentInput, UpdateCommentInput } from "../validatons/comment.validation.js";
+import type { CreateCommentInput, UpdateCommentInput } from "../validations/comment.validation.js";
 import { findProjectMember } from "../repositories/project.repository.js";
 import { createNotificationService } from "./notification.service.js";
 

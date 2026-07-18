@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createProjectSchema, inviteMemberSchema, acceptInvitationSchema, updateProjectSchema, declineInvitationSchema } from "../validatons/project.validation.js";
+import { createProjectSchema, inviteMemberSchema, acceptInvitationSchema, updateProjectSchema, declineInvitationSchema } from "../validations/project.validation.js";
 import {
     createProjectService, getUserProjectsServices, getProjectDetailService, inviteMemberService,
     acceptInvitationService, getProjectMembersService, removeProjectMembersService,

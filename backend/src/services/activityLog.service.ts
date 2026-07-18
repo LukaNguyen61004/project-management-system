@@ -1,4 +1,4 @@
-import {  type CreateActivityLog } from "../validatons/activityLog.validation.js";
+import {  type CreateActivityLog } from "../validations/activityLog.validation.js";
 import { countProjectActivity, createActivityLog, getProjectActivityLog } from "../repositories/activity.repository.js";
 import { findProjectById, findProjectMembership } from "../repositories/project.repository.js";
 

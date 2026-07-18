@@ -1,6 +1,6 @@
 import type { SprintStatus } from "@prisma/client";
 import prisma from "../lib/prisma.js";
-import type { UpdateSprintInput } from "../validatons/sprint.validation.js";
+import type { UpdateSprintInput } from "../validations/sprint.validation.js";
 
 export type createSprintData = {
     sprint_name: string,

@@ -1,11 +1,16 @@
 
 import { ActivityActionType, NotificationType, SprintStatus } from "@prisma/client";
-import { findProjectById, findProjectMember, getProjectMemberIds } from "../repositories/project.repository.js";
+import { findProjectById, findProjectMember } from "../repositories/project.repository.js";
 import { createSprint, findSprintById, findSprintByName, getProjectSprints, getSprintIssues, updateSprint, updateSprintStatus, type createSprintData } from "../repositories/sprint.repository.js";
-import type { changeSprintStatus, CreateSprintInput, UpdateSprintInput } from "../validatons/sprint.validation.js";
+import type { changeSprintStatus, CreateSprintInput, UpdateSprintInput } from "../validations/sprint.validation.js";
 import { createActivityLogService } from "./activityLog.service.js";
 import { notifyProjectMembers } from "../helper/notification.helper.js";
 
+const ALLOWED_TRANSITIONS: Record<SprintStatus, SprintStatus[]> = {
+    planned: [SprintStatus.active],
+    active: [SprintStatus.completed],
+    completed: [],
+};
 
 export const createSprintService = async (projectId: number, currentUserId: number, data: CreateSprintInput) => {
     const project = await findProjectById(projectId);
@@ -225,6 +230,11 @@ export const changeStatusSprintService = async (sprintId: number, currentUserId:
 
     if (sprint.sprint_status === status.sprint_status) {
         throw new Error("This status does not change");
+    }
+
+
+    if (!ALLOWED_TRANSITIONS[sprint.sprint_status].includes(status.sprint_status)) {
+        throw new Error("Invalid sprint status transition");
     }
 
     const updatedSprint = await updateSprintStatus(sprintId, status.sprint_status);

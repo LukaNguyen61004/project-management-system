@@ -1,8 +1,8 @@
 import prisma from "../lib/prisma.js"
-import type { CreateActivityLog } from "../validatons/activityLog.validation.js"
+import type { CreateActivityLog } from "../validations/activityLog.validation.js"
 
 
-export const createActivityLog =async (data: CreateActivityLog) =>{
+export const createActivityLog = async (data: CreateActivityLog) => {
     return prisma.activityLog.create({
         data: {
             user_id: data.user_id,
@@ -17,17 +17,19 @@ export const createActivityLog =async (data: CreateActivityLog) =>{
             old_value: data.old_value ?? null,
             new_value: data.new_value ?? null,
             reason: data.reason ?? null,
+            epic_id: data.epic_id ?? null,
+            comment_id: data.comment_id ?? null,
         },
     });
 }
 
-export const getProjectActivityLog = async(projectId: number, skip: number, take:number)=>{
+export const getProjectActivityLog = async (projectId: number, skip: number, take: number) => {
     return prisma.activityLog.findMany({
         where: {
             project_id: projectId,
         },
         include: {
-            user:{
+            user: {
                 select: {
                     user_id: true,
                     user_name: true,
@@ -35,16 +37,16 @@ export const getProjectActivityLog = async(projectId: number, skip: number, take
                 }
             },
 
-            issue :{
+            issue: {
                 select: {
-                    issue_id:true,
+                    issue_id: true,
                     issue_name: true,
                 }
             },
 
-            sprint:{
-                select :{
-                    sprint_id:true,
+            sprint: {
+                select: {
+                    sprint_id: true,
                     sprint_name: true,
                 },
             },
@@ -57,42 +59,42 @@ export const getProjectActivityLog = async(projectId: number, skip: number, take
     })
 };
 
-export const countProjectActivity = async(projectId: number)=>{
+export const countProjectActivity = async (projectId: number) => {
     return prisma.activityLog.count({
-        where:{
+        where: {
             project_id: projectId,
         },
     });
 };
 
 export const findScheduleChangesForSprint = async (
-  projectId: number,
-  sprintId: number,
-  issueIds: number[]
+    projectId: number,
+    sprintId: number,
+    issueIds: number[]
 ) => {
-  return prisma.activityLog.findMany({
-    where: {
-      project_id: projectId,
-      OR: [
-        {
-          sprint_id: sprintId,
-          field_name: { in: ["start_date", "end_date"] },
+    return prisma.activityLog.findMany({
+        where: {
+            project_id: projectId,
+            OR: [
+                {
+                    sprint_id: sprintId,
+                    field_name: { in: ["start_date", "end_date"] },
+                },
+                {
+                    issue_id: { in: issueIds },
+                    field_name: { in: ["due_date", "estimate"] },
+                },
+            ],
         },
-        {
-          issue_id: { in: issueIds },
-          field_name: { in: ["due_date", "estimate"] },
+        orderBy: { created_at: "asc" },
+        select: {
+            field_name: true,
+            old_value: true,
+            new_value: true,
+            reason: true,
+            created_at: true,
+            issue_id: true,
+            sprint_id: true,
         },
-      ],
-    },
-    orderBy: { created_at: "asc" },
-    select: {
-      field_name: true,
-      old_value: true,
-      new_value: true,
-      reason: true,
-      created_at: true,
-      issue_id: true,
-      sprint_id: true,
-    },
-  });
+    });
 };

@@ -1,14 +1,14 @@
 import { v4 as uuidv4 } from "uuid"
 import {
     findProjectByKey, createProjectWithAdmin, getUserProjects, findProjectMember,
-    findProjectMembership, findPendingInvitation, creatInvitation, acceptInvitation,
+    findProjectMembership, findPendingInvitation, createInvitation, acceptInvitation,
     findInvitationByToken, createProjectMembership, getProjectMembers, findProjectById,
     removeProjectMember, updateProject,
     deleteProject,
     findPendingInvitationsByEmail,
     deleteInvitationByToken
 } from "../repositories/project.repository.js";
-import type { UpdateProjectInput } from "../validatons/project.validation.js"
+import type { UpdateProjectInput } from "../validations/project.validation.js"
 import { findUserByEmail, findUserById } from "../repositories/auth.repository.js";
 import { createActivityLogService } from "./activityLog.service.js";
 import { ActivityActionType, NotificationType } from "@prisma/client";
@@ -76,13 +76,14 @@ export const inviteMemberService = async (projectId: number, currentUserId: numb
 
     const token = uuidv4();
 
-    const invitation = await creatInvitation(projectId, email, token, currentUserId);
+    const invitation = await createInvitation(projectId, email, token, currentUserId);
+
     await createActivityLogService({
         user_id: currentUserId,
         project_id: projectId,
         action_type: ActivityActionType.MEMBER_INVITED,
     });
-
+if (existingUser) {
     await createNotificationService(
         existingUser!.user_id,
         currentUserId,
@@ -92,6 +93,7 @@ export const inviteMemberService = async (projectId: number, currentUserId: numb
         undefined,
         projectId
     );
+}
 
 
     return invitation

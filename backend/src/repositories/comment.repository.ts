@@ -1,5 +1,5 @@
 import prisma from "../lib/prisma.js"
-import type { CreateCommentInput, UpdateCommentInput } from "../validatons/comment.validation.js"
+import type { CreateCommentInput, UpdateCommentInput } from "../validations/comment.validation.js"
 
 export const createComment = async (issueId: number, userId: number, data: CreateCommentInput) => {
     return prisma.comment.create({
