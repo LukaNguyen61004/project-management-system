@@ -1,5 +1,5 @@
 import prisma from "../lib/prisma.js";
-import type { UpdateProjectInput } from "../validatons/project.validation.js";
+import type { UpdateProjectInput } from "../validations/project.validation.js";
 
 
 export const findProjectByKey = async (project_key: string) => {
@@ -123,7 +123,7 @@ export const findPendingInvitation = async (projectId: number, email: string) =>
     })
 }
 
-export const creatInvitation = async (projectId: number, email: string, token: string, invitedBy: number) => {
+export const createInvitation = async (projectId: number, email: string, token: string, invitedBy: number) => {
     return prisma.projectInvitation.create({
         data: {
             project_id: projectId,

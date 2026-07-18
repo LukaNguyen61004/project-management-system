@@ -1,5 +1,5 @@
 import prisma from "../lib/prisma.js"
-import type { CreateIssueInput, UpdateIssueInput } from "../validatons/issue.validation.js"
+import type { CreateIssueInput, UpdateIssueInput } from "../validations/issue.validation.js"
 import { IssuePriority, IssueStatus, IssueType } from "@prisma/client"
 
 export type CreateIssueData = {
@@ -45,7 +45,7 @@ export const getNextIssueNumber = async (projectId: number, projectKey: string) 
     return max + 1
 }
 
-export const creatIssue = async (data: CreateIssueData) => {
+export const createIssue = async (data: CreateIssueData) => {
 
     return prisma.issue.create({
         data,
@@ -261,3 +261,10 @@ export const incrementWarningCount = async (issueId: number) => {
         data: { warning_count: { increment: 1 } },
     })
 }
+
+export const incrementReviewRejectCount = async (issueId: number) => {
+    return prisma.issue.update({
+        where: { issue_id: issueId },
+        data: { review_reject_count: { increment: 1 } },
+    });
+};

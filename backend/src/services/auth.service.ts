@@ -4,13 +4,13 @@ import admin, { isFirebaseAdminReady } from "../lib/firebaseAdmin.js";
 import { env } from "../config/env.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import { findUserByEmail, createUser, findUserById, updateRefreshToken, updateUserProfile } from "../repositories/auth.repository.js";
-import type { UpdateProfileInput } from "../validatons/auth.validation.js";
+import type { UpdateProfileInput } from "../validations/auth.validation.js";
 
 export const refreshTokenService = async (refreshToken: string) => {
     try {
         const decoded = jwt.verify(
             refreshToken,
-            env.JWT_SECRET
+            env.JWT_REFRESH_SECRET
         )
         if (typeof decoded === "string") {
             throw new Error("Invalid token");

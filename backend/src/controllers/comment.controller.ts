@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createCommentSchema, updateCommentSchema } from "../validatons/comment.validation.js";
+import { createCommentSchema, updateCommentSchema } from "../validations/comment.validation.js";
 import { createCommentService, deleteCommentService, getIssueCommentsService, updateCommentService } from "../services/comment.service.js";
 import { sendError } from "../helper/httpError.js";
 

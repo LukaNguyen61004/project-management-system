@@ -12,7 +12,7 @@ import {
     assignIssueSchema, changeIssuePrioritySchema, changeIssueStatusSchema, createIssueSchema,
     updateIssueSchema,
     updateIssueSprintSchema
-} from "../validatons/issue.validation.js";
+} from "../validations/issue.validation.js";
 import { sendError } from "../helper/httpError.js";
 
 

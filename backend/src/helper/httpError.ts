@@ -25,6 +25,7 @@ const ERROR_STATUS_MAP: Record<string, number> = {
   "Email already exist": 409,
   "Project key already exists": 409,
   "Sprint name duplicated": 409,
+  "Invalid sprint status transition": 400,
   "Invitation already sent": 409,
   "User already in project": 409,
 

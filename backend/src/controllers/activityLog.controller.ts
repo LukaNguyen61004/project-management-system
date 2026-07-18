@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { getProjectActivityLogSchema } from "../validatons/activityLog.validation.js";
+import { getProjectActivityLogSchema } from "../validations/activityLog.validation.js";
 import { getProjectActivityLogService } from "../services/activityLog.service.js";
 import { sendError } from "../helper/httpError.js";
 

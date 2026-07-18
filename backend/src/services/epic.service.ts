@@ -1,7 +1,7 @@
 import { ActivityActionType, type Prisma } from "@prisma/client";
 import { createEpic, deleteEpic, findEpicById, findProjectEpics, getDuplicateEpicName, getEpicByName, updateEpic } from "../repositories/epic.repository.js";
 import { findProjectById, findProjectMember } from "../repositories/project.repository.js";
-import type { CreateEpicInput, UpdateEpicInput } from "../validatons/epic.validation.js";
+import type { CreateEpicInput, UpdateEpicInput } from "../validations/epic.validation.js";
 import { createActivityLogService } from "./activityLog.service.js";
 
 
@@ -13,7 +13,11 @@ export const createEpicService = async (projectId: number, userId: number, data:
         throw new Error("Project not found");
     }
 
-    await findProjectMember(projectId, userId);
+    const member = await findProjectMember(projectId, userId);
+    if (!member) {
+        throw new Error("You are not a member of this project");
+    }
+
 
     const duplicate = await getEpicByName(projectId, data.epic_name);
 
@@ -44,7 +48,7 @@ export const createEpicService = async (projectId: number, userId: number, data:
     return epic;
 };
 
-export const getProjectEpicsService = async (projectId: number,userId: number) => {
+export const getProjectEpicsService = async (projectId: number, userId: number) => {
 
     const project = await findProjectById(projectId);
 
@@ -52,28 +56,32 @@ export const getProjectEpicsService = async (projectId: number,userId: number) =
         throw new Error("Project not found");
     }
 
-    await findProjectMember(projectId,userId);
+    const member = await findProjectMember(projectId, userId);
+    if (!member) {
+        throw new Error("You are not a member of this project");
+    }
+
 
     return findProjectEpics(projectId);
 };
 
-export const getEpicDetailService = async (epicId: number,userId: number) => {
+export const getEpicDetailService = async (epicId: number, userId: number) => {
 
     const epic = await findEpicById(epicId);
 
     if (!epic) {
         throw new Error("Epic not found");
     }
+    const member = await findProjectMember(epic.project_id, userId);
+    if (!member) {
+        throw new Error("You are not a member of this project");
+    }
 
-    await findProjectMember(
-        epic.project_id,
-        userId
-    );
 
     return epic;
 };
 
-export const updateEpicService = async ( epicId: number, userId: number, data: UpdateEpicInput) => {
+export const updateEpicService = async (epicId: number, userId: number, data: UpdateEpicInput) => {
 
     const epic = await findEpicById(epicId);
 
@@ -81,7 +89,7 @@ export const updateEpicService = async ( epicId: number, userId: number, data: U
         throw new Error("Epic not found");
     }
 
-    await findProjectMember(epic.project_id,userId);
+    await findProjectMember(epic.project_id, userId);
 
     if (data.epic_name && data.epic_name !== epic.epic_name) {
 
@@ -160,7 +168,7 @@ export const deleteEpicService = async (epicId: number, userId: number) => {
         throw new Error("Epic not found");
     }
 
-    await findProjectMember(epic.project_id,userId);
+    await findProjectMember(epic.project_id, userId);
 
     await createActivityLogService({
         user_id: userId,
