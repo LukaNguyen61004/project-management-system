@@ -386,9 +386,6 @@ export const updateIssueSprintService = async (issueId: number, currentUserId: n
         throw new Error("You are not a member of this project");
     }
 
-    if (currentMember.role !== "admin") {
-        throw new Error("Only admin can update issue in sprint");
-    }
 
     if (sprint_id === null) {
         if (issue.sprint_id === null) {
