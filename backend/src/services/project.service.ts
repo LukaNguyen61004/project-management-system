@@ -13,6 +13,7 @@ import { findUserByEmail, findUserById } from "../repositories/auth.repository.j
 import { createActivityLogService } from "./activityLog.service.js";
 import { ActivityActionType, NotificationType } from "@prisma/client";
 import { createNotificationService } from "./notification.service.js";
+import { sendInviteEmail } from "../utils/mailer.js";
 
 
 
@@ -78,22 +79,30 @@ export const inviteMemberService = async (projectId: number, currentUserId: numb
 
     const invitation = await createInvitation(projectId, email, token, currentUserId);
 
+    
+    const project = await findProjectById(projectId);
+    try {
+        await sendInviteEmail(email, token, project?.project_name ?? `#${projectId}`);
+    } catch (err) {
+        console.error("Failed to send invite email:", err);
+    }
+
     await createActivityLogService({
         user_id: currentUserId,
         project_id: projectId,
         action_type: ActivityActionType.MEMBER_INVITED,
     });
-if (existingUser) {
-    await createNotificationService(
-        existingUser!.user_id,
-        currentUserId,
-        NotificationType.project_invitation,
-        "Project invitation",
-        `You were invited to project ${projectId}`,
-        undefined,
-        projectId
-    );
-}
+    if (existingUser) {
+        await createNotificationService(
+            existingUser!.user_id,
+            currentUserId,
+            NotificationType.project_invitation,
+            "Project invitation",
+            `You were invited to project ${projectId}`,
+            undefined,
+            projectId
+        );
+    }
 
 
     return invitation
@@ -304,7 +313,7 @@ export const declineInvitationService = async (token: string, currentUserId: num
     if (!user) throw new Error('User not found')
 
     const invitation = await findInvitationByToken(token)
-    
+
     if (!invitation) throw new Error('Invitation not found')
     if (invitation.accepted_at) throw new Error('Invitation already accepted')
     if (invitation.email !== user.user_email) {
