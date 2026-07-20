@@ -48,7 +48,7 @@ export function NotificationBell() {
             }
             return
         }
-        
+
         const isMemberJoined =
             notification.notifi_type === 'project_member_joined' ||
             (notification.notifi_type === 'project_invitation' &&
@@ -62,13 +62,15 @@ export function NotificationBell() {
 
         if (notification.notifi_type === 'project_invitation') {
             setOpen(false)
+            
+            if (!notification.is_read) {
+                markReadMutation.mutate(notification.notifi_id)
+            }
 
             setInvitationNotification(notification)
             return
         }
-        if (!notification.is_read) {
-            markReadMutation.mutate(notification.notifi_id)
-        }
+
     }
 
     useEffect(() => {
