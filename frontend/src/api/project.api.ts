@@ -26,6 +26,9 @@ export const projectApi = {
     update: (projectId: number, data: { project_name?: string; project_description?: string }) =>
         apiClient.patch<{ success: boolean; project: Project }>(`/projects/${projectId}`, data),
 
+    delete: (projectId: number) =>
+        apiClient.delete<{ success: boolean; message: string }>(`/projects/${projectId}`),
+
     acceptInvitation: (token: string) =>
         apiClient.post<{ success: boolean; message: string; project: Project }>(
             '/projects/invitations/accept',
