@@ -288,13 +288,7 @@ export const deleteProjectService = async (projectId: number, currentUserId: num
         throw new Error("Only project owner can delete");
     }
 
-    await createActivityLogService({
-        user_id: currentUserId,
-        project_id: projectId,
-        action_type: ActivityActionType.PROJECT_DELETED,
-    });
-
-
+    // Skip activity log: project_id FK is RESTRICT and the project (with all logs) is removed
     await deleteProject(projectId);
 
     return { message: "Project deleted successfully" };

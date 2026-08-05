@@ -227,11 +227,31 @@ export const updateProject = async (projectId: number,data: UpdateProjectInput) 
     })
 }
 
-export const deleteProject =async (projectId: number)=>{
-    return prisma.project.delete({
-        where :{
-            project_id:projectId,
+export const deleteProject = async (projectId: number) => {
+    return prisma.$transaction(async (tx) => {
+        // Child FKs use ON DELETE RESTRICT — clean up before deleting the project
+        await tx.activityLog.deleteMany({ where: { project_id: projectId } })
+
+        const issues = await tx.issue.findMany({
+            where: { project_id: projectId },
+            select: { issue_id: true },
+        })
+        const issueIds = issues.map((i) => i.issue_id)
+
+        if (issueIds.length > 0) {
+            await tx.comment.deleteMany({ where: { issue_id: { in: issueIds } } })
+            // IssueAttachment cascades on issue delete
+            await tx.issue.deleteMany({ where: { project_id: projectId } })
         }
+
+        await tx.epic.deleteMany({ where: { project_id: projectId } })
+        await tx.sprint.deleteMany({ where: { project_id: projectId } })
+        await tx.projectInvitation.deleteMany({ where: { project_id: projectId } })
+        await tx.projectMember.deleteMany({ where: { project_id: projectId } })
+
+        return tx.project.delete({
+            where: { project_id: projectId },
+        })
     })
 }
 
