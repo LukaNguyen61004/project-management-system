@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { projectApi } from '../api/project.api'
 import { Input } from '../components/ui/Input'
@@ -8,11 +8,14 @@ import { getApiErrorMessage } from '../utils/apiError'
 import { toast } from 'sonner'
 import { Mail, UserMinus } from 'lucide-react'
 import { ActivityLogList } from '../components/activityLog/ActivityLogList'
+import { useAuthStore } from '../store/auth.store'
 
 export function ProjectSettingPage() {
   const { projectId } = useParams()
   const pid = Number(projectId)
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const currentUserId = useAuthStore((s) => s.user?.user_id)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [inviteEmail, setInviteEmail] = useState('')
@@ -67,6 +70,19 @@ export function ProjectSettingPage() {
     },
     onError: (err) => toast.error(getApiErrorMessage(err, 'Xóa thành viên thất bại')),
   })
+
+  const deleteMutation = useMutation({
+    mutationFn: () => projectApi.delete(pid),
+    onSuccess: () => {
+      toast.success('Đã xóa project')
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.removeQueries({ queryKey: ['project', pid] })
+      navigate('/projects', { replace: true })
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Xóa project thất bại')),
+  })
+
+  const isOwner = !!project && currentUserId === project.owner_id
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -204,6 +220,32 @@ export function ProjectSettingPage() {
         <h3 className="text-base font-semibold text-jira-text mb-4">Activity</h3>
         <ActivityLogList projectId={pid} />
       </section>
+
+      {isOwner && (
+        <section className="mt-6 bg-white rounded-lg border border-red-200 p-6">
+          <h3 className="text-base font-semibold text-red-600 mb-2">Danger zone</h3>
+          <p className="text-sm text-jira-text-subtle mb-4">
+            Xóa project sẽ xóa toàn bộ issues, sprints, epics và thành viên. Không thể hoàn tác.
+          </p>
+          <Button
+            type="button"
+            variant="secondary"
+            className="text-red-500 border-red-200 hover:bg-red-50"
+            disabled={deleteMutation.isPending}
+            onClick={() => {
+              if (
+                window.confirm(
+                  `Xóa project "${project?.project_name}"? Hành động này không thể hoàn tác.`
+                )
+              ) {
+                deleteMutation.mutate()
+              }
+            }}
+          >
+            {deleteMutation.isPending ? 'Deleting...' : 'Delete project'}
+          </Button>
+        </section>
+      )}
     </div>
   )
 }

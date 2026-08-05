@@ -4,7 +4,7 @@ import { STATUS_COLUMN_COLORS } from '../../utils/constants'
 import { cn } from '../../utils/cn'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { SortableIssueCard } from './IssueCard'   // thay IssueCard
+import { SortableIssueCard } from './IssueCard'   
 
 interface KanbanColumnProps {
   status: IssueStatus
