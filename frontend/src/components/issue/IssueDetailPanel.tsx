@@ -20,6 +20,7 @@ import { IssueAttachments } from './IssueAttachments'
 import { dateInputToISO, isoToDateInput } from '../../utils/date'
 import { getApiErrorMessage } from '../../utils/apiError'
 import { toast } from 'sonner'
+import { PRIORITY_RANK } from '../../utils/issuePriority'
 
 
 interface IssueDetailPanelProps {
@@ -27,12 +28,13 @@ interface IssueDetailPanelProps {
   projectId: number
   onClose: () => void
   onDeleted?: () => void
+  onAddSubtask?: (parent: Issue) => void
 }
 
 const selectClass =
   'mt-1 w-full rounded border border-jira-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-jira-blue'
 
-export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: IssueDetailPanelProps) {
+export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSubtask }: IssueDetailPanelProps) {
   const queryClient = useQueryClient()
   const currentUser = useAuthStore((s) => s.user)
 
@@ -41,7 +43,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
   const [type, setType] = useState<IssueType>('task')
   const [dueDate, setDueDate] = useState('')
   const [estimate, setEstimate] = useState('')
- 
+
   const [saveError, setSaveError] = useState('')
   const [commentText, setCommentText] = useState('')
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
@@ -76,6 +78,9 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
 
   const currentIssue = detail || issue
 
+  const issues = queryClient.getQueryData<Issue[]>(['issues', projectId]) ?? []
+  const canCreateBug = issues.some((i) => i.issue_status === 'done')
+
   useEffect(() => {
     if (currentIssue) {
       setTitle(currentIssue.issue_name)
@@ -83,7 +88,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
       setType(currentIssue.issue_type)
       setDueDate(isoToDateInput(currentIssue.due_date))
       setEstimate(currentIssue.estimate != null ? String(currentIssue.estimate) : '')
-      
+
       setSaveError('')
     }
   }, [
@@ -95,7 +100,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
     currentIssue?.estimate,
   ])
 
-  
+
 
   const invalidate = () => {
     if (!issueId) return
@@ -153,7 +158,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
   const handleSave = () => {
     setSaveError('')
     if (title.length < 3) return
-    
+
     if (estimate !== '' && (Number.isNaN(Number(estimate)) || Number(estimate) < 0)) {
       setSaveError('Story points phải là số >= 0')
       return
@@ -241,6 +246,14 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
 
   if (!issue || !currentIssue) return null
 
+  const availablePriorities = currentIssue.parent
+    ? ISSUE_PRIORITIES.filter(
+      (p) =>
+        PRIORITY_RANK[p.value] >=
+        PRIORITY_RANK[currentIssue.parent!.issue_priority]
+    )
+    : ISSUE_PRIORITIES
+
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
@@ -308,7 +321,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
                 onChange={(e) => priorityMutation.mutate(e.target.value as IssuePriority)}
                 className={selectClass}
               >
-                {ISSUE_PRIORITIES.map((p) => (
+                {availablePriorities.map((p) => (
                   <option key={p.value} value={p.value}>
                     {p.label}
                   </option>
@@ -323,7 +336,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
                 onChange={(e) => setType(e.target.value as IssueType)}
                 className={selectClass}
               >
-                {ISSUE_TYPES.map((t) => (
+                {(canCreateBug || type === 'bug' ? ISSUE_TYPES : ISSUE_TYPES.filter((t) => t.value! == 'bug')).map((t) => (
                   <option key={t.value} value={t.value}>
                     {t.label}
                   </option>
@@ -414,8 +427,33 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
               />
             </div>
           </div>
+          {currentIssue.issue_type !== 'subtask' && onAddSubtask && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-jira-text">Subtasks</label>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => onAddSubtask(currentIssue)}
+                >
+                  Add subtask
+                </Button>
+              </div>
+              {currentIssue.subtasks && currentIssue.subtasks.length > 0 ? (
+                <ul className="text-sm text-jira-text space-y-1">
+                  {currentIssue.subtasks.map((s) => (
+                    <li key={s.issue_id} className="text-jira-text-subtle">
+                      {s.issue_key} · {s.issue_priority}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-jira-text-subtle">No subtasks yet</p>
+              )}
+            </div>
+          )}
 
-        
           {saveError && <p className="text-sm text-red-500">{saveError}</p>}
 
           <Button
@@ -424,6 +462,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted }: Issue
           >
             {updateMutation.isPending ? 'Saving...' : 'Save changes'}
           </Button>
+
 
           {issueId && (
             <IssueAttachments issueId={issueId} projectId={projectId} />
