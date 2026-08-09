@@ -21,7 +21,9 @@ export const createIssueSchema = z.object({
         .number()
         .int()
         .positive()
-        .optional()
+        .optional(),
+    
+    parent_issue_id: z.number().int().positive().optional()
 })
 
 export type CreateIssueInput = z.infer<typeof createIssueSchema>
