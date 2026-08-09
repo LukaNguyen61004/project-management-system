@@ -24,6 +24,7 @@ export function BacklogPage() {
   const pid = Number(projectId)
   const [showCreateIssue, setShowCreateIssue] = useState(false)
   const [showCreateSprint, setShowCreateSprint] = useState(false)
+  const [parentIssueForCreate, setParentIssueForCreate] = useState<Issue | null>(null)
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null)
   const [editingSprint, setEditingSprint] = useState<Sprint | null>(null)
   const [showCreateEpic, setShowCreateEpic] = useState(false)
@@ -36,6 +37,8 @@ export function BacklogPage() {
     queryFn: () => issueApi.getByProject(pid).then((r) => r.data.result),
     enabled: !!pid,
   })
+
+
 
   const { data: sprints = [], isLoading: sprintsLoading } = useQuery({
     queryKey: ['sprints', pid],
@@ -55,6 +58,7 @@ export function BacklogPage() {
     enabled: !!pid,
   })
 
+  const canCreateBug = issues.some((i) => i.issue_status === 'done')
   const filteredIssues = useIssueFilters(issues, filters)
 
   useEffect(() => {
@@ -86,7 +90,10 @@ export function BacklogPage() {
           <Button size="sm" variant="secondary" onClick={() => setShowCreateSprint(true)}>
             <Plus size={14} /> Create sprint
           </Button>
-          <Button size="sm" onClick={() => setShowCreateIssue(true)}>
+          <Button size="sm" onClick={() => {
+            setParentIssueForCreate(null)
+            setShowCreateIssue(true)
+          }}>
             <Plus size={14} /> Create issue
           </Button>
         </div>
@@ -133,8 +140,13 @@ export function BacklogPage() {
 
       <CreateIssueModal
         open={showCreateIssue}
-        onClose={() => setShowCreateIssue(false)}
+        onClose={() => {
+          setShowCreateIssue(false)
+          setParentIssueForCreate(null)
+        }}
         projectId={pid}
+        canCreateBug={canCreateBug}
+        parentIssue={parentIssueForCreate}
       />
 
       <IssueDetailPanel
@@ -142,6 +154,11 @@ export function BacklogPage() {
         projectId={pid}
         onClose={() => setSelectedIssue(null)}
         onDeleted={() => setSelectedIssue(null)}
+        onAddSubtask={(parent) => {
+          setParentIssueForCreate(parent)
+          setSelectedIssue(null)
+          setShowCreateIssue(true)
+        }}
       />
 
       <CreateSprintModal
