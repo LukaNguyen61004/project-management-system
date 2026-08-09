@@ -14,6 +14,8 @@ export type CreateIssueData = {
 
     issue_description?: string;
     assignee_id?: number;
+
+    parent_issue_id?: number
 };
 
 export const countProjectIssues = async (project_id: number) => {
@@ -49,6 +51,17 @@ export const createIssue = async (data: CreateIssueData) => {
 
     return prisma.issue.create({
         data,
+        include: {
+            parent: {
+                select:
+                {
+                    issue_id: true,
+                    issue_key: true,
+                    issue_priority: true,
+                    issue_type: true
+                }
+            },
+        }
     })
 
 }
@@ -77,6 +90,21 @@ export const getProjectIssues = async (projectId: number) => {
                     user_avatar_url: true,
                 }
             },
+            parent: {
+                select: {
+                    issue_id: true,
+                    issue_key: true,
+                    issue_priority: true,
+                    issue_type: true
+                },
+            },
+            subtasks: {
+                select: {
+                    issue_id: true,
+                    issue_key: true,
+                    issue_priority: true
+                },
+            },
             sprint: {
                 select: {
                     sprint_id: true,
@@ -89,7 +117,7 @@ export const getProjectIssues = async (projectId: number) => {
                     epic_name: true,
                     epic_color: true,
                 }
-            }
+            },
         },
         orderBy: {
             issue_created_at: "desc"
@@ -121,7 +149,21 @@ export const findIssueById = async (issueId: number) => {
                     user_avatar_url: true,
                 }
             },
-
+            parent: {
+                select: {
+                    issue_id: true,
+                    issue_key: true,
+                    issue_priority: true,
+                    issue_type: true
+                },
+            },
+            subtasks: {
+                select: {
+                    issue_id: true,
+                    issue_key: true,
+                    issue_priority: true
+                },
+            },
             project: {
                 select: {
                     project_id: true,
@@ -129,7 +171,6 @@ export const findIssueById = async (issueId: number) => {
                     project_key: true,
                 }
             },
-
             sprint: {
                 select: {
                     sprint_id: true,
@@ -159,7 +200,7 @@ export const updateIssue = async (issueId: number, data: UpdateIssueInput) => {
         ...(data.estimate !== undefined && {
             estimate: data.estimate,
         }),
-        
+
         ...(data.due_date !== undefined && {
             due_date: data.due_date === null ? null : new Date(data.due_date),
         }),
@@ -268,3 +309,12 @@ export const incrementReviewRejectCount = async (issueId: number) => {
         data: { review_reject_count: { increment: 1 } },
     });
 };
+
+export const countIssueDone = async (projectId: number) => {
+    return prisma.issue.count({
+        where: {
+            project_id: projectId,
+            issue_status: IssueStatus.done,
+        },
+    })
+}

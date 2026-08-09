@@ -1,4 +1,4 @@
-import { createIssue, getNextIssueNumber, getProjectIssues, findIssueById, updateIssue, changeIssueStatus, assignIssue, changeIssuePriority, updateIssueSprint, updateIssueEpic, touchLastActivity, incrementReviewRejectCount } from "../repositories/issue.repository.js";
+import { createIssue, getNextIssueNumber, getProjectIssues, findIssueById, updateIssue, changeIssueStatus, assignIssue, changeIssuePriority, updateIssueSprint, updateIssueEpic, touchLastActivity, incrementReviewRejectCount, countIssueDone } from "../repositories/issue.repository.js";
 import { deleteIssue, type CreateIssueData } from "../repositories/issue.repository.js"
 import type { AssignIssueInput, ChangIssuePriorityInput, ChangIssueStatusInput, CreateIssueInput, UpdateIssueInput, UpdateIssueSprintInput } from "../validations/issue.validation.js";
 import { findProjectById, findProjectMember } from "../repositories/project.repository.js";
@@ -8,11 +8,12 @@ import { createActivityLogService } from "./activityLog.service.js";
 import { ActivityActionType, NotificationType } from "@prisma/client";
 import { findEpicById } from "../repositories/epic.repository.js";
 import { createNotificationService } from "./notification.service.js";
-
+import { isPriorityLower } from "../helper/priority.helper.js";
 
 
 export const createIssueService = async (projectId: number, reporterId: number, data: CreateIssueInput) => {
     const project = await findProjectById(projectId);
+
 
     if (!project) {
         throw new Error("Project not found");
@@ -30,6 +31,29 @@ export const createIssueService = async (projectId: number, reporterId: number, 
         if (!assigneeMember) {
             throw new Error("Assignee is not a member of this project");
         }
+    }
+
+    const doneCount = await countIssueDone(project.project_id);
+    if (data.issue_type === 'bug' && doneCount === 0) {
+        throw new Error("Cannot create bug: project has no completed work yet")
+    }
+
+    if (data.issue_type === 'subtask') {
+        if (!data.parent_issue_id) {
+            throw new Error("Subtask must have a parent issue")
+        }
+        const parent = await findIssueById(data.parent_issue_id)
+        if (!parent || parent.project_id !== projectId) {
+            throw new Error("Parent issue not found in this project")
+        }
+        if (parent.issue_type === 'subtask') {
+            throw new Error("Cannot nest subtask under another subtask")
+        }
+        if (isPriorityLower(data.issue_priority, parent.issue_priority)) {
+            throw new Error("Subtask priority cannot be lower than parent")
+        }
+    } else if (data.parent_issue_id) {
+        throw new Error("Only subtask can have a parent issue")
     }
 
     const nextNumber = await getNextIssueNumber(projectId, project.project_key);
@@ -55,7 +79,11 @@ export const createIssueService = async (projectId: number, reporterId: number, 
             assignee_id:
                 data.issue_assignee,
         }),
+        ...(data.parent_issue_id !== undefined && {
+            parent_issue_id: data.parent_issue_id,
+        }),
     }
+    
     const issue = await createIssue(issueData);
 
     await createActivityLogService({
@@ -352,9 +380,26 @@ export const changeIssuePriorityService = async (issueId: number, data: ChangIss
         throw new Error("You are not a member of this project");
     }
 
+
     if (issue.issue_priority === data.issue_priority) {
         throw new Error("Issue already had the same priority");
     }
+
+    if (issue.parent_issue_id) {
+        const parent = await findIssueById(issue.parent_issue_id)
+        if (parent && isPriorityLower(data.issue_priority, parent.issue_priority)) {
+            throw new Error("Subtask priority cannot be lower than parent")
+        }
+    }
+
+    if (!issue.parent_issue_id && issue.subtasks?.length) {
+        for (const sub of issue.subtasks) {
+            if (isPriorityLower(sub.issue_priority, data.issue_priority)) {
+                await changeIssuePriority(sub.issue_id, data.issue_priority)
+            }
+        }
+    }
+
     const updated = await changeIssuePriority(issueId, data.issue_priority);
 
     await touchLastActivity(issueId)

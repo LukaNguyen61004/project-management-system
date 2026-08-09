@@ -52,7 +52,7 @@ export const summarizeSprintService = async (
         throw new Error("Sprint must be completed before generating summary");
     }
 
-    // ---------- Cache: đã có summary → không gọi AI lại ----------
+    //  Cache: đã có summary → không gọi AI lại 
     if (sprint.sprint_summary) {
         const issues = await getSprintIssues(sprintId);
         const summaryData = buildSprintSummaryData(sprint, issues);
