@@ -27,10 +27,22 @@ export interface Issue {
     review_reject_count: number
     issue_created_at: string
     issue_updated_at: string
+    parent_issue_id?: number | null
     epic?: { epic_id: number; epic_name: string; epic_color: string } | null
     reporter?: UserSummary
     assignee?: UserSummary | null
     sprint?: { sprint_id: number; sprint_name: string } | null
+    parent?: {
+        issue_id: number
+        issue_key: string
+        issue_priority: IssuePriority
+        issue_type: IssueType
+    } | null
+    subtasks?: {
+        issue_id: number
+        issue_key: string
+        issue_priority: IssuePriority
+    }[]
 }
 
 export interface UpdateIssueInput {

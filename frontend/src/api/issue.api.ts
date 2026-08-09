@@ -8,6 +8,7 @@ export interface CreateIssueInput {
   issue_description?: string
   issue_type: IssueType
   issue_priority: IssuePriority
+  parent_issue_id?: number
 }
 
 export const issueApi = {

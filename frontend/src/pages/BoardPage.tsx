@@ -22,12 +22,14 @@ export function BoardPage() {
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null)
   const [filters, setFilters] = useState(EMPTY_ISSUE_FILTERS)
   const [searchParams, setSearchParams] = useSearchParams()
+  const [parentIssueForCreate, setParentIssueForCreate] = useState<Issue | null>(null)
 
   const { data: issues = [], isLoading, isError } = useQuery({
     queryKey: ['issues', pid],
     queryFn: () => issueApi.getByProject(pid).then((r) => r.data.result),
     enabled: !!pid,
   })
+  const canCreateBug = issues.some((i) => i.issue_status === 'done')
 
   const { data: sprints = [], isLoading: sprintsLoading } = useQuery({
     queryKey: ['sprints', pid],
@@ -89,7 +91,10 @@ export function BoardPage() {
               : 'No active sprint — showing all project issues'}
           </p>
         </div>
-        <Button size="sm" onClick={() => setShowCreate(true)}>+ Create issue</Button>
+        <Button size="sm" onClick={() => {
+          setParentIssueForCreate(null)
+          setShowCreate(true)
+        }}>+ Create issue</Button>
       </div>
 
       <IssueFilterBar
@@ -109,8 +114,13 @@ export function BoardPage() {
 
       <CreateIssueModal
         open={showCreate}
-        onClose={() => setShowCreate(false)}
+        onClose={() => {
+          setShowCreate(false)
+          setParentIssueForCreate(null)
+        }}
         projectId={pid}
+        canCreateBug={canCreateBug}
+        parentIssue={parentIssueForCreate}
       />
 
       <IssueDetailPanel
@@ -118,6 +128,11 @@ export function BoardPage() {
         issue={selectedIssue}
         onClose={() => setSelectedIssue(null)}
         onDeleted={() => setSelectedIssue(null)}
+        onAddSubtask={(parent) => {
+          setParentIssueForCreate(parent)
+          setSelectedIssue(null)
+          setShowCreate(true)
+        }}
       />
     </>
   )
