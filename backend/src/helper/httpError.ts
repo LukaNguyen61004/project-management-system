@@ -18,7 +18,14 @@ const ERROR_STATUS_MAP: Record<string, number> = {
   "Insufficient permissions": 403,
   "Only project owner can delete": 403,
   "Cannot remove project owner": 403,
-  " project owner cannot leave": 403,
+  "Project owner cannot leave": 403,
+
+  "Cannot create bug: project has no completed work yet": 400,
+  "Subtask must have a parent issue": 400,
+  "Parent issue not found in this project": 400,
+  "Cannot nest subtask under another subtask": 400,
+  "Subtask priority cannot be lower than parent": 400,
+  "Only subtask can have a parent issue": 400,
 
   "Epic name already exists": 409,
   "Email already exist": 409,

@@ -272,6 +272,8 @@ model Issue {
   due_date  DateTime?
   estimate  Int?
 
+  parent_issue_id Int?
+
   project Project @relation(fields: [project_id], references: [project_id])
 
   sprint Sprint? @relation(fields: [sprint_id], references: [sprint_id])
@@ -281,6 +283,10 @@ model Issue {
   reporter User @relation("Reporter", fields: [reporter_id], references: [user_id])
 
   assignee User? @relation("Assignee", fields: [assignee_id], references: [user_id])
+
+  parent   Issue?  @relation("IssueSubtasks", fields: [parent_issue_id], references: [issue_id])
+
+  subtasks Issue[] @relation("IssueSubtasks")
 
   comments Comment[]
 
@@ -299,6 +305,7 @@ model Issue {
   @@index([issue_status])
   @@index([issue_priority])
   @@index([last_activity_at])
+  @@index([parent_issue_id])
 }
 
 model IssueAttachment {
