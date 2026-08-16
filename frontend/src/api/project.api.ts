@@ -15,10 +15,22 @@ export const projectApi = {
         apiClient.get<{ members: ProjectMember[] }>(`/projects/${projectId}/members`),
 
     invite: (projectId: number, email: string) =>
-        apiClient.post(`/projects/${projectId}/invite`, { email }),
+        apiClient.post<{
+            success: boolean
+            invitation: {
+                emailSent?: boolean
+                emailError?: string
+                [key: string]: unknown
+            }
+        }>(`/projects/${projectId}/invite`, { email }),
 
     removeMember: (projectId: number, userId: number) =>
         apiClient.delete(`/projects/${projectId}/members/${userId}`),
+
+    leave: (projectId: number) =>
+        apiClient.post<{ success: boolean; result: { message: string } }>(
+            `/projects/${projectId}/leave`
+        ),
 
     create: (data: CreateProjectInput) =>
         apiClient.post<{ success: boolean, project: Project }>('/projects', data),

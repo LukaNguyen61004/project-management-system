@@ -25,13 +25,18 @@ export function SprintList({ sprints, issues, onIssueClick, onEditSprint }: Spri
             defaultOpen={sprint.sprint_status === 'active'}
           >
             <div className="divide-y divide-jira-border">
-              {sprintIssues.map((issue) => (
-                <DraggableBacklogIssueRow
-                  key={issue.issue_id}
-                  issue={issue}
-                  onClick={() => onIssueClick(issue)}
-                />
-              ))}
+              {sprintIssues.map((issue) => {
+                const lockedInCompleted =
+                  sprint.sprint_status === 'completed' && issue.issue_status === 'done'
+                return (
+                  <DraggableBacklogIssueRow
+                    key={issue.issue_id}
+                    issue={issue}
+                    onClick={() => onIssueClick(issue)}
+                    draggable={!lockedInCompleted}
+                  />
+                )
+              })}
             </div>
           </SprintPanel>
         )

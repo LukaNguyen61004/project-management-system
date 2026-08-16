@@ -38,6 +38,8 @@ export function formatActivityMessage(activity: ActivityLog): string {
       return `${name} invited a member`
     case 'INVITATION_ACCEPTED':
       return `${name} joined the project`
+    case 'INVITATION_DECLINED':
+      return `${name} declined an invitation`
     case 'MEMBER_REMOVED':
       return `${name} removed a member`
     default:

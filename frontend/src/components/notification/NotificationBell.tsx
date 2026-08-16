@@ -54,7 +54,7 @@ export function NotificationBell() {
             (notification.notifi_type === 'project_invitation' &&
                 notification.notifi_title === 'New member joined')
 
-        if (isMemberJoined) {
+        if (isMemberJoined || notification.notifi_type === 'project_invitation_declined') {
             setOpen(false)
             if (!notification.is_read) markReadMutation.mutate(notification.notifi_id)
             return

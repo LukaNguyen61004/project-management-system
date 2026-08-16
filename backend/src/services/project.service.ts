@@ -79,12 +79,20 @@ export const inviteMemberService = async (projectId: number, currentUserId: numb
 
     const invitation = await createInvitation(projectId, email, token, currentUserId);
 
-    
     const project = await findProjectById(projectId);
+    let emailSent = false;
+    let emailError: string | undefined;
     try {
-        await sendInviteEmail(email, token, project?.project_name ?? `#${projectId}`);
+        const result = await sendInviteEmail(
+            email,
+            token,
+            project?.project_name ?? `#${projectId}`
+        );
+        emailSent = result.sent;
+        if (!result.sent) emailError = result.reason;
     } catch (err) {
-        console.error("Failed to send invite email:", err);
+        emailError = err instanceof Error ? err.message : String(err);
+        console.error("Failed to send invite email:", emailError);
     }
 
     await createActivityLogService({
@@ -104,8 +112,8 @@ export const inviteMemberService = async (projectId: number, currentUserId: numb
         );
     }
 
-
-    return invitation
+    // Loi moi van thanh cong; email co the fail (Resend sandbox / domain)
+    return { ...invitation, emailSent, emailError };
 }
 
 export const acceptInvitationService = async (token: string, currentUserId: number) => {
@@ -226,7 +234,7 @@ export const leaveProjectService = async (projectId: number, currentUserId: numb
     }
 
     if (project.owner_id === currentUserId) {
-        throw new Error(" project owner cannot leave");
+        throw new Error("Project owner cannot leave");
     }
 
     await removeProjectMember(projectId, currentUserId);
@@ -313,6 +321,24 @@ export const declineInvitationService = async (token: string, currentUserId: num
     if (invitation.email !== user.user_email) {
         throw new Error('This invitation is not for your account')
     }
+
+    const projectName = invitation.project?.project_name ?? `#${invitation.project_id}`
+
+    await createActivityLogService({
+        user_id: currentUserId,
+        project_id: invitation.project_id,
+        action_type: ActivityActionType.INVITATION_DECLINED,
+    })
+
+    await createNotificationService(
+        invitation.invited_by,
+        currentUserId,
+        NotificationType.project_invitation_declined,
+        "Invitation declined",
+        `${user.user_name} declined the invitation to "${projectName}"`,
+        undefined,
+        invitation.project_id
+    )
 
     await deleteInvitationByToken(token)
     return { message: 'Invitation declined' }
