@@ -6,7 +6,7 @@ import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
 import { getApiErrorMessage } from '../utils/apiError'
 import { toast } from 'sonner'
-import { Mail, UserMinus } from 'lucide-react'
+import { LogOut, Mail, UserMinus } from 'lucide-react'
 import { ActivityLogList } from '../components/activityLog/ActivityLogList'
 import { useAuthStore } from '../store/auth.store'
 
@@ -55,8 +55,18 @@ export function ProjectSettingPage() {
 
   const inviteMutation = useMutation({
     mutationFn: () => projectApi.invite(pid, inviteEmail),
-    onSuccess: () => {
-      toast.success('Đã gửi lời mời')
+    onSuccess: (res) => {
+      const inv = res.data.invitation
+      if (inv.emailSent) {
+        toast.success('Đã gửi lời mời (email + trong app)')
+      } else {
+        toast.success('Đã tạo lời mời trong app')
+        toast.warning(
+          inv.emailError
+            ? `Email chưa gửi được: ${inv.emailError}`
+            : 'Email chưa gửi được (Resend chỉ gửi tới email đăng ký Resend)'
+        )
+      }
       setInviteEmail('')
     },
     onError: (err) => toast.error(getApiErrorMessage(err, 'Gửi lời mời thất bại')),
@@ -80,6 +90,18 @@ export function ProjectSettingPage() {
       navigate('/projects', { replace: true })
     },
     onError: (err) => toast.error(getApiErrorMessage(err, 'Xóa project thất bại')),
+  })
+
+  const leaveMutation = useMutation({
+    mutationFn: () => projectApi.leave(pid),
+    onSuccess: () => {
+      toast.success('Đã rời project')
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.removeQueries({ queryKey: ['project', pid] })
+      queryClient.removeQueries({ queryKey: ['members', pid] })
+      navigate('/projects', { replace: true })
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Rời project thất bại')),
   })
 
   const isOwner = !!project && currentUserId === project.owner_id
@@ -220,6 +242,33 @@ export function ProjectSettingPage() {
         <h3 className="text-base font-semibold text-jira-text mb-4">Activity</h3>
         <ActivityLogList projectId={pid} />
       </section>
+
+      {!isOwner && (
+        <section className="mt-6 bg-white rounded-lg border border-jira-border p-6">
+          <h3 className="text-base font-semibold text-jira-text mb-2">Leave project</h3>
+          <p className="text-sm text-jira-text-subtle mb-4">
+            Rời project sẽ mất quyền truy cập board, backlog và dữ liệu trong project này.
+          </p>
+          <Button
+            type="button"
+            variant="secondary"
+            className="text-red-500 border-red-200 hover:bg-red-50"
+            disabled={leaveMutation.isPending}
+            onClick={() => {
+              if (
+                window.confirm(
+                  `Rời project "${project?.project_name}"? Bạn sẽ không còn là thành viên.`
+                )
+              ) {
+                leaveMutation.mutate()
+              }
+            }}
+          >
+            <LogOut size={16} />
+            {leaveMutation.isPending ? 'Leaving...' : 'Leave project'}
+          </Button>
+        </section>
+      )}
 
       {isOwner && (
         <section className="mt-6 bg-white rounded-lg border border-red-200 p-6">

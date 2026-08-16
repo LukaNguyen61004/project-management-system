@@ -58,6 +58,18 @@ export function BacklogList({
     if (targetSprintId === undefined) return
     if (issue.sprint_id === targetSprintId) return
 
+    // Không cho kéo vào sprint completed
+    if (targetSprintId != null) {
+      const target = sprints.find((s) => s.sprint_id === targetSprintId)
+      if (target?.sprint_status === 'completed') return
+    }
+
+    // Issue done trong sprint completed: giữ nguyên lịch sử
+    if (issue.sprint_id != null) {
+      const current = sprints.find((s) => s.sprint_id === issue.sprint_id)
+      if (current?.sprint_status === 'completed' && issue.issue_status === 'done') return
+    }
+
     moveMutation.mutate({ issueId, sprintId: targetSprintId })
   }
 

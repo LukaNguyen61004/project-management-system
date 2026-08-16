@@ -27,6 +27,7 @@ function flushQueue(token: string | null) {
   waitQueue = []
 }
 
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {

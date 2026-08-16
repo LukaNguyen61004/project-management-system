@@ -5,7 +5,7 @@ import { findProjectById, findProjectMember } from "../repositories/project.repo
 import { findUserById } from "../repositories/auth.repository.js";
 import { findSprintById } from "../repositories/sprint.repository.js";
 import { createActivityLogService } from "./activityLog.service.js";
-import { ActivityActionType, NotificationType } from "@prisma/client";
+import { ActivityActionType, IssueStatus, NotificationType, SprintStatus } from "@prisma/client";
 import { findEpicById } from "../repositories/epic.repository.js";
 import { createNotificationService } from "./notification.service.js";
 import { isPriorityLower } from "../helper/priority.helper.js";
@@ -431,6 +431,15 @@ export const updateIssueSprintService = async (issueId: number, currentUserId: n
         throw new Error("You are not a member of this project");
     }
 
+    // Sprint completed: issue done giữ nguyên lịch sử; issue chưa done được kéo ra backlog / sprint khác
+    if (issue.sprint_id != null && issue.sprint_id !== sprint_id) {
+        const currentSprint = await findSprintById(issue.sprint_id);
+        if (currentSprint?.sprint_status === SprintStatus.completed) {
+            if (issue.issue_status === IssueStatus.done) {
+                throw new Error("Cannot move done issue out of a completed sprint");
+            }
+        }
+    }
 
     if (sprint_id === null) {
         if (issue.sprint_id === null) {
@@ -449,6 +458,10 @@ export const updateIssueSprintService = async (issueId: number, currentUserId: n
 
     if (sprint.project_id !== issue.project_id) {
         throw new Error("Issue and sprint aren't in the same project")
+    }
+
+    if (sprint.sprint_status === SprintStatus.completed) {
+        throw new Error("Cannot move issue into a completed sprint");
     }
 
     if (issue.sprint_id === sprint_id) {

@@ -11,7 +11,7 @@ router.get("/test", (req,res)=>{
 
 router.post("/register", authRateLimit,registerController);
 
-router.post("/login",authRateLimit, loginController);
+router.post("/login", authRateLimit, loginController);
 
 router.post("/google", authRateLimit, firebaseGoogleLoginController);
 

@@ -152,7 +152,12 @@ export function SprintPanel({
         <SprintDropZone
           id={sprintDropId(sprint.sprint_id)}
           isEmpty={issueCount === 0}
-          emptyMessage="Drop issues here"
+          emptyMessage={
+            sprint.sprint_status === 'completed'
+              ? 'Completed sprint — cannot drop issues here'
+              : 'Drop issues here'
+          }
+          disabled={sprint.sprint_status === 'completed'}
         >
           {children}
         </SprintDropZone>

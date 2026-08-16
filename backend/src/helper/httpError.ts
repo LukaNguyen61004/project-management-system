@@ -54,6 +54,8 @@ const ERROR_STATUS_MAP: Record<string, number> = {
   "Issue already had the same priority": 400,
   "Issue and sprint aren't in the same project": 400,
   "Issue is already moved to this sprint": 400,
+  "Cannot move issue into a completed sprint": 400,
+  "Cannot move done issue out of a completed sprint": 400,
   "Sprint must be completed before generating summary": 400,
   "Reason is required when changing due date or estimate": 400,
   "Reason is required when changing sprint dates": 400,

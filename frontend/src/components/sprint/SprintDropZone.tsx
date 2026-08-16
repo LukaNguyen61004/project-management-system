@@ -6,17 +6,25 @@ interface SprintDropZoneProps {
   children: React.ReactNode
   emptyMessage: string
   isEmpty: boolean
+  disabled?: boolean
 }
 
-export function SprintDropZone({ id, children, emptyMessage, isEmpty }: SprintDropZoneProps) {
-  const { setNodeRef, isOver } = useDroppable({ id })
+export function SprintDropZone({
+  id,
+  children,
+  emptyMessage,
+  isEmpty,
+  disabled = false,
+}: SprintDropZoneProps) {
+  const { setNodeRef, isOver } = useDroppable({ id, disabled })
 
   return (
     <div
       ref={setNodeRef}
       className={cn(
         'min-h-[3rem] transition-colors',
-        isOver && 'bg-blue-50 ring-2 ring-inset ring-jira-blue/30'
+        !disabled && isOver && 'bg-blue-50 ring-2 ring-inset ring-jira-blue/30',
+        disabled && 'opacity-90'
       )}
     >
       {isEmpty ? (

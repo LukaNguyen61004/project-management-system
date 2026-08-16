@@ -57,6 +57,7 @@ enum NotificationType {
   sprint_completed
   project_invitation
   project_member_joined
+  project_invitation_declined
   stale_issue_warning
 }
 
@@ -66,6 +67,7 @@ enum ActivityActionType {
   PROJECT_DELETED
   MEMBER_INVITED
   INVITATION_ACCEPTED
+  INVITATION_DECLINED
   MEMBER_REMOVED
   MEMBER_LEFT
   ISSUE_CREATED
