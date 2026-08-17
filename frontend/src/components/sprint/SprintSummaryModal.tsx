@@ -8,6 +8,7 @@ interface SprintSummaryModalProps {
   sprintName: string
   data: SprintSummaryResult | null
   loading?: boolean
+  error?: string | null
 }
 
 type SummarySection = { title: string; body: string }
@@ -283,6 +284,7 @@ export function SprintSummaryModal({
   sprintName,
   data,
   loading,
+  error,
 }: SprintSummaryModalProps) {
   const handleCopy = () => {
     if (data?.summary) navigator.clipboard.writeText(data.summary)
@@ -310,7 +312,15 @@ export function SprintSummaryModal({
                 {data.manager_stats.overdue_keys.length > 0 &&
                   ` (${data.manager_stats.overdue_keys.join(', ')})`}
               </p>
-              <p>Unassigned: {data.manager_stats.unassigned_count}</p>
+              <p>
+                Unassigned (chưa done): {data.manager_stats.unassigned_count}
+              </p>
+              {(data.manager_stats.done_without_assignee_count ?? 0) > 0 && (
+                <p className="text-amber-800">
+                  Done nhưng chưa assign: {data.manager_stats.done_without_assignee_count}
+                  {' '}(vẫn tính hoàn thành)
+                </p>
+              )}
               <p>Member chưa 100%: {membersBelow100}</p>
             </div>
           )}
@@ -383,7 +393,9 @@ export function SprintSummaryModal({
           </div>
         </div>
       ) : (
-        <p className="text-sm text-red-500">Không tạo được tóm tắt.</p>
+        <p className="text-sm text-red-500">
+          {error || 'Không tạo được tóm tắt.'}
+        </p>
       )}
     </Modal>
   )

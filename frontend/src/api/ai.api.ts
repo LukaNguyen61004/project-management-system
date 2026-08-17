@@ -16,6 +16,7 @@ export interface ManagerStats {
     overdue_count: number
     overdue_keys: string[]
     unassigned_count: number
+    done_without_assignee_count?: number
 }
 
 export interface SprintSummaryResult {

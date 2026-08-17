@@ -40,6 +40,7 @@ export function SprintPanel({
   const [summaryOpen, setSummaryOpen] = useState(false)
   const [summaryData, setSummaryData] = useState<SprintSummaryResult | null>(null)
   const [summaryLoading, setSummaryLoading] = useState(false)
+  const [summaryError, setSummaryError] = useState<string | null>(null)
 
   const statusMutation = useMutation({
     mutationFn: (sprint_status: 'planned' | 'active' | 'completed') =>
@@ -60,17 +61,17 @@ export function SprintPanel({
 
   const handleComplete = async () => {
     try {
-      // 1. Complete sprint
       await statusMutation.mutateAsync('completed')
-      // 2. Gọi AI summary
       setSummaryOpen(true)
       setSummaryLoading(true)
+      setSummaryError(null)
+      setSummaryData(null)
       const res = await aiApi.summarizeSprint(sprint.sprint_id)
       setSummaryData(res.data.data)
-    } catch {
-      // Complete OK nhưng AI fail → vẫn mở modal báo lỗi
+    } catch (err) {
       setSummaryOpen(true)
       setSummaryData(null)
+      setSummaryError(getApiErrorMessage(err, 'Không tạo được tóm tắt'))
     } finally {
       setSummaryLoading(false)
     }
@@ -79,11 +80,14 @@ export function SprintPanel({
   const handleViewSummary = async () => {
     setSummaryOpen(true)
     setSummaryLoading(true)
+    setSummaryError(null)
+    setSummaryData(null)
     try {
       const res = await aiApi.summarizeSprint(sprint.sprint_id)
       setSummaryData(res.data.data)
-    } catch {
+    } catch (err) {
       setSummaryData(null)
+      setSummaryError(getApiErrorMessage(err, 'Không tạo được tóm tắt'))
     } finally {
       setSummaryLoading(false)
     }
@@ -169,6 +173,7 @@ export function SprintPanel({
         sprintName={sprint.sprint_name}
         data={summaryData}
         loading={summaryLoading}
+        error={summaryError}
       />
 
     </div>
