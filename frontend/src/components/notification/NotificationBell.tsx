@@ -36,16 +36,35 @@ export function NotificationBell() {
     })
 
     const handleNotificationClick = (notification: Notification) => {
-        if (notification.notifi_type === 'stale_issue_warning') {
-            setOpen(false)
-            if (!notification.is_read) {
-                markReadMutation.mutate(notification.notifi_id)
-            }
-            const pid = notification.related_project_id
-            const iid = notification.related_issue_id
+        setOpen(false)
+
+        if (!notification.is_read) {
+            markReadMutation.mutate(notification.notifi_id)
+        }
+
+        const pid = notification.related_project_id
+        const iid = notification.related_issue_id
+
+        // Issue-related: assign / comment / stale → mở issue trên backlog
+        if (
+            notification.notifi_type === 'issue_assigned' ||
+            notification.notifi_type === 'comment_added' ||
+            notification.notifi_type === 'stale_issue_warning'
+        ) {
             if (pid && iid) {
                 navigate(`/projects/${pid}/backlog?issue=${iid}`)
+            } else if (pid) {
+                navigate(`/projects/${pid}/backlog`)
             }
+            return
+        }
+
+        // Sprint started/completed → board của project
+        if (
+            notification.notifi_type === 'sprint_started' ||
+            notification.notifi_type === 'sprint_completed'
+        ) {
+            if (pid) navigate(`/projects/${pid}/board`)
             return
         }
 
@@ -55,22 +74,14 @@ export function NotificationBell() {
                 notification.notifi_title === 'New member joined')
 
         if (isMemberJoined || notification.notifi_type === 'project_invitation_declined') {
-            setOpen(false)
-            if (!notification.is_read) markReadMutation.mutate(notification.notifi_id)
+            if (pid) navigate(`/projects/${pid}/board`)
             return
         }
 
         if (notification.notifi_type === 'project_invitation') {
-            setOpen(false)
-            
-            if (!notification.is_read) {
-                markReadMutation.mutate(notification.notifi_id)
-            }
-
             setInvitationNotification(notification)
             return
         }
-
     }
 
     useEffect(() => {
