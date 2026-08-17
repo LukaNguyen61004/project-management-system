@@ -117,7 +117,11 @@ export function buildSprintSummaryData(sprint: Sprint, issues: IssueWithUsers[])
             completion_rate: `${completionRate}%`,
             overdue_count: overdueIssues.length,
             overdue_keys: overdueIssues.map((i) => i.issue_key),
-            unassigned_count: issues.filter((i) => !i.assignee_id).length,
+            // Chỉ issue CHƯA done + chưa assign — done mà unassigned vẫn tính là hoàn thành
+            unassigned_count: issues.filter(
+                (i) => !i.assignee_id && i.issue_status !== "done"
+            ).length,
+            done_without_assignee_count: byStatus.done.filter((i) => !i.assignee_id).length,
         },
         quality_flags: issues
             .filter((i) => i.review_reject_count > 0 || i.warning_count > 0)

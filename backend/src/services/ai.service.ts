@@ -106,7 +106,13 @@ export const summarizeSprintService = async (
     }
 
     const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({
+        model: "gemini-2.5-flash",
+        // Giảm thinking để tránh response rỗng / timeout trên free tier
+        generationConfig: {
+            thinkingConfig: { thinkingBudget: 0 },
+        } as object,
+    });
 
     const prompt = `Bạn là Scrum Master viết báo cáo cho Manager. Tiếng Việt.
 
@@ -127,14 +133,34 @@ Quy tắc định dạng (BẮT BUỘC):
 - Mỗi ý một dòng, bắt đầu bằng "- " (gạch ngang + space), không dùng dấu *
 - Không lặp lại bảng tiến độ member (UI đã có sẵn)
 - Dùng đúng member_progress, manager_stats, schedule_changes
+- status = done nghĩa là ĐÃ hoàn thành, kể cả khi assignee = Unassigned
+- unassigned_count chỉ là issue CHƯA done và chưa assign — KHÔNG gọi đó là "chưa hoàn thành" nếu issue đã done
+- done_without_assignee_count chỉ là cảnh báo quy trình (done nhưng thiếu người nhận), KHÔNG đồng nghĩa chưa hoàn thành
 - Nếu schedule_changes rỗng → viết "Không có thay đổi được ghi nhận"
 - Liệt kê issue bằng key (vd: PROJ-3)
 - Mọi ngày tháng PHẢI viết dạng DD/MM/YYYY (vd: 14/07/2026). TUYỆT ĐỐI KHÔNG viết dạng ISO như 2026-07-14T00:00:00.000Z
 - Tối đa ~550 từ
 - Không bịa issue / reason không có trong dữ liệu`;
 
-    const result = await model.generateContent(prompt);
-    const summary = result.response.text();
+    let summary: string;
+    try {
+        const result = await model.generateContent(prompt);
+        summary = result.response.text()?.trim() ?? "";
+    } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error("[ai] Gemini summarize failed:", msg);
+        if (/429|quota|rate|resource.?exhausted/i.test(msg)) {
+            throw new Error("AI quota exceeded. Try again later");
+        }
+        if (/API key|invalid|permission|403/i.test(msg)) {
+            throw new Error("AI is not configured (missing GEMINI_API_KEY)");
+        }
+        throw new Error("AI failed to generate sprint summary");
+    }
+
+    if (!summary) {
+        throw new Error("AI failed to generate sprint summary");
+    }
 
     await prisma.sprint.update({
         where: { sprint_id: sprintId },

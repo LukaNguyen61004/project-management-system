@@ -60,6 +60,8 @@ const ERROR_STATUS_MAP: Record<string, number> = {
   "Reason is required when changing due date or estimate": 400,
   "Reason is required when changing sprint dates": 400,
   "AI is not configured (missing GEMINI_API_KEY)": 400,
+  "AI failed to generate sprint summary": 400,
+  "AI quota exceeded. Try again later": 429,
   "Refresh token required": 400,
   "Invitation already accepted": 400,
   "Invitation expired": 400,
