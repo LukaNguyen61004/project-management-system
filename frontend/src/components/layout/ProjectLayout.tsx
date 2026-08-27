@@ -34,9 +34,9 @@ export function ProjectLayout() {
                         title={isLoading ? 'Loading...' : (project?.project_name ?? 'Project')}
                         subtitle={project?.project_key}
                     />
-                    <main className="relative  flex-1 overflow-auto rounded-[30px]">
+                    <main className="relative flex-1 min-h-0 rounded-[30px] flex flex-col">
                         <div className="cinder-glass pointer-events-none absolute inset-0 rounded-[30px]" />
-                        <div className="relative">
+                        <div className="relative flex-1 overflow-auto min-h-0">
                           <Outlet />
                         </div>
                     </main>
