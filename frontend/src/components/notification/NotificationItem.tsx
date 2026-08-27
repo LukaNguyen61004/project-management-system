@@ -15,7 +15,7 @@ export function NotificationItem({ notification, onClick }: NotificationItemProp
       onClick={() => onClick(notification)}
       className={cn(
         'w-full text-left px-4 py-3 border-b border-jira-border hover:bg-jira-bg transition-colors',
-        !notification.is_read && 'bg-blue-50'
+        !notification.is_read && 'bg-white/10'
       )}
     >
       <div className="flex gap-3">

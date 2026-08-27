@@ -18,6 +18,7 @@ import { KanbanColumn } from './KanbanColumn'
 import { IssueCard } from './IssueCard'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '../../utils/apiError'
+import { getStatusTransitionError } from '../../utils/issueStatus'
 
 interface KanbanBoardProps {
   projectId: number
@@ -110,6 +111,11 @@ export function KanbanBoard({ projectId, issues, onIssueClick }: KanbanBoardProp
     }
 
     if (newStatus && newStatus !== issue.issue_status) {
+      const error = getStatusTransitionError(issue.issue_status, newStatus, issue.assignee_id)
+      if (error) {
+        toast.error(error)
+        return
+      }
       statusMutation.mutate({ issueId, status: newStatus })
     }
   }

@@ -9,7 +9,7 @@ interface AvatarProps {
 const sizes = {
   sm: 'w-6 h-6 text-xs',
   md: 'w-8 h-8 text-sm',
-  lg: 'w-10 h-10 text-base',
+  lg: 'w-16 h-16 text-lg',
 }
 
 function getInitials(name?: string | null) {

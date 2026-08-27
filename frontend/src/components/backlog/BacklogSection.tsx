@@ -10,7 +10,7 @@ interface BacklogSectionProps {
 
 export function BacklogSection({ issues, onIssueClick }: BacklogSectionProps) {
   return (
-    <div className="bg-white rounded-lg border border-jira-border">
+    <div className="cinder-glass rounded-[20px]">
       <div className="px-4 py-3 border-b border-jira-border">
         <h3 className="text-sm font-semibold text-jira-text">
           Backlog ({issues.length} issues)

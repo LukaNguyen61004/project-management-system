@@ -17,16 +17,15 @@ interface SortableIssueCardProps {
 }
 
 const PRIORITY_COLOR: Record<Issue['issue_priority'], string> = {
-  low: 'text-gray-500',
-  medium: 'text-blue-500',
-  high: 'text-orange-500',
-  critical: 'text-red-500',
+  low: 'text-white/50',
+  medium: 'text-sky-300',
+  high: 'text-[#dbd215]',
 }
 
 export function IssueCard({ issue, onClick, isDragging }: IssueCardProps) {
   return (
-    <div onClick={onClick} className={cn('bg-white rounded border border-jira-border p-3 cursor-pointer hover:shadow-md transition-shadow', isDragging && 'shadow-lg rotate-1 opacity-90')}>
-      <p className="text-xs text-jira-text-subtle font-medium mb-1">
+    <div onClick={onClick} className={cn('cinder-glass rounded-2xl p-3 cursor-pointer hover:opacity-70 hover:bg-white/10 transition-all', isDragging && 'shadow-lg rotate-1 opacity-90')}>
+      <p className="text-xs text-white/50 font-medium mb-1">
         {issue.issue_key}
       </p>
 
@@ -39,7 +38,7 @@ export function IssueCard({ issue, onClick, isDragging }: IssueCardProps) {
       )}
 
       <div className="flex items-center justify-between gap-2">
-        <span className={`text-xs font-medium uppercase ${PRIORITY_COLOR[issue.issue_priority]}`}>
+        <span className={`text-xs font-medium uppercase ${PRIORITY_COLOR[issue.issue_priority] ?? PRIORITY_COLOR.high}`}>
           {issue.issue_priority}
         </span>
         <IssueWarningBadge issue={issue} />
@@ -57,10 +56,11 @@ export function SortableIssueCard({ issue, onClick }: SortableIssueCardProps) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    opacity: isDragging ? 0 : 1,
   }
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <IssueCard issue={issue} onClick={onClick} isDragging={isDragging} />
+      <IssueCard issue={issue} onClick={onClick} />
     </div>
   )
 }

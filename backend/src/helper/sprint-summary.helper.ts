@@ -39,7 +39,6 @@ export function buildSprintSummaryData(sprint: Sprint, issues: IssueWithUsers[])
         priority: i.issue_priority,
         type: i.issue_type,
         assignee: i.assignee?.user_name ?? "Unassigned",
-        estimate: i.estimate ?? null,
         due_date: fmtDate(i.due_date),
         overdue: isOverdue(i),
         review_rejects: i.review_reject_count,

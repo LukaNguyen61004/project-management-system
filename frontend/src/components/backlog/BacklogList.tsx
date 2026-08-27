@@ -100,7 +100,7 @@ export function BacklogList({
 
       <DragOverlay>
         {activeIssue && (
-          <div className="flex items-center gap-3 px-4 py-2.5 bg-white shadow-lg rounded border border-jira-border cursor-grabbing">
+          <div className="flex items-center gap-3 px-4 py-2.5 cinder-glass shadow-lg rounded-[16px] cursor-grabbing">
             <BacklogIssueRow issue={activeIssue} />
           </div>
         )}

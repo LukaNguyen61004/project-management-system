@@ -78,7 +78,7 @@ export function BacklogPage() {
 
   return (
     <>
-      <div className="px-4 py-3 bg-white border-b border-jira-border flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-white/15 flex items-center justify-between">
         <div>
           <h2 className="text-sm font-semibold text-jira-text">Backlog & Sprints</h2>
           <p className="text-xs text-jira-text-subtle">{issues.length} issues</p>
@@ -90,7 +90,7 @@ export function BacklogPage() {
           <Button size="sm" variant="secondary" onClick={() => setShowCreateSprint(true)}>
             <Plus size={14} /> Create sprint
           </Button>
-          <Button size="sm" onClick={() => {
+          <Button size="sm" variant="secondary" onClick={() => {
             setParentIssueForCreate(null)
             setShowCreateIssue(true)
           }}>
@@ -100,7 +100,7 @@ export function BacklogPage() {
       </div>
 
       {epics.length > 0 && (
-        <div className="px-4 py-3 bg-white border-b border-jira-border flex flex-wrap gap-2">
+        <div className="px-4 py-3 border-b border-white/15 flex flex-wrap gap-2">
           {epics.map((e) => (
             <span
               key={e.epic_id}

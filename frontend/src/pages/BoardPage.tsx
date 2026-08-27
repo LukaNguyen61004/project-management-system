@@ -14,6 +14,7 @@ import type { Issue } from '../types/issue.types'
 import { formatSprintDateRange } from '../utils/date'
 import { useIssueFilters } from '../hooks/useIssueFilters'
 import { EMPTY_ISSUE_FILTERS } from '../types/issueFilter.types'
+import { Plus } from 'lucide-react'
 
 export function BoardPage() {
   const { projectId } = useParams()
@@ -80,7 +81,7 @@ export function BoardPage() {
 
   return (
     <>
-      <div className="px-4 py-3 bg-white border-b border-jira-border flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-white/15 flex items-center justify-between">
         <div>
           <h2 className="text-sm font-semibold text-jira-text">
             {activeSprint ? activeSprint.sprint_name : 'All issues'}
@@ -91,10 +92,10 @@ export function BoardPage() {
               : 'No active sprint — showing all project issues'}
           </p>
         </div>
-        <Button size="sm" onClick={() => {
+        <Button size="sm" variant="secondary" onClick={() => {
           setParentIssueForCreate(null)
           setShowCreate(true)
-        }}>+ Create issue</Button>
+        }}> <Plus size={16} /> Create issue</Button>
       </div>
 
       <IssueFilterBar

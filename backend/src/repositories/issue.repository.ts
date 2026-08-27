@@ -197,10 +197,6 @@ export const updateIssue = async (issueId: number, data: UpdateIssueInput) => {
             issue_type: data.issue_type,
         }),
 
-        ...(data.estimate !== undefined && {
-            estimate: data.estimate,
-        }),
-
         ...(data.due_date !== undefined && {
             due_date: data.due_date === null ? null : new Date(data.due_date),
         }),

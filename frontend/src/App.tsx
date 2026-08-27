@@ -8,7 +8,7 @@ const queryClient = new QueryClient()
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Toaster position="top-right" richColors closeButton />
+      <Toaster position="top-right" richColors closeButton theme="dark" />
       <AuthBootstrap>
         <AppRouter />
       </AuthBootstrap>

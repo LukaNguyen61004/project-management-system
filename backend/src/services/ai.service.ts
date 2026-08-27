@@ -75,7 +75,7 @@ export const summarizeSprintService = async (
     const issues = await getSprintIssues(sprintId);
     const summaryData = buildSprintSummaryData(sprint, issues);
 
-    // Query log đổi ngày / estimate — nằm ở repository
+    // Query log đổi due date — nằm ở repository
     const schedule_changes = await findScheduleChangesForSprint(
         sprint.project_id,
         sprintId,
@@ -123,7 +123,7 @@ CẤU TRÚC BẮT BUỘC (chỉ dùng heading ## như dưới, không thêm # ti
 ## Highlight cho Manager
 ## Tổng quan
 ## Chưa hoàn thành
-## Thay đổi lịch / estimate
+## Thay đổi lịch
 ## Gợi ý cho sprint tiếp theo
 
 Quy tắc định dạng (BẮT BUỘC):

@@ -10,7 +10,7 @@ import routes from "./routes/index.js"
 const app= express();
 app.use(cookieParser());
 
-const allowed = (process.env.FRONTEND_URLS || "http://localhost:5173")
+const allowed = (process.env.FRONTEND_URLS || "http://localhost:5174")
   .split(",")
   .map((s) => s.trim());
 

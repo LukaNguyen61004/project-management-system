@@ -17,6 +17,15 @@ export function isoToDateInput(iso: string | null | undefined): string {
 
 
 
+export function formatShortDate(iso: string | null | undefined): string {
+  if (!iso) return ''
+  try {
+    return format(parseISO(iso), 'd MMM yyyy')
+  } catch {
+    return iso
+  }
+}
+
 export function formatSprintDateRange(
   start: string | null,
   end: string | null

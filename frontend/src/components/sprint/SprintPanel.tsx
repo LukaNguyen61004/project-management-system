@@ -94,8 +94,8 @@ export function SprintPanel({
   }
 
   return (
-    <div className="bg-white rounded-lg border border-jira-border mb-4">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-jira-border">
+    <div className="cinder-glass rounded-[20px] mb-4">
+      <div className="flex items-center justify-between px-4 py-3 ">
         <button
           type="button"
           onClick={() => setOpen(!open)}

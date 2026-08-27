@@ -10,17 +10,22 @@ interface AppHeaderProps {
 
 export function AppHeader({ title, subtitle, children, compact }: AppHeaderProps) {
   return (
-    <header className={`bg-white border-b border-jira-border  py-4 ${compact ? 'px-4' : 'px-6'}`}>
-      <div className={`flex items-center justify-between gap-4 ${compact ? 'w-full' : 'max-w-6xl mx-auto'}`}>
-        {/* Trái: title + subtitle */}
-        <div className="min-w-0">
-          <h1 className="text-xl font-semibold text-jira-text truncate">{title}</h1>
-          {subtitle && (
-            <p className="text-sm text-jira-text-subtle mt-0.5 truncate">{subtitle}</p>
+    <header className={`relative z-20 cinder-glass rounded-[30px] py-4 ${compact ? 'px-4' : 'px-8'}`}>
+      <div className={`flex items-center justify-between gap-4 ${compact ? 'w-full' : ''}`}>
+        <div className="min-w-0 flex items-center gap-4">
+          <span className="font-[Jua] text-[20px] leading-none tracking-wide text-white shrink-0">
+            CINDER
+          </span>
+          {compact && (
+            <div className="min-w-0 hidden sm:block border-l border-white/20 pl-4">
+              <h1 className="text-lg font-semibold text-white truncate">{title}</h1>
+              {subtitle && (
+                <p className="text-sm text-jira-text-subtle mt-0.5 truncate">{subtitle}</p>
+              )}
+            </div>
           )}
         </div>
 
-        {/* Phải: nút tùy trang + user menu */}
         <div className="flex items-center gap-3 shrink-0">
           {children}
           <NotificationBell />

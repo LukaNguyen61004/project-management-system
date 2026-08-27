@@ -242,7 +242,7 @@ function sectionStyle(title: string): { wrap: string; head: string } {
     }
   }
   return {
-    wrap: 'border-jira-border bg-white',
+    wrap: 'border-jira-border cinder-glass',
     head: 'bg-jira-bg text-jira-text border-jira-border',
   }
 }
@@ -300,7 +300,7 @@ export function SprintSummaryModal({
       ) : data ? (
         <div className="space-y-4">
           {data.manager_stats && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm space-y-1">
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm space-y-1 text-amber-950">
               <p className="font-semibold text-amber-900">Highlight cho Manager</p>
               <p>
                 Hoàn thành:{' '}
