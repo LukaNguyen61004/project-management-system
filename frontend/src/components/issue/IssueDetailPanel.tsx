@@ -248,7 +248,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-md [-webkit-backdrop-filter:blur(12px)]" onClick={onClose} />
       <div className="relative w-full max-w-xl cinder-glass shadow-2xl overflow-y-auto min-h-full">
         <div className="sticky top-0 bg-[#141313]/90 backdrop-blur-md border-b border-jira-border px-6 py-4 flex items-center justify-between">
           <span className="text-sm text-jira-text-subtle font-medium">
