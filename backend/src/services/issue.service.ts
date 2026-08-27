@@ -9,6 +9,7 @@ import { ActivityActionType, IssueStatus, NotificationType, SprintStatus } from 
 import { findEpicById } from "../repositories/epic.repository.js";
 import { createNotificationService } from "./notification.service.js";
 import { isPriorityLower } from "../helper/priority.helper.js";
+import { assertCanChangeIssueStatus } from "../helper/issue-status.helper.js";
 
 
 export const createIssueService = async (projectId: number, reporterId: number, data: CreateIssueInput) => {
@@ -142,14 +143,12 @@ export const updateIssueService = async (issueId: number, currentUserId: number,
         data.issue_name === undefined &&
         data.issue_description === undefined &&
         data.issue_type === undefined &&
-        data.due_date === undefined &&
-        data.estimate === undefined
+        data.due_date === undefined
     ) {
         throw new Error("No fields provided for update");
     }
 
     const dueChanged = data.due_date !== undefined && (data.due_date === null ? issue.due_date !== null : new Date(data.due_date).getTime() !== issue.due_date?.getTime());
-    const estimateChanged = data.estimate !== undefined && data.estimate !== issue.estimate;
 
     const update = await updateIssue(issueId, data);
     if (
@@ -208,18 +207,6 @@ export const updateIssueService = async (issueId: number, currentUserId: number,
             new_value: data.due_date ?? undefined,
         });
     }
-
-    if (estimateChanged) {
-        await createActivityLogService({
-            user_id: currentUserId,
-            project_id: issue.project_id,
-            issue_id: issue.issue_id,
-            action_type: ActivityActionType.ISSUE_UPDATED,
-            field_name: "estimate",
-            old_value: issue.estimate != null ? String(issue.estimate) : undefined,
-            new_value: data.estimate != null ? String(data.estimate) : undefined,
-        });
-    }
     await touchLastActivity(issueId);
 
     return update;
@@ -264,11 +251,12 @@ export const changeIssueStatusService = async (issueId: number, data: ChangIssue
     if (issue.issue_status === data.issue_status) {
         throw new Error("Issue already has this status");
     }
+    
+    assertCanChangeIssueStatus(issue.issue_status, data.issue_status, issue.assignee_id);
 
     if (
-        issue.issue_status === "in_review" &&
-        (data.issue_status === "todo" || data.issue_status === "in_progress")
-    ) {
+        issue.issue_status === "in_review" && data.issue_status === "in_progress")
+     {
         await incrementReviewRejectCount(issueId);
     }
 

@@ -22,12 +22,10 @@ export const ISSUE_PRIORITIES: {
   { value: 'low', label: 'Low', color: 'text-gray-500' },
   { value: 'medium', label: 'Medium', color: 'text-blue-500' },
   { value: 'high', label: 'High', color: 'text-orange-500' },
-  { value: 'critical', label: 'Critical', color: 'text-red-500' },
 ]
 
 export const ISSUE_TYPES: { value: IssueType; label: string }[] = [
   { value: 'task', label: 'Task' },
   { value: 'bug', label: 'Bug' },
-  { value: 'story', label: 'Story' },
   { value: 'subtask', label: 'Subtask' },
 ]

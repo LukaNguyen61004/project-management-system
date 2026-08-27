@@ -20,7 +20,6 @@ enum UserRole {
 enum IssueType {
   task
   bug
-  story
   subtask
 }
 
@@ -35,7 +34,6 @@ enum IssuePriority {
   low
   medium
   high
-  critical
 }
 
 enum AttachmentType {
@@ -272,7 +270,6 @@ model Issue {
   issue_updated_at DateTime @updatedAt
 
   due_date  DateTime?
-  estimate  Int?
 
   parent_issue_id Int?
 

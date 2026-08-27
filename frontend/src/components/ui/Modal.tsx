@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { X } from "lucide-react";
 import { cn } from "../../utils/cn";
+import { createPortal } from 'react-dom'
 
 interface ModalProps {
     open: boolean
@@ -28,24 +29,25 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
 
     if (!open) return null
 
-    return (
+    return createPortal (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="fixed inset-0 bg-black/50" onClick={onClose} />
             <div
                 className={cn(
-                    'relative bg-white rounded-lg shadow-xl w-full mx-auto',
+                    'relative cinder-glass rounded-[20px] shadow-xl w-full mx-auto',
                     'flex flex-col max-h-[min(90vh,900px)]',
                     sizes[size]
                 )}
             >
                 <div className="flex items-center justify-between px-6 py-4 border-b border-jira-border shrink-0">
                     <h2 className="text-lg font-semibold text-jira-text">{title}</h2>
-                    <button type="button" onClick={onClose} className="p-1 rounded hover:bg-gray-100">
+                    <button type="button" onClick={onClose} className="p-1 rounded hover:bg-white/10">
                         <X size={20} />
                     </button>
                 </div>
                 <div className="p-6 overflow-y-auto min-h-0 flex-1">{children}</div>
             </div>
-        </div>
+        </div>,
+        document.body
     )
 }

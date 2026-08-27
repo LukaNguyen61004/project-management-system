@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button'
 import { ProjectCard } from '../components/project/ProjectCard'
 import { CreateProjectModal } from '../components/project/CreateProjectModal'
 import { AppHeader } from '../components/layout/AppHeader'
+import { CinderBackdrop } from '../components/layout/CinderBackdrop'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '../utils/apiError'
 
@@ -51,67 +52,68 @@ export function ProjectsPage() {
     onError: (err) => toast.error(getApiErrorMessage(err, 'Từ chối lời mời thất bại')),
   })
   return (
-    <div className="min-h-screen bg-jira-bg">
-      <AppHeader
-        title="Your projects"
-        subtitle={`Welcome back, ${user?.user_name || user?.user_email}`}
-      />
+    <div className="relative min-h-screen">
+      <CinderBackdrop />
+      <div className="relative z-10 p-6 space-y-4">
+        <AppHeader
+          title="Your projects"
+          subtitle={`Welcome back, ${user?.user_name || user?.user_email}`}
+        />
 
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="flex items-center justify-between mb-6">
-          <p className="text-jira-text-subtle text-sm">
-            {projects.length} project{projects.length !== 1 ? 's' : ''}
-          </p>
-          <Button onClick={() => setShowCreate(true)}>
-            <Plus size={16} />
-            Create project
-          </Button>
-        </div>
-
-        {pendingInvites.length > 0 && (
-          <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
-            <p className="mb-2 font-medium text-blue-800">
-              Bạn có {pendingInvites.length} lời mời tham gia project
-            </p>
-            {pendingInvites.map((inv) => (
-              <div key={inv.invitation_id} className="flex items-center justify-between py-1">
-                <span className="text-sm text-blue-900">{inv.project?.project_name}</span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => acceptMutation.mutate(inv.token)}
-                    className="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
-                  >
-                    Chấp nhận
-                  </button>
-                  <button
-                    onClick={() => declineMutation.mutate(inv.token)}
-                    className="rounded border px-3 py-1 text-sm text-gray-600 hover:bg-gray-100"
-                  >
-                    Từ chối
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {isLoading ? (
-          <PageLoader />
-        ) : projects.length === 0 ? (
-          <div className="text-center py-16 bg-white border border-jira-border rounded-lg">
-            <p className="text-jira-text-subtle mb-4">No projects yet. Create your first one!</p>
+        <div className="cinder-glass rounded-[30px] p-8 min-h-[70vh]">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-[30px] font-bold text-white tracking-wide">WORK SPACE</h2>
             <Button onClick={() => setShowCreate(true)}>
               <Plus size={16} />
               Create project
             </Button>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {projects.map((project) => (
-              <ProjectCard key={project.project_id} project={project} />
-            ))}
-          </div>
-        )}
+
+          {pendingInvites.length > 0 && (
+            <div className="mb-4 rounded-[20px] border border-white/20 bg-white/5 p-4">
+              <p className="mb-2 font-medium text-white">
+                Bạn có {pendingInvites.length} lời mời tham gia project
+              </p>
+              {pendingInvites.map((inv) => (
+                <div key={inv.invitation_id} className="flex items-center justify-between py-1">
+                  <span className="text-sm text-white/80">{inv.project?.project_name}</span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => acceptMutation.mutate(inv.token)}
+                      className="rounded bg-[#9d877c] px-3 py-1 text-sm text-[#151414] hover:bg-[#b49a8e]"
+                    >
+                      Chấp nhận
+                    </button>
+                    <button
+                      onClick={() => declineMutation.mutate(inv.token)}
+                      className="rounded border border-white/30 px-3 py-1 text-sm text-white/80 hover:bg-white/10"
+                    >
+                      Từ chối
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {isLoading ? (
+            <PageLoader />
+          ) : projects.length === 0 ? (
+            <div className="text-center py-16 cinder-glass rounded-[20px]">
+              <p className="text-jira-text-subtle mb-4">No projects yet. Create your first one!</p>
+              <Button onClick={() => setShowCreate(true)}>
+                <Plus size={16} />
+                Create project
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {projects.map((project) => (
+                <ProjectCard key={project.project_id} project={project} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <CreateProjectModal open={showCreate} onClose={() => setShowCreate(false)} />

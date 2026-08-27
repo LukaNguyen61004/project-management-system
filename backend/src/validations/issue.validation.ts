@@ -47,13 +47,6 @@ export const updateIssueSchema = z.object({
         .datetime()
         .nullable()
         .optional(),
-    estimate: z
-        .number()
-        .int()
-        .min(0)
-        .max(100)
-        .nullable()
-        .optional(),
     reason: z
         .string()
         .trim()

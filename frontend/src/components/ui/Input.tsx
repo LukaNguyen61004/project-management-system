@@ -12,15 +12,15 @@ export function Input({label, error, className, id,...props}: InputProps){
     return (
         <div className="flex flex-col gap-1">
             {label && (
-                <label htmlFor={inputId} className='text-sm font-medium text-jira-text'>
+                <label htmlFor={inputId} className='text-sm font-semibold text-jira-text font-[Hind]'>
                     {label}
                 </label>
             )}
            <input
              id={inputId}
              className={cn(
-               'rounded border border-jira-border px-3 py-2 text-sm',
-               'focus:outline-none focus:ring-2 focus:ring-jira-blue',
+               'rounded-2xl border border-jira-border bg-transparent px-3 py-2 text-sm text-jira-text',
+               'placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/25',
                error && 'border-red-500',
                className
              )}

@@ -61,7 +61,7 @@ export function InviteAcceptPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-jira-bg p-4">
-      <div className="bg-white rounded-lg border border-jira-border p-8 max-w-md w-full text-center">
+      <div className="cinder-glass rounded-[20px] p-8 max-w-md w-full text-center">
         {acceptMutation.isPending ? (
           <p className="text-jira-text-subtle">Accepting invitation...</p>
         ) : declineMutation.isPending ? (

@@ -129,7 +129,7 @@ export function ProjectSettingPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="lg:col-span-4 bg-white rounded-lg border border-jira-border p-6 space-y-4"
+          className="lg:col-span-4 cinder-glass rounded-[20px] p-6 space-y-4"
         >
           <h3 className="text-base font-semibold text-jira-text">Project info</h3>
           <div>
@@ -175,7 +175,7 @@ export function ProjectSettingPage() {
         </form>
 
 
-        <section className="lg:col-span-6 bg-white rounded-lg border border-jira-border p-6">
+        <section className="lg:col-span-6 cinder-glass rounded-[20px] p-6">
           <h3 className="text-base font-semibold text-jira-text mb-4">Team members</h3>
           <form onSubmit={handleInviteSubmit} className="flex gap-2 mb-4">
             <Input
@@ -238,13 +238,13 @@ export function ProjectSettingPage() {
           </div>
         </section>
       </div>
-      <section className="mt-6 bg-white rounded-lg border border-jira-border p-6">
+      <section className="mt-6 cinder-glass rounded-[20px] p-6">
         <h3 className="text-base font-semibold text-jira-text mb-4">Activity</h3>
         <ActivityLogList projectId={pid} />
       </section>
 
       {!isOwner && (
-        <section className="mt-6 bg-white rounded-lg border border-jira-border p-6">
+        <section className="mt-6 cinder-glass rounded-[20px] p-6">
           <h3 className="text-base font-semibold text-jira-text mb-2">Leave project</h3>
           <p className="text-sm text-jira-text-subtle mb-4">
             Rời project sẽ mất quyền truy cập board, backlog và dữ liệu trong project này.
@@ -271,7 +271,7 @@ export function ProjectSettingPage() {
       )}
 
       {isOwner && (
-        <section className="mt-6 bg-white rounded-lg border border-red-200 p-6">
+        <section className="mt-6 cinder-glass rounded-[20px] border border-red-400/40 p-6">
           <h3 className="text-base font-semibold text-red-600 mb-2">Danger zone</h3>
           <p className="text-sm text-jira-text-subtle mb-4">
             Xóa project sẽ xóa toàn bộ issues, sprints, epics và thành viên. Không thể hoàn tác.

@@ -21,6 +21,7 @@ import { dateInputToISO, isoToDateInput } from '../../utils/date'
 import { getApiErrorMessage } from '../../utils/apiError'
 import { toast } from 'sonner'
 import { PRIORITY_RANK } from '../../utils/issuePriority'
+import { getAllowedStatuses } from '../../utils/issueStatus'
 
 
 interface IssueDetailPanelProps {
@@ -42,7 +43,6 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
   const [description, setDescription] = useState('')
   const [type, setType] = useState<IssueType>('task')
   const [dueDate, setDueDate] = useState('')
-  const [estimate, setEstimate] = useState('')
 
   const [saveError, setSaveError] = useState('')
   const [commentText, setCommentText] = useState('')
@@ -87,7 +87,6 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
       setDescription(currentIssue.issue_description || '')
       setType(currentIssue.issue_type)
       setDueDate(isoToDateInput(currentIssue.due_date))
-      setEstimate(currentIssue.estimate != null ? String(currentIssue.estimate) : '')
 
       setSaveError('')
     }
@@ -97,7 +96,6 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
     currentIssue?.issue_description,
     currentIssue?.issue_type,
     currentIssue?.due_date,
-    currentIssue?.estimate,
   ])
 
 
@@ -140,7 +138,6 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
         issue_description: description || undefined,
         issue_type: type,
         due_date: dueDate ? dateInputToISO(dueDate)! : null,
-        estimate: estimate === '' ? null : Number(estimate),
       })
     },
     onSuccess: () => {
@@ -158,11 +155,6 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
   const handleSave = () => {
     setSaveError('')
     if (title.length < 3) return
-
-    if (estimate !== '' && (Number.isNaN(Number(estimate)) || Number(estimate) < 0)) {
-      setSaveError('Story points phải là số >= 0')
-      return
-    }
     updateMutation.mutate()
   }
 
@@ -257,15 +249,15 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative w-full max-w-xl bg-white shadow-2xl overflow-y-auto min-h-full">
-        <div className="sticky top-0 bg-white border-b border-jira-border px-6 py-4 flex items-center justify-between">
+      <div className="relative w-full max-w-xl cinder-glass shadow-2xl overflow-y-auto min-h-full">
+        <div className="sticky top-0 bg-[#141313]/90 backdrop-blur-md border-b border-jira-border px-6 py-4 flex items-center justify-between">
           <span className="text-sm text-jira-text-subtle font-medium">
             {currentIssue.issue_key}
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded hover:bg-gray-100 text-jira-text-subtle"
+            className="p-1 rounded hover:bg-white/10 text-jira-text-subtle"
           >
             <X size={20} />
           </button>
@@ -306,9 +298,9 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
                 onChange={(e) => statusMutation.mutate(e.target.value as IssueStatus)}
                 className={selectClass}
               >
-                {ISSUE_STATUSES.map((s) => (
-                  <option key={s.value} value={s.value}>
-                    {s.label}
+                {getAllowedStatuses(currentIssue.issue_status, currentIssue.assignee_id).map((s) => (
+                  <option key={s} value={s}>
+                    {ISSUE_STATUSES.find((x) => x.value === s)?.label}
                   </option>
                 ))}
               </select>
@@ -336,7 +328,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
                 onChange={(e) => setType(e.target.value as IssueType)}
                 className={selectClass}
               >
-                {(canCreateBug || type === 'bug' ? ISSUE_TYPES : ISSUE_TYPES.filter((t) => t.value! == 'bug')).map((t) => (
+                {(canCreateBug || type === 'bug' ? ISSUE_TYPES : ISSUE_TYPES.filter((t) => t.value !== 'bug')).map((t) => (
                   <option key={t.value} value={t.value}>
                     {t.label}
                   </option>
@@ -411,19 +403,6 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
                 className={selectClass}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-jira-text">Story points</label>
-              <input
-                type="number"
-                min={0}
-                max={100}
-                value={estimate}
-                onChange={(e) => setEstimate(e.target.value)}
-                className={selectClass}
-                placeholder="e.g. 3"
               />
             </div>
           </div>

@@ -5,6 +5,7 @@ import { Camera } from 'lucide-react'
 import { authApi } from '../api/auth.api'
 import { useAuthStore } from '../store/auth.store'
 import { AppHeader } from '../components/layout/AppHeader'
+import { CinderBackdrop } from '../components/layout/CinderBackdrop'
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
 import { Avatar } from '../components/ui/Avatar'
@@ -79,11 +80,13 @@ export function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-jira-bg">
+    <div className="relative min-h-screen">
+      <CinderBackdrop />
+      <div className="relative z-10 p-6 space-y-4">
       <AppHeader title="Your profile" subtitle={profile?.user_email} />
 
-      <div className="max-w-lg mx-auto p-6">
-        <div className="bg-white rounded-lg border border-jira-border p-6 space-y-6">
+      <div className="max-w-lg mx-auto">
+        <div className="cinder-glass rounded-[20px] p-6 space-y-6">
           <div className="flex flex-col items-center gap-3">
             <div className="relative">
               <Avatar
@@ -95,7 +98,7 @@ export function ProfilePage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="absolute bottom-0 right-0 p-1.5 rounded-full bg-jira-blue text-white hover:bg-jira-blue-dark"
+                className="absolute bottom-0 right-0 p-1.5 rounded-full bg-jira-blue text-[#151414] hover:bg-jira-blue-dark"
                 title="Change avatar"
               >
                 <Camera size={14} />
@@ -150,6 +153,7 @@ export function ProfilePage() {
             </Button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )

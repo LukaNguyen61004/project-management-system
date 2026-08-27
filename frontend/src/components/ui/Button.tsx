@@ -8,8 +8,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants = {
-    primary: 'bg-jira-blue hover:bg-jira-blue-dark text-white',
-    secondary: 'bg-white border border-jira-border hover:bg-gray-50 text-jira-text',
+    primary: 'bg-[#9d877c]/85 hover:bg-[#9d877c] text-[#151414]',
+    secondary: 'cinder-glass hover:bg-white/10 text-jira-text',
 }
 
 const sizes = {
@@ -26,8 +26,8 @@ export function Button({
 }: ButtonProps) {
     return (
         <button className={cn(
-            'inline-flex items-center justify-center gap-2 rounded font-medium transition-colors',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
+            'inline-flex items-center justify-center gap-2 rounded-[10px] font-medium cursor-pointer transition-all',
+            'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:opacity-50',
             variants[variant],
             sizes[size],
             className

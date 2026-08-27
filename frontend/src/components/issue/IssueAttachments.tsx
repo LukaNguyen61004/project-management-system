@@ -130,7 +130,7 @@ export function IssueAttachments({ issueId, projectId }: IssueAttachmentsProps) 
           {attachments.map((a) => (
             <div
               key={a.attachment_id}
-              className="flex items-center gap-3 p-2 rounded border border-jira-border bg-white"
+              className="flex items-center gap-3 p-2 rounded border border-jira-border bg-white/5"
             >
               {a.attachment_type === 'image' ? (
                 <a href={a.file_url} target="_blank" rel="noreferrer">

@@ -27,7 +27,7 @@ Register a new account (email/password or Google) to explore the app.
 - **Authentication** — Email/password + Google Sign-In; JWT access token (15m) and refresh token (7d)
 - **RBAC** — Project-scoped Admin / Member roles for invites, settings, and privileged actions
 - **Projects & invites** — Create workspaces with unique project keys; token-based invitations (7-day expiry)
-- **Issues** — Jira-like keys (`PROJ-1`), types (task/bug/story/subtask), status, priority, assignee, epic, sprint
+- **Issues** — Jira-like keys (`PROJ-1`), types (task/bug/subtask), status, priority, assignee, epic, sprint
 - **Kanban board** — Drag-and-drop status updates with optimistic UI (`@dnd-kit`)
 - **Backlog & sprints** — Plan work; drag issues between backlog and sprints; sprint lifecycle (planned → active → completed)
 - **Epics** — Group related issues under larger initiatives

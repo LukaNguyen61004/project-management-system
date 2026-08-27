@@ -17,7 +17,7 @@ interface IssueFilterBarProps {
 }
 
 const selectClass =
-  'rounded border border-jira-border px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-jira-blue min-w-[120px]'
+  'rounded-3xl border border-jira-border px-1 py-1.5 text-sm bg-transparent text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/25 min-w-[120px]'
 
 export function IssueFilterBar({
   filters,
@@ -40,7 +40,7 @@ export function IssueFilterBar({
     filters.epicId !== ''
 
   return (
-    <div className="px-4 py-3 bg-white border-b border-jira-border space-y-2">
+    <div className="px-4 py-3 border-b border-white/15 space-y-2">
       <div className="flex flex-wrap items-center gap-2">
         {/* Search */}
         <div className="relative flex-1 min-w-[200px] max-w-sm">
@@ -53,7 +53,7 @@ export function IssueFilterBar({
             value={filters.q}
             onChange={(e) => set('q', e.target.value)}
             placeholder="Search key or title..."
-            className="w-full rounded border border-jira-border pl-9 pr-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-jira-blue"
+            className="w-full rounded-2xl border border-jira-border bg-transparent pl-9 pr-3 py-1.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/25"
           />
         </div>
 

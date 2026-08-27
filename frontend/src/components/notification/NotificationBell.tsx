@@ -99,7 +99,7 @@ export function NotificationBell() {
                     e.stopPropagation()
                     setOpen(!open)
                 }}
-                className="relative p-2 rounded hover:bg-gray-100 text-jira-text-subtle hover:text-jira-text"
+        className="relative p-2 rounded hover:bg-white/10 text-jira-text-subtle hover:text-jira-text"
                 title="Notifications"
             >
                 <Bell size={20} />

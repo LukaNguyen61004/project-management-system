@@ -1,14 +1,17 @@
 import { useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { authApi } from '../api/auth.api'
 import { useAuthStore } from '../store/auth.store'
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
-import { FolderKanban } from 'lucide-react'
 import { getApiErrorMessage } from '../utils/apiError'
 import { useGoogleLogin } from '../hooks/useGoogleLogin'
 import { getPostLoginPath } from '../utils/getPostLoginPath'
+import { AuthShell } from '../components/auth/AuthShell'
+
+const authInputClass =
+    'h-12 rounded-none bg-transparent border-0 border-b border-white/70 px-0 focus:ring-0 text-white'
 
 export function LoginPage() {
     const navigate = useNavigate()
@@ -40,75 +43,61 @@ export function LoginPage() {
     }
     const googleLogin = useGoogleLogin()
     return (
-        <div className="min-h-screen flex items-center justify-center bg-jira-bg p-4">
-            <div className="w-full max-w-md">
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center gap-2 text-jira-blue mb-4">
-                        <FolderKanban size={32} />
-                        <span className="text-2xl font-bold">PMS</span>
-                    </div>
-                    <h1 className="text-xl font-semibold text-jira-text">Sign in to your account</h1>
-                </div>
+        <AuthShell mode="signin">
+            <p className="font-[Jua] text-2xl tracking-wide text-white">CINDER</p>
+            <h1 className="mt-3 font-[Hind] text-[30px] font-medium leading-tight text-white uppercase">
+                Sign in account
+            </h1>
+            <p className="mt-3 font-[Hind] text-xl text-[rgba(252,252,252,0.48)]">
+                Welcome back !!!
+            </p>
 
-                <form
-                    onSubmit={handleSubmit}
-                    className="bg-white rounded-lg border border-jira-border p-6 space-y-4 shadow-sm"
-                >
-                    <Input
-                        label="Email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="you@example.com"
-                        required
-                    />
-                    <Input
-                        label="Password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        required
-                    />
+            <form onSubmit={handleSubmit} className="mt-10 space-y-6">
+                <Input
+                    label="Email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    required
+                    className={authInputClass}
+                />
+                <Input
+                    label="Password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    className={authInputClass}
+                />
 
-                    {error && <p className="text-sm text-red-500">{error}</p>}
-
-                    <Button type="submit" className="w-full" disabled={mutation.isPending}>
+                {error && <p className="text-sm text-red-400">{error}</p>}
+                <div className="flex gap-4">
+                    <Button
+                        type="submit"
+                        className="h-[70px] w-full h-12 rounded-full border border-white bg-transparent text-white hover:bg-transparent"
+                        disabled={mutation.isPending}
+                    >
                         {mutation.isPending ? 'Signing in...' : 'Sign in'}
                     </Button>
 
-                    <div className="relative my-4">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-jira-border" />
-                        </div>
-                        <div className="relative flex justify-center text-xs">
-                            <span className="bg-white px-2 text-jira-text-subtle">or</span>
-                        </div>
-                    </div>
+
                     <Button
                         type="button"
-                        variant="secondary"
-                        className="w-full"
+                        className="h-[70px] w-full  h-12  rounded-full border border-white bg-transparent text-white hover:bg-transparent"
                         disabled={googleLogin.isPending}
                         onClick={() => googleLogin.mutate()}
                     >
-                        {googleLogin.isPending ? 'Signing in...' : 'Continue with Google'}
+                        {googleLogin.isPending ? 'Signing in...' : 'Google'}
                     </Button>
-                    {googleLogin.error && (
-                        <p className="text-sm text-red-500 text-center">
-                            {getApiErrorMessage(googleLogin.error, 'Google login failed')}
-                        </p>
-                    )}
-
-
-                    <p className="text-center text-sm text-jira-text-subtle">
-                        Don't have an account?{' '}
-                        <Link to="/register" className="text-jira-blue hover:underline">
-                            Register
-                        </Link>
+                </div>
+                {googleLogin.error && (
+                    <p className="text-center text-sm text-red-400">
+                        {getApiErrorMessage(googleLogin.error, 'Google login failed')}
                     </p>
-                </form>
-            </div>
-        </div>
+                )}
+            </form>
+        </AuthShell>
     )
 }

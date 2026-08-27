@@ -45,7 +45,7 @@ export function UserMenu() {
       <button
         type="button"
         onClick={handleLogout}
-        className="p-1.5 rounded hover:bg-gray-100 text-jira-text-subtle"
+        className="p-1.5 rounded hover:bg-white/10 text-jira-text-subtle"
         title="Logout"
       >
         <LogOut size={18} />

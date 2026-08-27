@@ -4,6 +4,7 @@ import { projectApi } from "../../api/project.api";
 import { useAuthStore } from "../../store/auth.store";
 import { AppHeader } from "./AppHeader";
 import { Sidebar } from "./Sidebar";
+import { CinderBackdrop } from "./CinderBackdrop";
 
 export function ProjectLayout() {
     const { projectId } = useParams();
@@ -22,18 +23,24 @@ export function ProjectLayout() {
     }
 
     return (
-        <div className="flex min-h-screen">
-            <Sidebar />
+        <div className="relative min-h-screen">
+            <CinderBackdrop />
+            <div className="relative z-10 flex gap-4 p-6 min-h-screen">
+                <Sidebar />
 
-            <div className="flex-1 flex flex-col min-w-0">
-                <AppHeader
-                    compact
-                    title={isLoading ? 'Loading...' : (project?.project_name ?? 'Project')}
-                    subtitle={project?.project_key}
-                />
-                <main className="flex-1 overflow-auto bg-jira-bg">
-                    <Outlet />
-                </main>
+                <div className="flex-1 flex flex-col min-w-0 gap-4">
+                    <AppHeader
+                        compact
+                        title={isLoading ? 'Loading...' : (project?.project_name ?? 'Project')}
+                        subtitle={project?.project_key}
+                    />
+                    <main className="relative  flex-1 overflow-auto rounded-[30px]">
+                        <div className="cinder-glass pointer-events-none absolute inset-0 rounded-[30px]" />
+                        <div className="relative">
+                          <Outlet />
+                        </div>
+                    </main>
+                </div>
             </div>
         </div>
     )

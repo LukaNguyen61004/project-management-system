@@ -82,7 +82,7 @@ export const findScheduleChangesForSprint = async (
                 },
                 {
                     issue_id: { in: issueIds },
-                    field_name: { in: ["due_date", "estimate"] },
+                    field_name: { in: ["due_date"] },
                 },
             ],
         },
