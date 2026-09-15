@@ -27,16 +27,7 @@ export const findUserById = async (userId: number) => {
     });
 };
 
-export const updateRefreshToken = async ( userId: number, refreshToken: string | null) => {
-    return prisma.user.update({
-      where: {
-        user_id: userId,
-      },
-      data: {
-        refresh_token: refreshToken,
-      },
-    });
-  };
+
 
 export const updateUserProfile = async (
     userId: number,

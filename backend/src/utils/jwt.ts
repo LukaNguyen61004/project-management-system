@@ -12,12 +12,12 @@ export const generateAccessToken = ( payload: object) => {
   );
 };
 
-export const generateRefreshToken = (payload: object) => {
-  return jwt.sign(
-    payload,
-    env.JWT_REFRESH_SECRET,
-    {
-      expiresIn: "7d",
-    }
-  );
-};
+export const generateRefreshToken = (
+  payload: {userId: number; familyId: string},
+  jwtid: string
+)=>{
+  return jwt.sign(payload, env.JWT_REFRESH_SECRET,{
+    expiresIn: "7d",
+    jwtid
+  })
+}

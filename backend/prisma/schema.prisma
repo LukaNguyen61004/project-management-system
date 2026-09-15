@@ -97,7 +97,8 @@ model User {
   user_email String @unique
 
   user_password_hash String?
-  refresh_token      String?
+  refresh_tokens RefreshToken[]
+ 
 
   user_name       String?
   user_avatar_url String?
@@ -126,6 +127,23 @@ model User {
   activity_logs ActivityLog[]
 
   issue_attachments IssueAttachment[]
+}
+
+model RefreshToken {
+  id          String    @id
+  user_id     Int
+  family_id   String
+  token_hash  String    @unique
+  expires_at  DateTime
+  revoked_at  DateTime?
+  replaced_by String?
+  rotated_at  DateTime?
+  created_at  DateTime  @default(now())
+
+  user User @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([family_id])
 }
 
 model Project {
