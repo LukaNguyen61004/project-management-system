@@ -1,39 +1,97 @@
 import bcrypt from "bcryptjs";
+import { randomUUID } from "node:crypto";
 import jwt from "jsonwebtoken";
 import admin, { isFirebaseAdminReady } from "../lib/firebaseAdmin.js";
 import { env } from "../config/env.js";
-import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
-import { findUserByEmail, createUser, findUserById, updateRefreshToken, updateUserProfile } from "../repositories/auth.repository.js";
+import { generateAccessToken } from "../utils/jwt.js";
+import { findUserByEmail, createUser, findUserById, updateUserProfile } from "../repositories/auth.repository.js";
+import { createRefreshToken, lockByTokenHash, markReplaced, revokeAllForUser, revokeFamily } from "../repositories/refreshToken.repository.js";
+import prisma from "../lib/prisma.js";
 import type { UpdateProfileInput } from "../validations/auth.validation.js";
+import type { RefreshJwtPayload } from "../types/jwt.type.js";
+import { hashRefreshToken, ROTATION_GRACE_MS } from "../utils/refreshToken.js";
+
+function toSafeUser<T extends { user_password_hash?: string | null }>(user: T) {
+    const { user_password_hash, ...safeUser } = user;
+    return safeUser;
+}
+
+async function issueTokenPair(user: {
+    user_id: number;
+    user_email: string;
+    provider: string;
+}) {
+    const familyId = randomUUID();
+    const { token: refreshToken } = await createRefreshToken(
+        prisma,
+        user.user_id,
+        familyId
+    );
+    const accessToken = generateAccessToken({
+        userId: user.user_id,
+        email: user.user_email,
+        provider: user.provider,
+    });
+    return { accessToken, refreshToken };
+}
+
 
 export const refreshTokenService = async (refreshToken: string) => {
+    let decoded: RefreshJwtPayload;
     try {
-        const decoded = jwt.verify(
-            refreshToken,
-            env.JWT_REFRESH_SECRET
-        )
-        if (typeof decoded === "string") {
+        const payload = jwt.verify(refreshToken, env.JWT_REFRESH_SECRET);
+        if (typeof payload === "string" || payload.userId == null || !payload.familyId || !payload.jti) {
             throw new Error("Invalid token");
         }
-
-        const user = await findUserById(decoded.userId);
-
-        if (!user) {
-            throw new Error("User not found");
-        }
-
-        if (user.refresh_token !== refreshToken) {
-            throw new Error("Invalid refresh token");
-        }
-
-        const newAccessToken = generateAccessToken({ userId: user.user_id, email: user.user_email, provider: user.provider });
-        return { accessToken: newAccessToken };
-
-    } catch (error) {
-        throw new Error(
-            "Invalid or expired refresh token"
-        );
+        decoded = payload as RefreshJwtPayload;
+    } catch {
+        throw new Error("Invalid or expired refresh token");
     }
+
+    const tokenHash = hashRefreshToken(refreshToken);
+    return prisma.$transaction(async (tx) => {
+        const row = await lockByTokenHash(tx, tokenHash);
+        if (!row) {
+            throw new Error("Invalid or expired refresh token");
+        }
+        if (row.user_id !== decoded.userId || row.family_id !== decoded.familyId) {
+            throw new Error("Invalid or expired refresh token");
+        }
+        if (row.revoked_at || row.expires_at.getTime() <= Date.now()) {
+            throw new Error("Invalid or expired refresh token");
+        }
+        const user = await findUserById(decoded.userId);
+        if (!user) {
+            throw new Error("Invalid or expired refresh token");
+        }
+        const accessToken = generateAccessToken({
+            userId: user.user_id,
+            email: user.user_email,
+            provider: user.provider,
+        });
+        // Đã rotate rồi → grace hoặc reuse
+        if (row.replaced_by) {
+            const rotatedAt = row.rotated_at?.getTime() ?? 0;
+            if (Date.now() - rotatedAt <= ROTATION_GRACE_MS) {
+                return { accessToken };
+            }
+            await revokeFamily(tx, row.family_id);
+            console.warn("[AUTH] Refresh token reuse detected", {
+                userId: row.user_id,
+                familyId: row.family_id,
+            });
+            throw new Error("Invalid or expired refresh token");
+        }
+        // Token hiện tại → rotate
+        const { token: newRefreshToken, id: newId } = await createRefreshToken(
+            tx,              // cùng transaction với lock
+            user.user_id,
+            row.family_id    // GIỮ family, không randomUUID mới
+        );
+        await markReplaced(tx, row.id, newId);
+        return { accessToken, refreshToken: newRefreshToken };
+    });
+
 }
 
 export const registerService = async (user_email: string, user_password: string) => {
@@ -86,29 +144,11 @@ export const loginService = async (user_email: string, user_password: string) =>
         throw new Error("Invalid credentials")
     }
 
-    //tao token
-    const accessToken = generateAccessToken({
-        userId: user.user_id,
-        email: user.user_email,
-        provider: user.provider,
-    });
-
-    const refreshToken = generateRefreshToken({ userId: user.user_id, });
-
-    await updateRefreshToken(
-        user.user_id,
-        refreshToken
-    );
-
-    const {
-        user_password_hash,
-        refresh_token,
-        ...safeUser
-    } = user;
+    const { accessToken, refreshToken } = await issueTokenPair(user);
 
     //Tra ve tt user va token
     return {
-        safeUser,
+        safeUser: toSafeUser(user),
         accessToken,
         refreshToken
     };
@@ -142,27 +182,11 @@ export const firebaseGoogleLoginService = async (idToken: string) => {
         throw new Error("This email uses password login");
     }
 
-    const accessToken = generateAccessToken({
-        userId: user.user_id,
-        email: user.user_email,
-        provider: user.provider,
-    });
 
-    const refreshToken = generateRefreshToken({ userId: user.user_id, });
-
-    await updateRefreshToken(
-        user.user_id,
-        refreshToken
-    );
-
-    const {
-        user_password_hash,
-        refresh_token,
-        ...safeUser
-    } = user;
+    const { accessToken, refreshToken } = await issueTokenPair(user);
 
     return {
-        safeUser,
+        safeUser: toSafeUser(user),
         accessToken,
         refreshToken,
     }
@@ -175,17 +199,24 @@ export const getCurrentUserService = async (userId: number) => {
         throw new Error("User not found");
     }
 
-    const { user_password_hash, refresh_token, ...safeUser} = user;
-    
-    return safeUser;
+    return toSafeUser(user);
+
 }
 
-export const logoutService = async (userId: number)=>{
-    await updateRefreshToken(userId, null);
+export const logoutService = async (userId: number, refreshToken: string | null) => {
 
-    return {
-        message: "Logout successful"
+    if (refreshToken) {
+        const row = await prisma.refreshToken.findUnique({
+            where: { token_hash: hashRefreshToken(refreshToken) },
+        });
+        if (row && row.user_id === userId) {
+            await revokeFamily(prisma, row.family_id);
+            return { message: "Logout successful" };
+        }
     }
+    await revokeAllForUser(prisma, userId);
+    return { message: "Logout successful" };
+
 }
 
 
@@ -210,7 +241,6 @@ export const updateProfileService = async (
 
     const updated = await updateUserProfile(userId, updateData);
 
-    const { user_password_hash, refresh_token, ...safeUser } = updated;
-    return safeUser;
+    return toSafeUser(updated);
 };
 

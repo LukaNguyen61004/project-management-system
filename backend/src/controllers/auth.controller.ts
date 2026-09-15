@@ -84,10 +84,12 @@ export const refreshTokenController = async (req: Request, res: Response) => {
         }
 
         const data = await refreshTokenService(refreshToken);
-
+        if (data.refreshToken) {
+            setRefreshCookie(res, data.refreshToken);
+        }
         return res.status(200).json({
             success: true,
-            data,
+            data: { accessToken: data.accessToken },
         });
     } catch (error) {
         clearRefreshCookie(res);
@@ -101,7 +103,7 @@ export const logoutController = async (req: Request, res: Response) => {
             return sendError(res, new Error("Unauthorized"), 401);
         }
 
-        const data = await logoutService(req.user.userId);
+        const data = await logoutService(req.user.userId, req.cookies?.refreshToken);
         clearRefreshCookie(res);
 
         return res.status(200).json({

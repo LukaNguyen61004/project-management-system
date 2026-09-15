@@ -1,5 +1,6 @@
 import type { Response } from "express";
 import { env } from "../config/env.js";
+import { REFRESH_TOKEN_TTL_MS } from "./refreshToken.js";
 
 const isProd = env.NODE_ENV === "production";
 
@@ -9,7 +10,7 @@ export function setRefreshCookie(res: Response, refreshToken: string) {
     secure: isProd,         
     sameSite: isProd ? "none" : "lax",
     path: "/",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
+    maxAge: REFRESH_TOKEN_TTL_MS
   });
 }
 

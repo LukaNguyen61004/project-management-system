@@ -5,3 +5,9 @@ export interface AuthJwtPayload extends JwtPayload{
     email: string;
     provider: string;
 }
+
+export interface RefreshJwtPayload extends JwtPayload {
+  userId: number;
+  familyId: string;
+  jti: string;
+}
