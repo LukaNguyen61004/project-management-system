@@ -57,7 +57,7 @@ export function CreateSprintModal({ open, projectId, onClose }: CreateSprintModa
           required
           minLength={3}
         />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium text-jira-text">{t('sprint.startDate')}</label>
             <input

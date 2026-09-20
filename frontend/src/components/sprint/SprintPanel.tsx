@@ -146,11 +146,11 @@ export function SprintPanel({
 
   return (
     <div className="cinder-glass rounded-[20px] mb-4">
-      <div className="flex items-center justify-between px-4 py-3 ">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-4 py-3">
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="flex items-center gap-2 text-sm font-semibold text-jira-text"
+          className="flex items-center gap-2 text-sm font-semibold text-jira-text min-w-0 flex-wrap"
         >
           {open ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
           {sprint.sprint_name}
@@ -165,7 +165,7 @@ export function SprintPanel({
           <span className="text-jira-text-subtle font-normal">{t('common.issueCount', { count: issueCount })}</span>
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
           {sprint.sprint_status !== 'completed' && onEdit && (
             <button
               type="button"

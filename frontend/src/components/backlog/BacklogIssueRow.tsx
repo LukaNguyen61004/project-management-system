@@ -13,8 +13,8 @@ export function BacklogIssueRow({ issue }: BacklogIssueRowProps) {
   return (
     <>
       <IssueTypeIcon type={issue.issue_type} />
-      <span className="text-xs text-jira-text-subtle w-20 shrink-0">{issue.issue_key}</span>
-      <span className="text-sm text-jira-text flex-1 truncate">{issue.issue_name}</span>
+      <span className="text-xs text-jira-text-subtle w-auto sm:w-20 shrink-0">{issue.issue_key}</span>
+      <span className="text-sm text-jira-text flex-1 min-w-0 truncate">{issue.issue_name}</span>
       {issue.epic && (
         <EpicBadge name={issue.epic.epic_name} color={issue.epic.epic_color} />
       )}

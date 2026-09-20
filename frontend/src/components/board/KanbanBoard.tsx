@@ -2,9 +2,6 @@ import { useState } from 'react'
 import {
   DndContext,
   DragOverlay,
-  PointerSensor,
-  useSensor,
-  useSensors,
   closestCorners,
   type DragEndEvent,
   type DragStartEvent,
@@ -20,6 +17,7 @@ import { toast } from 'sonner'
 import { getApiErrorMessage } from '../../utils/apiError'
 import { getStatusTransitionError } from '../../utils/issueStatus'
 import type { IssueListPage } from '../../api/issue.api'
+import { useAppDndSensors } from '../../hooks/useAppDndSensors'
 import { useT, t } from '../../i18n/useT'
 
 interface KanbanBoardProps {
@@ -85,10 +83,7 @@ export function KanbanBoard({ projectId, issues, onIssueClick, listQueryKey }: K
     },
   })
 
-  // Chỉ bắt drag sau khi kéo 8px — tránh nhầm với click
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
-  )
+  const sensors = useAppDndSensors()
 
   const handleDragStart = (event: DragStartEvent) => {
     const issue = issues.find((i) => i.issue_id === event.active.id)
@@ -140,7 +135,7 @@ export function KanbanBoard({ projectId, issues, onIssueClick, listQueryKey }: K
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 p-4 overflow-x-auto min-h-[calc(100vh-8rem)]">
+      <div className="flex gap-3 md:gap-4 p-3 md:p-4 overflow-x-auto snap-x snap-mandatory min-h-[calc(100dvh-14rem)] [scrollbar-width:thin]">
         {ISSUE_STATUSES.map(({ value }) => (
           <KanbanColumn
             key={value}

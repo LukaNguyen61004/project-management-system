@@ -29,12 +29,13 @@ export function CreateIssueModal({ open, onClose, projectId, canCreateBug, paren
   const [description, setDescription] = useState('')
   const [type, setType] = useState<IssueType>('task')
   const [priority, setPriority] = useState<IssuePriority>('medium')
+  const [titleError, setTitleError] = useState('')
   const t = useT()
 
   const mutation = useMutation({
     mutationFn: () =>
       issueApi.create(projectId, {
-        issue_name: title,
+        issue_name: title.trim(),
         issue_description: description || undefined,
         issue_type: parentIssue ? 'subtask' : type,
         issue_priority: priority,
@@ -78,27 +79,41 @@ export function CreateIssueModal({ open, onClose, projectId, canCreateBug, paren
     setDescription('')
     setType('task')
     setPriority('medium')
+    setTitleError('')
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (title.length < 3) return
+    const trimmed = title.trim()
+    if (trimmed.length < 3) {
+      setTitleError(t('issue.summaryMin'))
+      return
+    }
+    if (trimmed.length > 255) {
+      setTitleError(t('issue.summaryMax'))
+      return
+    }
+    setTitleError('')
     mutation.mutate()
   }
 
   return (
     <Modal open={open} onClose={onClose} title={t('issue.createTitle')}>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <Input
           label={t('issue.summary')}
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            setTitle(e.target.value)
+            setTitleError('')
+          }}
           placeholder={t('issue.summaryPlaceholder')}
-          required
-          minLength={3}
+          maxLength={255}
+          hint={t('issue.summaryHint')}
+          error={titleError}
         />
 
-        <div>
+        <div className="flex flex-col gap-1">
           <label className="text-sm font-medium text-jira-text">{t('issue.description')}</label>
           <textarea
             value={description}
@@ -107,9 +122,10 @@ export function CreateIssueModal({ open, onClose, projectId, canCreateBug, paren
             className={selectClass}
             placeholder={t('common.optional')}
           />
+          <span className="text-xs text-jira-text-subtle">{t('issue.descriptionHint')}</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium text-jira-text">{t('issue.type')}</label>
             {parentIssue ? (
@@ -148,7 +164,7 @@ export function CreateIssueModal({ open, onClose, projectId, canCreateBug, paren
 
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
-          <Button type="submit" disabled={mutation.isPending || title.length < 3}>
+          <Button type="submit" disabled={mutation.isPending}>
             {mutation.isPending ? t('common.creating') : t('common.create')}
           </Button>
         </div>

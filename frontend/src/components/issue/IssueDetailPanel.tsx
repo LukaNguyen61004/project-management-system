@@ -49,6 +49,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
   const [dueDate, setDueDate] = useState('')
 
   const [saveError, setSaveError] = useState('')
+  const [titleError, setTitleError] = useState('')
   const [commentText, setCommentText] = useState('')
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
   const [editText, setEditText] = useState('')
@@ -138,7 +139,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
     mutationFn: () => {
       if (!issueId) throw new Error('No issue')
       return issueApi.update(issueId, {
-        issue_name: title,
+        issue_name: title.trim(),
         issue_description: description || undefined,
         issue_type: type,
         due_date: dueDate ? dateInputToISO(dueDate)! : null,
@@ -158,7 +159,16 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
 
   const handleSave = () => {
     setSaveError('')
-    if (title.length < 3) return
+    const trimmed = title.trim()
+    if (trimmed.length < 3) {
+      setTitleError(t('issue.summaryMin'))
+      return
+    }
+    if (trimmed.length > 255) {
+      setTitleError(t('issue.summaryMax'))
+      return
+    }
+    setTitleError('')
     updateMutation.mutate()
   }
 
@@ -253,8 +263,8 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-md [-webkit-backdrop-filter:blur(12px)]" onClick={onClose} />
-      <div className="relative w-full max-w-xl cinder-glass shadow-2xl overflow-y-auto min-h-full">
-        <div className="sticky top-0 bg-[#141313]/90 backdrop-blur-md border-b border-jira-border px-6 py-4 flex items-center justify-between">
+      <div className="relative w-full md:max-w-xl cinder-glass-solid shadow-2xl overflow-y-auto min-h-full max-md:h-dvh">
+        <div className="sticky top-0 bg-[#141313]/90 backdrop-blur-md border-b border-jira-border px-4 sm:px-6 py-4 flex items-center justify-between">
           <span className="text-sm text-jira-text-subtle font-medium">
             {currentIssue.issue_key}
           </span>
@@ -267,7 +277,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-6">
           {isIssueWarned(currentIssue) && (
             <div className="flex items-start gap-2 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
               <AlertTriangle size={16} className="shrink-0 mt-0.5" />
@@ -278,12 +288,16 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
           <Input
             label={t('issue.summary')}
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            minLength={3}
-            required
+            onChange={(e) => {
+              setTitle(e.target.value)
+              setTitleError('')
+            }}
+            maxLength={255}
+            hint={t('issue.summaryHint')}
+            error={titleError}
           />
 
-          <div>
+          <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-jira-text">{t('issue.description')}</label>
             <textarea
               value={description}
@@ -292,9 +306,10 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
               className={selectClass}
               placeholder={t('common.optional')}
             />
+            <span className="text-xs text-jira-text-subtle">{t('issue.descriptionHint')}</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-jira-text">{t('issue.status')}</label>
               <select
