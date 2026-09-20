@@ -19,16 +19,20 @@ import { IssueCard } from './IssueCard'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '../../utils/apiError'
 import { getStatusTransitionError } from '../../utils/issueStatus'
+import type { IssueListPage } from '../../api/issue.api'
+import { useT, t } from '../../i18n/useT'
 
 interface KanbanBoardProps {
   projectId: number
   issues: Issue[]
   onIssueClick: (issue: Issue) => void
+  listQueryKey: readonly unknown[]
 }
 
-export function KanbanBoard({ projectId, issues, onIssueClick }: KanbanBoardProps) {
+export function KanbanBoard({ projectId, issues, onIssueClick, listQueryKey }: KanbanBoardProps) {
   const queryClient = useQueryClient()
   const [activeIssue, setActiveIssue] = useState<Issue | null>(null)
+  const translate = useT()
 
   const issuesByStatus = ISSUE_STATUSES.reduce(
     (acc, { value }) => {
@@ -45,20 +49,21 @@ export function KanbanBoard({ projectId, issues, onIssueClick }: KanbanBoardProp
     // 1. TRƯỚC khi gọi API — sửa UI ngay
     onMutate: async ({ issueId, status }) => {
       // Dừng fetch đang chạy, tránh ghi đè optimistic
-      await queryClient.cancelQueries({ queryKey: ['issues', projectId] })
+      await queryClient.cancelQueries({ queryKey: listQueryKey })
 
       // Lưu bản cũ để rollback nếu lỗi
-      const previous = queryClient.getQueryData<Issue[]>(['issues', projectId])
+      const previous = queryClient.getQueryData<IssueListPage[]>(listQueryKey)
 
       // Cập nhật cache — card nhảy cột NGAY
-      queryClient.setQueryData<Issue[]>(['issues', projectId], (old = []) =>
-        old.map((issue) =>
-          issue.issue_id === issueId
-            ? { ...issue, issue_status: status }
-            : issue
-        )
-      )
-
+      queryClient.setQueryData<IssueListPage>(listQueryKey, (old) => {
+        if (!old) return old
+        return {
+          ...old,
+          issues: old.issues.map((issue) =>
+            issue.issue_id === issueId ? { ...issue, issue_status: status } : issue
+          ),
+        }
+      })
       return { previous }
     },
 
@@ -67,16 +72,16 @@ export function KanbanBoard({ projectId, issues, onIssueClick }: KanbanBoardProp
       if (context?.previous) {
         queryClient.setQueryData(['issues', projectId], context.previous)
       }
-      toast.error(getApiErrorMessage(err, 'Đổi status thất bại'))
+      toast.error(getApiErrorMessage(err, t('board.statusFailed')))
     },
 
     onSuccess: () => {
-      toast.success('Đã cập nhật status')
+      toast.success(t('board.statusUpdated'))
     },
 
     // 3. Xong (thành công hay lỗi) → sync lại server (nền, không block UI)
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['issues', projectId] })
+      queryClient.invalidateQueries({ queryKey: listQueryKey })
     },
   })
 
@@ -123,7 +128,7 @@ export function KanbanBoard({ projectId, issues, onIssueClick }: KanbanBoardProp
   if (issues.length === 0) {
     return (
       <p className="text-sm text-jira-text-subtle text-center py-16">
-        No issues match your filters
+        {translate('board.emptyFilters')}
       </p>
     )
   }
@@ -136,11 +141,11 @@ export function KanbanBoard({ projectId, issues, onIssueClick }: KanbanBoardProp
       onDragEnd={handleDragEnd}
     >
       <div className="flex gap-4 p-4 overflow-x-auto min-h-[calc(100vh-8rem)]">
-        {ISSUE_STATUSES.map(({ value, label }) => (
+        {ISSUE_STATUSES.map(({ value }) => (
           <KanbanColumn
             key={value}
             status={value}
-            label={label}
+            label={translate(`status.${value}`)}
             issues={issuesByStatus[value]}
             onIssueClick={onIssueClick}
           />

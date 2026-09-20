@@ -1,48 +1,52 @@
 import type { ActivityLog } from '../types/activityLog.types'
+import { t } from '../i18n/useT'
 
 export function formatActivityMessage(activity: ActivityLog): string {
-  const name = activity.user?.user_name || 'Someone'
-  const issueName = activity.issue?.issue_name || 'an issue'
-  const sprintName = activity.sprint?.sprint_name || 'a sprint'
+  const name = activity.user?.user_name || t('activity.someone')
+  const issueName = activity.issue?.issue_name || t('activity.anIssue')
+  const sprintName = activity.sprint?.sprint_name || t('activity.aSprint')
 
   switch (activity.action_type) {
     case 'ISSUE_CREATED':
-      return `${name} created ${issueName}`
+      return t('activity.issueCreated', { name, issue: issueName })
     case 'ISSUE_UPDATED':
-      return `${name} updated ${issueName}`
+      return t('activity.issueUpdated', { name, issue: issueName })
     case 'ISSUE_DELETED':
-      return `${name} deleted an issue`
+      return t('activity.issueDeleted', { name })
     case 'STATUS_CHANGED':
-      return `${name} changed status of ${issueName} to ${activity.new_value}`
+      return t('activity.statusChanged', { name, issue: issueName, value: activity.new_value ?? '' })
     case 'PRIORITY_CHANGED':
-      return `${name} changed priority of ${issueName} to ${activity.new_value}`
+      return t('activity.priorityChanged', { name, issue: issueName, value: activity.new_value ?? '' })
     case 'ISSUE_ASSIGNED':
-      return `${name} assigned ${issueName}`
+      return t('activity.issueAssigned', { name, issue: issueName })
     case 'ISSUE_MOVED_TO_SPRINT':
-      return `${name} moved ${issueName} to ${sprintName}`
+      return t('activity.movedToSprint', { name, issue: issueName, sprint: sprintName })
     case 'COMMENT_ADDED':
-      return `${name} commented on ${issueName}`
+      return t('activity.commentAdded', { name, issue: issueName })
     case 'COMMENT_UPDATED':
-      return `${name} updated a comment on ${issueName}`
+      return t('activity.commentUpdated', { name, issue: issueName })
     case 'COMMENT_DELETED':
-      return `${name} deleted a comment on ${issueName}`
+      return t('activity.commentDeleted', { name, issue: issueName })
     case 'SPRINT_CREATED':
-      return `${name} created sprint ${sprintName}`
+      return t('activity.sprintCreated', { name, sprint: sprintName })
     case 'SPRINT_UPDATED':
-      return `${name} updated sprint ${sprintName}`
+      return t('activity.sprintUpdated', { name, sprint: sprintName })
     case 'SPRINT_STARTED':
-      return `${name} started sprint ${sprintName}`
+      return t('activity.sprintStarted', { name, sprint: sprintName })
     case 'SPRINT_COMPLETED':
-      return `${name} completed sprint ${sprintName}`
+      return t('activity.sprintCompleted', { name, sprint: sprintName })
     case 'MEMBER_INVITED':
-      return `${name} invited a member`
+      return t('activity.memberInvited', { name })
     case 'INVITATION_ACCEPTED':
-      return `${name} joined the project`
+      return t('activity.invitationAccepted', { name })
     case 'INVITATION_DECLINED':
-      return `${name} declined an invitation`
+      return t('activity.invitationDeclined', { name })
     case 'MEMBER_REMOVED':
-      return `${name} removed a member`
+      return t('activity.memberRemoved', { name })
     default:
-      return `${name} performed ${activity.action_type.replace(/_/g, ' ').toLowerCase()}`
+      return t('activity.fallback', {
+        name,
+        action: activity.action_type.replace(/_/g, ' ').toLowerCase(),
+      })
   }
 }

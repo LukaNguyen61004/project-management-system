@@ -5,12 +5,15 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  closestCorners,
+  pointerWithin,
+  rectIntersection,
+  type CollisionDetection,
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
 import type { Issue } from '../../types/issue.types'
 import type { Sprint } from '../../types/sprint.types'
+import type { IssueFilters } from '../../types/issueFilter.types'
 import { useMoveIssueToSprint } from '../../hooks/useMoveIssueToSprint'
 import { SprintList } from '../sprint/SprintList'
 import { resolveTargetSprintId } from '../sprint/sprintDnd'
@@ -23,6 +26,23 @@ interface BacklogListProps {
   sprints: Sprint[]
   onIssueClick: (issue: Issue) => void
   onEditSprint?: (sprint: Sprint) => void
+  filters?: IssueFilters
+  page: number
+  totalPage: number
+  total: number
+  onPageChange: (page: number) => void
+  isLoading?: boolean
+}
+
+function issueFromDrag(event: { active: { data: { current?: unknown } } }): Issue | undefined {
+  const data = event.active.data.current as { issue?: Issue } | undefined
+  return data?.issue
+}
+
+const collisionDetection: CollisionDetection = (args) => {
+  const hits = pointerWithin(args)
+  if (hits.length > 0) return hits
+  return rectIntersection(args)
 }
 
 export function BacklogList({
@@ -31,71 +51,78 @@ export function BacklogList({
   sprints,
   onIssueClick,
   onEditSprint,
+  filters,
+  page,
+  totalPage,
+  total,
+  onPageChange,
+  isLoading,
 }: BacklogListProps) {
   const [activeIssue, setActiveIssue] = useState<Issue | null>(null)
   const moveMutation = useMoveIssueToSprint(projectId)
-  const backlogIssues = issues.filter((i) => !i.sprint_id)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   )
 
   const handleDragStart = (event: DragStartEvent) => {
-    const issue = issues.find((i) => i.issue_id === event.active.id)
+    const issue = issueFromDrag(event)
     if (issue) setActiveIssue(issue)
   }
 
   const handleDragEnd = (event: DragEndEvent) => {
     setActiveIssue(null)
-    const { active, over } = event
+    const { over } = event
     if (!over) return
 
-    const issueId = active.id as number
-    const issue = issues.find((i) => i.issue_id === issueId)
+    const issue = issueFromDrag(event)
     if (!issue) return
 
-    const targetSprintId = resolveTargetSprintId(over.id, issues)
+    const targetSprintId = resolveTargetSprintId(over.id, over.data.current)
     if (targetSprintId === undefined) return
     if (issue.sprint_id === targetSprintId) return
 
-    // Không cho kéo vào sprint completed
     if (targetSprintId != null) {
       const target = sprints.find((s) => s.sprint_id === targetSprintId)
       if (target?.sprint_status === 'completed') return
     }
 
-    // Issue done trong sprint completed: giữ nguyên lịch sử
     if (issue.sprint_id != null) {
       const current = sprints.find((s) => s.sprint_id === issue.sprint_id)
       if (current?.sprint_status === 'completed' && issue.issue_status === 'done') return
     }
 
-    moveMutation.mutate({ issueId, sprintId: targetSprintId })
-  }
-
-  if (issues.length === 0) {
-    return (
-      <p className="text-sm text-jira-text-subtle text-center py-16">
-        No issues match your filters
-      </p>
-    )
+    moveMutation.mutate({
+      issueId: issue.issue_id,
+      sprintId: targetSprintId,
+      fromSprintId: issue.sprint_id,
+    })
   }
 
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={collisionDetection}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
       <div className="p-4">
         <SprintList
+          projectId={projectId}
           sprints={sprints}
-          issues={issues}
           onIssueClick={onIssueClick}
           onEditSprint={onEditSprint}
+          filters={filters}
         />
-        <BacklogSection issues={backlogIssues} onIssueClick={onIssueClick} />
+        <BacklogSection
+          issues={issues}
+          onIssueClick={onIssueClick}
+          page={page}
+          totalPage={totalPage}
+          total={total}
+          onPageChange={onPageChange}
+          isLoading={isLoading}
+        />
       </div>
 
       <DragOverlay>

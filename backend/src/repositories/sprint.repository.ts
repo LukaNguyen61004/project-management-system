@@ -116,3 +116,30 @@ export const getSprintIssues = async (sprintId: number) => {
         }
     })
 }
+
+
+export const completeSprintWithIncompleteMove = async (params: {
+  sprintId: number
+  allIssueIds: number[]
+  incompleteIssueIds: number[]
+  moveToSprintId: number | null
+}) => {
+  return prisma.$transaction(async (tx) => {
+    const sprint = await tx.sprint.update({
+      where: { sprint_id: params.sprintId },
+      data: {
+        sprint_status: 'completed',
+        sprint_close_issue_ids: params.allIssueIds,
+      },
+    })
+
+    if (params.incompleteIssueIds.length > 0) {
+      await tx.issue.updateMany({
+        where: { issue_id: { in: params.incompleteIssueIds } },
+        data: { sprint_id: params.moveToSprintId },
+      })
+    }
+
+    return sprint
+  })
+}

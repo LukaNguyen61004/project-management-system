@@ -6,6 +6,7 @@ import { Input } from '../ui/Input'
 import { Button } from '../ui/Button'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '../../utils/apiError'
+import { useT } from '../../i18n/useT'
 
 const COLORS = ['#8B5CF6', '#0052CC', '#36B37E', '#FF5630', '#FFAB00', '#6554C0']
 
@@ -19,22 +20,23 @@ export function CreateEpicModal({ open, projectId, onClose }: Props) {
   const queryClient = useQueryClient()
   const [name, setName] = useState('')
   const [color, setColor] = useState(COLORS[0])
+  const t = useT()
 
   const mutation = useMutation({
     mutationFn: () =>
       epicApi.create(projectId, { epic_name: name, epic_color: color }),
     onSuccess: () => {
-      toast.success('Đã tạo epic')
+      toast.success(t('epic.created'))
       queryClient.invalidateQueries({ queryKey: ['epics', projectId] })
       setName('')
       setColor(COLORS[0])
       onClose()
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Tạo epic thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('epic.createFailed'))),
   })
 
   return (
-    <Modal open={open} onClose={onClose} title="Create epic">
+    <Modal open={open} onClose={onClose} title={t('epic.createTitle')}>
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -43,7 +45,7 @@ export function CreateEpicModal({ open, projectId, onClose }: Props) {
         className="space-y-4"
       >
         <Input
-          label="Epic name"
+          label={t('epic.name')}
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="User Authentication"
@@ -52,7 +54,7 @@ export function CreateEpicModal({ open, projectId, onClose }: Props) {
         />
 
         <div>
-          <label className="text-sm font-medium text-jira-text">Color</label>
+          <label className="text-sm font-medium text-jira-text">{t('epic.color')}</label>
           <div className="flex gap-2 mt-2">
             {COLORS.map((c) => (
               <button
@@ -71,10 +73,10 @@ export function CreateEpicModal({ open, projectId, onClose }: Props) {
 
         <div className="flex justify-end gap-2">
           <Button type="button" variant="secondary" onClick={onClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button type="submit" disabled={mutation.isPending || !name.trim()}>
-            {mutation.isPending ? 'Creating...' : 'Create'}
+            {mutation.isPending ? t('common.creating') : t('common.create')}
           </Button>
         </div>
       </form>

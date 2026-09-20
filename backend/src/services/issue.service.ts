@@ -1,4 +1,4 @@
-import { createIssue, getNextIssueNumber, getProjectIssues, findIssueById, updateIssue, changeIssueStatus, assignIssue, changeIssuePriority, updateIssueSprint, updateIssueEpic, touchLastActivity, incrementReviewRejectCount, countIssueDone } from "../repositories/issue.repository.js";
+import { createIssue, getNextIssueNumber, getProjectIssues, findIssueById, updateIssue, changeIssueStatus, assignIssue, changeIssuePriority, updateIssueSprint, updateIssueEpic, touchLastActivity, incrementReviewRejectCount, countIssueDone, countProjectIssues, type IssueSprintFilter } from "../repositories/issue.repository.js";
 import { deleteIssue, type CreateIssueData } from "../repositories/issue.repository.js"
 import type { AssignIssueInput, ChangIssuePriorityInput, ChangIssueStatusInput, CreateIssueInput, UpdateIssueInput, UpdateIssueSprintInput } from "../validations/issue.validation.js";
 import { findProjectById, findProjectMember } from "../repositories/project.repository.js";
@@ -96,7 +96,13 @@ export const createIssueService = async (projectId: number, reporterId: number, 
     return issue;
 }
 
-export const getProjectIssueService = async (projectId: number, currentUserId: number) => {
+export const getProjectIssueService = async (
+    projectId: number,
+    currentUserId: number,
+    page: number,
+    limit: number,
+    sprint_id?: IssueSprintFilter,
+) => {
     const project = await findProjectById(projectId);
 
     if (!project) {
@@ -109,7 +115,21 @@ export const getProjectIssueService = async (projectId: number, currentUserId: n
         throw new Error("You are not a member of this project");
     }
 
-    return getProjectIssues(projectId);
+    const skip = (page - 1) * limit;
+    const [issues, total] = await Promise.all([
+        getProjectIssues(projectId, skip, limit, sprint_id),
+        countProjectIssues(projectId, sprint_id),
+    ]);
+
+    return {
+        issues,
+        pagination: {
+            page,
+            limit,
+            total,
+            totalPage: Math.ceil(total / limit),
+        },
+    };
 }
 
 export const getIssueDetailService = async (issueId: number, currentUserId: number) => {

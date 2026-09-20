@@ -1,7 +1,7 @@
 
 import { ActivityActionType, NotificationType, SprintStatus } from "@prisma/client";
 import { findProjectById, findProjectMember } from "../repositories/project.repository.js";
-import { createSprint, findSprintById, findSprintByName, getProjectSprints, getSprintIssues, updateSprint, updateSprintStatus, type createSprintData } from "../repositories/sprint.repository.js";
+import { completeSprintWithIncompleteMove, createSprint, findSprintById, findSprintByName, getProjectSprints, getSprintIssues, updateSprint, updateSprintStatus, type createSprintData } from "../repositories/sprint.repository.js";
 import type { changeSprintStatus, CreateSprintInput, UpdateSprintInput } from "../validations/sprint.validation.js";
 import { createActivityLogService } from "./activityLog.service.js";
 import { notifyProjectMembers } from "../helper/notification.helper.js";
@@ -237,7 +237,36 @@ export const changeStatusSprintService = async (sprintId: number, currentUserId:
         throw new Error("Invalid sprint status transition");
     }
 
-    const updatedSprint = await updateSprintStatus(sprintId, status.sprint_status);
+    let updatedSprint;
+
+    if (status.sprint_status === SprintStatus.completed) {
+        const issues = await getSprintIssues(sprintId)
+        const incomplete = issues.filter((i) => i.issue_status !== 'done')
+        if (incomplete.length > 0 && status.move_incomplete_to === undefined) {
+            throw new Error("Choose where to move incomplete issues")
+        }
+        let dest: number | null = status.move_incomplete_to ?? null
+        if (dest != null) {
+            const target = await findSprintById(dest)
+            if (!target || target.project_id !== sprint.project_id) {
+                throw new Error("Target sprint not found")
+            }
+            if (target.sprint_id === sprintId) {
+                throw new Error("Cannot move incomplete issues into the sprint being completed")
+            }
+            if (target.sprint_status !== SprintStatus.planned) {
+                throw new Error("Can only move incomplete issues to a planned sprint")
+            }
+        }
+        updatedSprint = await completeSprintWithIncompleteMove({
+            sprintId,
+            allIssueIds: issues.map((i) => i.issue_id),
+            incompleteIssueIds: incomplete.map((i) => i.issue_id),
+            moveToSprintId: dest,
+        })
+    } else {
+        updatedSprint = await updateSprintStatus(sprintId, status.sprint_status);
+    }
 
 
     await createActivityLogService({
@@ -268,6 +297,7 @@ export const changeStatusSprintService = async (sprintId: number, currentUserId:
 
     return updatedSprint
 }
+
 
 export const getSprintIssuesService = async (sprintId: number, currentUserId: number) => {
     const sprint = await findSprintById(sprintId);
