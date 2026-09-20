@@ -20,6 +20,8 @@ export function ProjectSettingPage() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [inviteEmail, setInviteEmail] = useState('')
+  const [nameError, setNameError] = useState('')
+  const [descriptionError, setDescriptionError] = useState('')
   const t = useT()
 
   const { data: project, isLoading, isError } = useQuery({
@@ -44,7 +46,7 @@ export function ProjectSettingPage() {
   const updateMutation = useMutation({
     mutationFn: () =>
       projectApi.update(pid, {
-        project_name: name,
+        project_name: name.trim(),
         project_description: description || undefined,
       }),
     onSuccess: () => {
@@ -110,7 +112,15 @@ export function ProjectSettingPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (name.length < 3) return
+    const trimmedName = name.trim()
+    let nextNameError = ''
+    let nextDescriptionError = ''
+    if (trimmedName.length < 3) nextNameError = t('project.nameMin')
+    else if (trimmedName.length > 100) nextNameError = t('project.nameMax')
+    if (description.length > 1000) nextDescriptionError = t('settings.descriptionMax')
+    setNameError(nextNameError)
+    setDescriptionError(nextDescriptionError)
+    if (nextNameError || nextDescriptionError) return
     updateMutation.mutate()
   }
 
@@ -131,6 +141,7 @@ export function ProjectSettingPage() {
 
         <form
           onSubmit={handleSubmit}
+          noValidate
           className="lg:col-span-4 cinder-glass rounded-[20px] p-6 space-y-4"
         >
           <h3 className="text-base font-semibold text-jira-text">{t('settings.info')}</h3>
@@ -143,20 +154,32 @@ export function ProjectSettingPage() {
           <Input
             label={t('project.name')}
             value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            minLength={3}
+            onChange={(e) => {
+              setName(e.target.value)
+              setNameError('')
+            }}
+            maxLength={100}
+            hint={t('project.nameHint')}
+            error={nameError}
           />
 
-          <div>
+          <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-jira-text">{t('project.description')}</label>
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                setDescription(e.target.value)
+                setDescriptionError('')
+              }}
               rows={4}
-              className="mt-1 w-full rounded border border-jira-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-jira-blue"
+              maxLength={1000}
+              className={`mt-1 w-full rounded border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-jira-blue ${
+                descriptionError ? 'border-red-500' : 'border-jira-border'
+              }`}
               placeholder={t('common.optional')}
             />
+            <span className="text-xs text-jira-text-subtle">{t('settings.descriptionHint')}</span>
+            {descriptionError && <span className="text-xs text-red-500">{descriptionError}</span>}
           </div>
 
           {updateMutation.isError && (
@@ -170,7 +193,7 @@ export function ProjectSettingPage() {
           )}
 
           <div className="flex justify-end pt-2">
-            <Button type="submit" disabled={updateMutation.isPending || name.length < 3}>
+            <Button type="submit" disabled={updateMutation.isPending}>
               {updateMutation.isPending ? t('common.saving') : t('settings.saveChanges')}
             </Button>
           </div>
