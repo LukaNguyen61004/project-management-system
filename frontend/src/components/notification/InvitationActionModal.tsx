@@ -7,6 +7,7 @@ import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
 import { getApiErrorMessage } from '../../utils/apiError'
 import { toast } from 'sonner'
+import { useT } from '../../i18n/useT'
 
 interface InvitationActionModalProps {
   notification: Notification | null
@@ -16,6 +17,7 @@ interface InvitationActionModalProps {
 export function InvitationActionModal({ notification, onClose }: InvitationActionModalProps) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const t = useT()
   const projectId = notification?.related_project_id
 
   const { data: pending = [], isLoading } = useQuery({
@@ -35,7 +37,7 @@ export function InvitationActionModal({ notification, onClose }: InvitationActio
   const acceptMutation = useMutation({
     mutationFn: () => projectApi.acceptInvitation(invitation!.token),
     onSuccess: (res) => {
-      toast.success('Đã chấp nhận lời mời')
+      toast.success(t('project.joined'))
       markRead()
       queryClient.invalidateQueries({ queryKey: ['projects'] })
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
@@ -44,41 +46,42 @@ export function InvitationActionModal({ notification, onClose }: InvitationActio
       const pid = res.data.project?.project_id ?? projectId
       if (pid) navigate(`/projects/${pid}/board`)
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Chấp nhận lời mời thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('project.acceptFailed'))),
   })
 
   const declineMutation = useMutation({
     mutationFn: () => projectApi.declineInvitation(invitation!.token),
     onSuccess: () => {
-      toast.success('Đã từ chối lời mời')
+      toast.success(t('project.declined'))
       markRead()
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
       queryClient.invalidateQueries({ queryKey: ['pending-invitations'] })
       onClose()
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Từ chối lời mời thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('project.declineFailed'))),
   })
 
   const error = acceptMutation.error || declineMutation.error
 
   return (
-    <Modal open={!!notification} onClose={onClose} title="Project invitation">
+    <Modal open={!!notification} onClose={onClose} title={t('invite.title')}>
       {isLoading ? (
-        <p className="text-sm text-jira-text-subtle">Loading...</p>
+        <p className="text-sm text-jira-text-subtle">{t('common.loading')}</p>
       ) : !invitation ? (
         <p className="text-sm text-jira-text-subtle">
-          This invitation is no longer available (expired or already handled).
+          {t('invite.unavailable')}
         </p>
       ) : (
         <div className="space-y-4">
           <p className="text-sm text-jira-text">
-            You were invited to join{' '}
-            <strong>{invitation.project.project_name}</strong> (
-            {invitation.project.project_key}).
+            {t('invite.joinHint', {
+              name: invitation.project.project_name,
+              key: invitation.project.project_key,
+            })}
           </p>
           {error && (
             <p className="text-sm text-red-500">
-              {getApiErrorMessage(error, 'Action failed')}
+              {getApiErrorMessage(error, t('invite.actionFailed'))}
             </p>
           )}
           <div className="flex justify-end gap-2">
@@ -87,13 +90,13 @@ export function InvitationActionModal({ notification, onClose }: InvitationActio
               disabled={declineMutation.isPending || acceptMutation.isPending}
               onClick={() => declineMutation.mutate()}
             >
-              Decline
+              {t('invite.decline')}
             </Button>
             <Button
               disabled={acceptMutation.isPending || declineMutation.isPending}
               onClick={() => acceptMutation.mutate()}
             >
-              Accept
+              {t('project.accept')}
             </Button>
           </div>
         </div>

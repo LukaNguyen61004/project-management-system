@@ -10,6 +10,7 @@ import type { Issue } from '../../types/issue.types'
 import { getApiErrorMessage } from '../../utils/apiError'
 import { toast } from 'sonner'
 import { PRIORITY_RANK } from '../../utils/issuePriority'
+import { useT } from '../../i18n/useT'
 
 interface CreateIssueModalProps {
   open: boolean
@@ -28,6 +29,7 @@ export function CreateIssueModal({ open, onClose, projectId, canCreateBug, paren
   const [description, setDescription] = useState('')
   const [type, setType] = useState<IssueType>('task')
   const [priority, setPriority] = useState<IssuePriority>('medium')
+  const t = useT()
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -39,12 +41,12 @@ export function CreateIssueModal({ open, onClose, projectId, canCreateBug, paren
         ...(parentIssue && { parent_issue_id: parentIssue.issue_id }),
       }),
     onSuccess: () => {
-      toast.success('Đã tạo issue')
+      toast.success(t('issue.created'))
       queryClient.invalidateQueries({ queryKey: ['issues', projectId] })
       resetForm()
       onClose()
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Tạo issue thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('issue.createFailed'))),
   })
 
   useEffect(() => {
@@ -85,54 +87,54 @@ export function CreateIssueModal({ open, onClose, projectId, canCreateBug, paren
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Create issue">
+    <Modal open={open} onClose={onClose} title={t('issue.createTitle')}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
-          label="Summary"
+          label={t('issue.summary')}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="What needs to be done?"
+          placeholder={t('issue.summaryPlaceholder')}
           required
           minLength={3}
         />
 
         <div>
-          <label className="text-sm font-medium text-jira-text">Description</label>
+          <label className="text-sm font-medium text-jira-text">{t('issue.description')}</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
             className={selectClass}
-            placeholder="Optional..."
+            placeholder={t('common.optional')}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium text-jira-text">Type</label>
+            <label className="text-sm font-medium text-jira-text">{t('issue.type')}</label>
             {parentIssue ? (
-              <input className={selectClass} value="Subtask" disabled readOnly />
+              <input className={selectClass} value={t('type.subtask')} disabled readOnly />
             ) : (
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as IssueType)}
                 className={selectClass}
               >
-                {availableTypes.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
+                {availableTypes.map((item) => (
+                  <option key={item.value} value={item.value}>{t(`type.${item.value}`)}</option>
                 ))}
               </select>
             )}
           </div>
           <div>
-            <label className="text-sm font-medium text-jira-text">Priority</label>
+            <label className="text-sm font-medium text-jira-text">{t('issue.priority')}</label>
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value as IssuePriority)}
               className={selectClass}
             >
               {availablePriorities.map((p) => (
-                <option key={p.value} value={p.value}>{p.label}</option>
+                <option key={p.value} value={p.value}>{t(`priority.${p.value}`)}</option>
               ))}
             </select>
           </div>
@@ -140,14 +142,14 @@ export function CreateIssueModal({ open, onClose, projectId, canCreateBug, paren
 
         {mutation.isError && (
           <p className="text-sm text-red-500">
-            {getApiErrorMessage(mutation.error, 'Failed to create issue')}
+            {getApiErrorMessage(mutation.error, t('issue.createFailed'))}
           </p>
         )}
 
         <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button type="button" variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
           <Button type="submit" disabled={mutation.isPending || title.length < 3}>
-            {mutation.isPending ? 'Creating...' : 'Create'}
+            {mutation.isPending ? t('common.creating') : t('common.create')}
           </Button>
         </div>
       </form>

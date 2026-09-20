@@ -1,36 +1,39 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { Issue } from '../types/issue.types'
-import { issueApi } from '../api/issue.api'
+import { issueApi, issueListKey } from '../api/issue.api'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '../utils/apiError'
+import { t } from '../i18n/useT'
 
 export function useMoveIssueToSprint(projectId: number) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ issueId, sprintId }: { issueId: number; sprintId: number | null }) =>
-      issueApi.updateSprint(issueId, sprintId),
-    onMutate: async ({ issueId, sprintId }) => {
-      await queryClient.cancelQueries({ queryKey: ['issues', projectId] })
-      const previous = queryClient.getQueryData<Issue[]>(['issues', projectId])
-      queryClient.setQueryData<Issue[]>(['issues', projectId], (old = []) =>
-        old.map((issue) =>
-          issue.issue_id === issueId ? { ...issue, sprint_id: sprintId } : issue
-        )
-      )
-      return { previous }
-    },
+    mutationFn: ({
+      issueId,
+      sprintId,
+    }: {
+      issueId: number
+      sprintId: number | null
+      fromSprintId?: number | null
+    }) => issueApi.updateSprint(issueId, sprintId),
     onSuccess: (_data, { sprintId }) => {
-      toast.success(sprintId == null ? 'Đã đưa issue về backlog' : 'Đã chuyển issue vào sprint')
+      toast.success(sprintId == null ? t('backlog.movedToBacklog') : t('backlog.movedToSprint'))
     },
-    onError: (err, _vars, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(['issues', projectId], context.previous)
+    onError: (err) => toast.error(getApiErrorMessage(err, t('backlog.moveFailed'))),
+    onSettled: (_data, _err, vars) => {
+      // Refetch đúng túi: mọi page backlog + sprint nguồn + sprint đích
+      queryClient.invalidateQueries({ queryKey: ['issues', projectId, 'backlog'] })
+      queryClient.invalidateQueries({ queryKey: issueListKey.all(projectId) })
+      if (vars.fromSprintId != null) {
+        queryClient.invalidateQueries({
+          queryKey: issueListKey.sprint(projectId, vars.fromSprintId),
+        })
       }
-      toast.error(getApiErrorMessage(err, 'Chuyển sprint thất bại'))
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['issues', projectId] })
+      if (vars.sprintId != null) {
+        queryClient.invalidateQueries({
+          queryKey: issueListKey.sprint(projectId, vars.sprintId),
+        })
+      }
     },
   })
 }

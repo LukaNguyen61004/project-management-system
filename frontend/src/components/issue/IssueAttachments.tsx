@@ -7,6 +7,8 @@ import { Button } from '../ui/Button'
 import { getApiErrorMessage } from '../../utils/apiError'
 import { toast } from 'sonner'
 import { formatDistanceToNow } from 'date-fns'
+import { useT } from '../../i18n/useT'
+import { useDateFnsLocale } from '../../i18n/dateLocale'
 
 interface IssueAttachmentsProps {
   issueId: number
@@ -20,6 +22,8 @@ export function IssueAttachments({ issueId, projectId }: IssueAttachmentsProps) 
   const [linkUrl, setLinkUrl] = useState('')
   const [linkName, setLinkName] = useState('')
   const [error, setError] = useState('')
+  const t = useT()
+  const dateLocale = useDateFnsLocale()
 
   const { data: attachments = [], isLoading } = useQuery({
     queryKey: ['attachments', issueId],
@@ -43,11 +47,11 @@ export function IssueAttachments({ issueId, projectId }: IssueAttachmentsProps) 
       setLinkUrl('')
       setLinkName('')
       setError('')
-      toast.success('Đã thêm attachment')
+      toast.success(t('attachment.added'))
       invalidate()
     },
     onError: (err) => {
-      const msg = getApiErrorMessage(err, 'Failed to add attachment')
+      const msg = getApiErrorMessage(err, t('attachment.addFailed'))
       setError(msg)
       toast.error(msg)
     },
@@ -56,10 +60,10 @@ export function IssueAttachments({ issueId, projectId }: IssueAttachmentsProps) 
   const deleteMutation = useMutation({
     mutationFn: (attachmentId: number) => attachmentApi.delete(attachmentId),
     onSuccess: () => {
-      toast.success('Đã xóa attachment')
+      toast.success(t('attachment.deleted'))
       invalidate()
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Xóa attachment thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('attachment.deleteFailed'))),
   })
 
   const handleAddLink = (e: React.FormEvent) => {
@@ -87,7 +91,7 @@ export function IssueAttachments({ issueId, projectId }: IssueAttachmentsProps) 
         file_url: url,
       })
     } catch (err) {
-      const msg = getApiErrorMessage(err, 'Failed to upload file')
+      const msg = getApiErrorMessage(err, t('attachment.uploadFailed'))
       setError(msg)
       toast.error(msg)
     } finally {
@@ -99,7 +103,7 @@ export function IssueAttachments({ issueId, projectId }: IssueAttachmentsProps) 
     <div className="pt-4 border-t border-jira-border">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-jira-text-subtle">
-          Attachments ({attachments.length})
+          {t('attachment.title', { count: attachments.length })}
         </h3>
         <div className="flex gap-2">
           <input
@@ -117,14 +121,14 @@ export function IssueAttachments({ issueId, projectId }: IssueAttachmentsProps) 
             onClick={() => fileInputRef.current?.click()}
           >
             <Paperclip size={14} />
-            {createMutation.isPending ? 'Uploading...' : 'Attach file'}
+            {createMutation.isPending ? t('attachment.uploading') : t('attachment.attachFile')}
           </Button>
         </div>
       </div>
-      <p className="text-xs text-jira-text-subtle mb-3">Ảnh, PDF, Word… tối đa 10MB/file</p>
+      <p className="text-xs text-jira-text-subtle mb-3">{t('attachment.hint')}</p>
 
       {isLoading ? (
-        <p className="text-sm text-jira-text-subtle">Loading attachments...</p>
+        <p className="text-sm text-jira-text-subtle">{t('attachment.loading')}</p>
       ) : attachments.length > 0 ? (
         <div className="space-y-2 mb-4">
           {attachments.map((a) => (
@@ -161,7 +165,7 @@ export function IssueAttachments({ issueId, projectId }: IssueAttachmentsProps) 
                 </a>
                 <p className="text-xs text-jira-text-subtle">
                   {a.user?.user_name || a.user?.user_email} ·{' '}
-                  {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(a.created_at), { addSuffix: true, locale: dateLocale })}
                 </p>
               </div>
 
@@ -170,7 +174,7 @@ export function IssueAttachments({ issueId, projectId }: IssueAttachmentsProps) 
                 target="_blank"
                 rel="noreferrer"
                 className="p-1 rounded hover:bg-gray-100 text-jira-text-subtle"
-                title="Open"
+                title={t('common.open')}
               >
                 <ExternalLink size={14} />
               </a>
@@ -178,12 +182,12 @@ export function IssueAttachments({ issueId, projectId }: IssueAttachmentsProps) 
               <button
                 type="button"
                 onClick={() => {
-                  if (window.confirm('Delete this attachment?')) {
+                  if (window.confirm(t('attachment.confirmDelete'))) {
                     deleteMutation.mutate(a.attachment_id)
                   }
                 }}
                 className="p-1 rounded hover:bg-red-50 text-jira-text-subtle hover:text-red-500"
-                title="Delete"
+                title={t('common.delete')}
               >
                 <Trash2 size={14} />
               </button>
@@ -191,16 +195,16 @@ export function IssueAttachments({ issueId, projectId }: IssueAttachmentsProps) 
           ))}
         </div>
       ) : (
-        <p className="text-sm text-jira-text-subtle mb-4">No attachments yet.</p>
+        <p className="text-sm text-jira-text-subtle mb-4">{t('attachment.empty')}</p>
       )}
 
       <form onSubmit={handleAddLink} className="space-y-2">
-        <p className="text-xs font-medium text-jira-text-subtle">Add link</p>
+        <p className="text-xs font-medium text-jira-text-subtle">{t('attachment.addLink')}</p>
         <input
           type="text"
           value={linkName}
           onChange={(e) => setLinkName(e.target.value)}
-          placeholder="Link title"
+          placeholder={t('attachment.linkTitle')}
           className="w-full rounded border border-jira-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-jira-blue"
         />
         <input
@@ -216,7 +220,7 @@ export function IssueAttachments({ issueId, projectId }: IssueAttachmentsProps) 
           disabled={!linkUrl.trim() || !linkName.trim() || createMutation.isPending}
         >
           <Link2 size={14} />
-          {createMutation.isPending ? 'Adding...' : 'Add link'}
+          {createMutation.isPending ? t('attachment.adding') : t('attachment.addLink')}
         </Button>
       </form>
 

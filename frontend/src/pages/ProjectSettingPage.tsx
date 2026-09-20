@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { LogOut, Mail, UserMinus } from 'lucide-react'
 import { ActivityLogList } from '../components/activityLog/ActivityLogList'
 import { useAuthStore } from '../store/auth.store'
+import { useT } from '../i18n/useT'
 
 export function ProjectSettingPage() {
   const { projectId } = useParams()
@@ -19,6 +20,7 @@ export function ProjectSettingPage() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [inviteEmail, setInviteEmail] = useState('')
+  const t = useT()
 
   const { data: project, isLoading, isError } = useQuery({
     queryKey: ['project', pid],
@@ -46,11 +48,11 @@ export function ProjectSettingPage() {
         project_description: description || undefined,
       }),
     onSuccess: () => {
-      toast.success('Đã lưu project')
+      toast.success(t('settings.saved'))
       queryClient.invalidateQueries({ queryKey: ['project', pid] })
       queryClient.invalidateQueries({ queryKey: ['projects'] })
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Lưu project thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('settings.saveFailed'))),
   })
 
   const inviteMutation = useMutation({
@@ -58,50 +60,50 @@ export function ProjectSettingPage() {
     onSuccess: (res) => {
       const inv = res.data.invitation
       if (inv.emailSent) {
-        toast.success('Đã gửi lời mời (email + trong app)')
+        toast.success(t('settings.inviteSentEmail'))
       } else {
-        toast.success('Đã tạo lời mời trong app')
+        toast.success(t('settings.inviteSentApp'))
         toast.warning(
           inv.emailError
-            ? `Email chưa gửi được: ${inv.emailError}`
-            : 'Email chưa gửi được (Resend chỉ gửi tới email đăng ký Resend)'
+            ? t('settings.inviteEmailFail', { error: inv.emailError })
+            : t('settings.inviteEmailResend')
         )
       }
       setInviteEmail('')
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Gửi lời mời thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('settings.inviteFailed'))),
   })
 
   const removeMutation = useMutation({
     mutationFn: (userId: number) => projectApi.removeMember(pid, userId),
     onSuccess: () => {
-      toast.success('Đã xóa thành viên')
+      toast.success(t('settings.memberRemoved'))
       queryClient.invalidateQueries({ queryKey: ['members', pid] })
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Xóa thành viên thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('settings.removeFailed'))),
   })
 
   const deleteMutation = useMutation({
     mutationFn: () => projectApi.delete(pid),
     onSuccess: () => {
-      toast.success('Đã xóa project')
+      toast.success(t('settings.deleted'))
       queryClient.invalidateQueries({ queryKey: ['projects'] })
       queryClient.removeQueries({ queryKey: ['project', pid] })
       navigate('/projects', { replace: true })
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Xóa project thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('settings.deleteFailed'))),
   })
 
   const leaveMutation = useMutation({
     mutationFn: () => projectApi.leave(pid),
     onSuccess: () => {
-      toast.success('Đã rời project')
+      toast.success(t('settings.left'))
       queryClient.invalidateQueries({ queryKey: ['projects'] })
       queryClient.removeQueries({ queryKey: ['project', pid] })
       queryClient.removeQueries({ queryKey: ['members', pid] })
       navigate('/projects', { replace: true })
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Rời project thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('settings.leaveFailed'))),
   })
 
   const isOwner = !!project && currentUserId === project.owner_id
@@ -118,12 +120,12 @@ export function ProjectSettingPage() {
     inviteMutation.mutate()
   }
 
-  if (isLoading) return <div className="p-6 text-jira-text-subtle">Loading settings...</div>
-  if (isError) return <div className="p-6 text-red-500">Failed to load project.</div>
+  if (isLoading) return <div className="p-6 text-jira-text-subtle">{t('settings.loading')}</div>
+  if (isError) return <div className="p-6 text-red-500">{t('settings.loadFailed')}</div>
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h2 className="text-lg font-semibold text-jira-text mb-6">Project settings</h2>
+      <h2 className="text-lg font-semibold text-jira-text mb-6">{t('settings.title')}</h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 items-start">
 
@@ -131,15 +133,15 @@ export function ProjectSettingPage() {
           onSubmit={handleSubmit}
           className="lg:col-span-4 cinder-glass rounded-[20px] p-6 space-y-4"
         >
-          <h3 className="text-base font-semibold text-jira-text">Project info</h3>
+          <h3 className="text-base font-semibold text-jira-text">{t('settings.info')}</h3>
           <div>
-            <label className="text-sm font-medium text-jira-text">Project key</label>
+            <label className="text-sm font-medium text-jira-text">{t('project.key')}</label>
             <p className="mt-1 text-sm text-jira-text-subtle">{project?.project_key}</p>
-            <p className="text-xs text-jira-text-subtle mt-0.5">Key cannot be changed</p>
+            <p className="text-xs text-jira-text-subtle mt-0.5">{t('settings.keyLocked')}</p>
           </div>
 
           <Input
-            label="Project name"
+            label={t('project.name')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -147,63 +149,63 @@ export function ProjectSettingPage() {
           />
 
           <div>
-            <label className="text-sm font-medium text-jira-text">Description</label>
+            <label className="text-sm font-medium text-jira-text">{t('project.description')}</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
               className="mt-1 w-full rounded border border-jira-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-jira-blue"
-              placeholder="Optional description..."
+              placeholder={t('common.optional')}
             />
           </div>
 
           {updateMutation.isError && (
             <p className="text-sm text-red-500">
-              {getApiErrorMessage(updateMutation.error, 'Failed to update project')}
+              {getApiErrorMessage(updateMutation.error, t('settings.updateFailed'))}
             </p>
           )}
 
           {updateMutation.isSuccess && (
-            <p className="text-sm text-green-600">Project updated successfully.</p>
+            <p className="text-sm text-green-600">{t('settings.updated')}</p>
           )}
 
           <div className="flex justify-end pt-2">
             <Button type="submit" disabled={updateMutation.isPending || name.length < 3}>
-              {updateMutation.isPending ? 'Saving...' : 'Save changes'}
+              {updateMutation.isPending ? t('common.saving') : t('settings.saveChanges')}
             </Button>
           </div>
         </form>
 
 
         <section className="lg:col-span-6 cinder-glass rounded-[20px] p-6">
-          <h3 className="text-base font-semibold text-jira-text mb-4">Team members</h3>
+          <h3 className="text-base font-semibold text-jira-text mb-4">{t('settings.team')}</h3>
           <form onSubmit={handleInviteSubmit} className="flex gap-2 mb-4">
             <Input
               type="email"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
-              placeholder="Email to invite..."
+              placeholder={t('settings.invitePlaceholder')}
               className="flex-1"
               required
             />
             <Button type="submit" disabled={inviteMutation.isPending}>
               <Mail size={16} />
-              {inviteMutation.isPending ? 'Sending...' : 'Invite'}
+              {inviteMutation.isPending ? t('settings.sending') : t('settings.invite')}
             </Button>
           </form>
           {inviteMutation.isError && (
             <p className="text-sm text-red-500 mb-4">
-              {getApiErrorMessage(inviteMutation.error, 'Failed to send invitation')}
+              {getApiErrorMessage(inviteMutation.error, t('settings.inviteFailed'))}
             </p>
           )}
           {inviteMutation.isSuccess && (
             <p className="text-sm text-green-600 mb-4">
-              Invitation sent. User must accept before appearing in the list.
+              {t('settings.inviteSentHint')}
             </p>
           )}
           <div className="divide-y divide-jira-border">
             {members.length === 0 ? (
-              <p className="text-sm text-jira-text-subtle py-4 text-center">No members yet</p>
+              <p className="text-sm text-jira-text-subtle py-4 text-center">{t('settings.noMembers')}</p>
             ) : (
               members.map((member) => (
                 <div
@@ -218,7 +220,7 @@ export function ProjectSettingPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded capitalize">
-                      {member.role}
+                      {member.role === 'admin' ? t('role.admin') : t('role.member')}
                     </span>
                     {member.role !== 'admin' && (
                       <button
@@ -226,7 +228,7 @@ export function ProjectSettingPage() {
                         onClick={() => removeMutation.mutate(member.user_id)}
                         disabled={removeMutation.isPending}
                         className="p-1.5 rounded hover:bg-red-50 text-red-500"
-                        title="Remove member"
+                        title={t('settings.removeMember')}
                       >
                         <UserMinus size={16} />
                       </button>
@@ -239,15 +241,15 @@ export function ProjectSettingPage() {
         </section>
       </div>
       <section className="mt-6 cinder-glass rounded-[20px] p-6">
-        <h3 className="text-base font-semibold text-jira-text mb-4">Activity</h3>
+        <h3 className="text-base font-semibold text-jira-text mb-4">{t('settings.activity')}</h3>
         <ActivityLogList projectId={pid} />
       </section>
 
       {!isOwner && (
         <section className="mt-6 cinder-glass rounded-[20px] p-6">
-          <h3 className="text-base font-semibold text-jira-text mb-2">Leave project</h3>
+          <h3 className="text-base font-semibold text-jira-text mb-2">{t('settings.leaveTitle')}</h3>
           <p className="text-sm text-jira-text-subtle mb-4">
-            Rời project sẽ mất quyền truy cập board, backlog và dữ liệu trong project này.
+            {t('settings.leaveHint')}
           </p>
           <Button
             type="button"
@@ -257,7 +259,7 @@ export function ProjectSettingPage() {
             onClick={() => {
               if (
                 window.confirm(
-                  `Rời project "${project?.project_name}"? Bạn sẽ không còn là thành viên.`
+                  t('settings.leaveConfirm', { name: project?.project_name ?? '' })
                 )
               ) {
                 leaveMutation.mutate()
@@ -265,16 +267,16 @@ export function ProjectSettingPage() {
             }}
           >
             <LogOut size={16} />
-            {leaveMutation.isPending ? 'Leaving...' : 'Leave project'}
+            {leaveMutation.isPending ? t('settings.leaving') : t('settings.leave')}
           </Button>
         </section>
       )}
 
       {isOwner && (
         <section className="mt-6 cinder-glass rounded-[20px] border border-red-400/40 p-6">
-          <h3 className="text-base font-semibold text-red-600 mb-2">Danger zone</h3>
+          <h3 className="text-base font-semibold text-red-600 mb-2">{t('settings.danger')}</h3>
           <p className="text-sm text-jira-text-subtle mb-4">
-            Xóa project sẽ xóa toàn bộ issues, sprints, epics và thành viên. Không thể hoàn tác.
+            {t('settings.deleteHint')}
           </p>
           <Button
             type="button"
@@ -284,14 +286,14 @@ export function ProjectSettingPage() {
             onClick={() => {
               if (
                 window.confirm(
-                  `Xóa project "${project?.project_name}"? Hành động này không thể hoàn tác.`
+                  t('settings.deleteConfirm', { name: project?.project_name ?? '' })
                 )
               ) {
                 deleteMutation.mutate()
               }
             }}
           >
-            {deleteMutation.isPending ? 'Deleting...' : 'Delete project'}
+            {deleteMutation.isPending ? t('common.deleting') : t('settings.deleteProject')}
           </Button>
         </section>
       )}

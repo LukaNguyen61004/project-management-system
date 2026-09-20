@@ -2,6 +2,7 @@ import { formatDistanceToNow } from 'date-fns'
 import type { Notification } from '../../types/notification.types'
 import { Avatar } from '../ui/Avatar'
 import { cn } from '../../utils/cn'
+import { useDateFnsLocale } from '../../i18n/dateLocale'
 
 interface NotificationItemProps {
   notification: Notification
@@ -9,6 +10,7 @@ interface NotificationItemProps {
 }
 
 export function NotificationItem({ notification, onClick }: NotificationItemProps) {
+  const dateLocale = useDateFnsLocale()
   return (
     <button
       type="button"
@@ -32,6 +34,7 @@ export function NotificationItem({ notification, onClick }: NotificationItemProp
             <span className="text-xs text-jira-text-subtle shrink-0">
               {formatDistanceToNow(new Date(notification.notifi_created_at), {
                 addSuffix: true,
+                locale: dateLocale,
               })}
             </span>
           </div>

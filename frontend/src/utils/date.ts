@@ -1,4 +1,6 @@
 import { format, parseISO } from 'date-fns'
+import { t } from '../i18n/useT'
+import { getDateFnsLocale } from '../i18n/dateLocale'
 
 export function dateInputToISO(date: string): string | undefined {
   if (!date) return undefined
@@ -20,7 +22,7 @@ export function isoToDateInput(iso: string | null | undefined): string {
 export function formatShortDate(iso: string | null | undefined): string {
   if (!iso) return ''
   try {
-    return format(parseISO(iso), 'd MMM yyyy')
+    return format(parseISO(iso), 'd MMM yyyy', { locale: getDateFnsLocale() })
   } catch {
     return iso
   }
@@ -31,8 +33,9 @@ export function formatSprintDateRange(
   end: string | null
 ): string | null {
   if (!start && !end) return null
-  const fmt = (iso: string) => format(parseISO(isoToDateInput(iso)), 'd MMM yyyy')
+  const fmt = (iso: string) =>
+    format(parseISO(isoToDateInput(iso)), 'd MMM yyyy', { locale: getDateFnsLocale() })
   if (start && end) return `${fmt(start)} – ${fmt(end)}`
-  if (start) return `From ${fmt(start)}`
-  return `Until ${fmt(end!)}`
+  if (start) return t('date.from', { date: fmt(start) })
+  return t('date.until', { date: fmt(end!) })
 }

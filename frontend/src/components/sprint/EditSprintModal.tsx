@@ -8,6 +8,7 @@ import { Button } from '../ui/Button'
 import { dateInputToISO, isoToDateInput } from '../../utils/date'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '../../utils/apiError'
+import { useT } from '../../i18n/useT'
 
 interface EditSprintModalProps {
   open: boolean
@@ -24,6 +25,7 @@ export function EditSprintModal({ open, sprint, projectId, onClose }: EditSprint
   const [endDate, setEndDate] = useState('')
   const [reason, setReason] = useState('')
   const [error, setError] = useState('')
+  const t = useT()
 
   const startRescheduled =
     !!sprint?.start_date &&
@@ -58,25 +60,25 @@ export function EditSprintModal({ open, sprint, projectId, onClose }: EditSprint
         ...(needsReason ? { reason: reason.trim() } : {}),
       }),
     onSuccess: () => {
-      toast.success('Đã lưu sprint')
+      toast.success(t('sprint.saved'))
       queryClient.invalidateQueries({ queryKey: ['sprints', projectId] })
       onClose()
     },
     onError: (err) => {
-      const msg = getApiErrorMessage(err, 'Lưu sprint thất bại')
+      const msg = getApiErrorMessage(err, t('sprint.saveFailed'))
       setError(msg)
       toast.error(msg)
     },
   })
 
   return (
-    <Modal open={open} onClose={onClose} title="Edit sprint">
+    <Modal open={open} onClose={onClose} title={t('sprint.editTitle')}>
       <form
         onSubmit={(e) => {
           e.preventDefault()
           if (name.length < 3) return
           if (needsReason && reason.trim().length < 3) {
-            setError('Cần lý do (ít nhất 3 ký tự) khi đổi ngày sprint')
+            setError(t('sprint.dateReasonRequired'))
             return
           }
           updateMutation.mutate()
@@ -84,25 +86,25 @@ export function EditSprintModal({ open, sprint, projectId, onClose }: EditSprint
         className="space-y-4"
       >
         <Input
-          label="Sprint name"
+          label={t('sprint.name')}
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
           minLength={3}
         />
         <div>
-          <label className="text-sm font-medium text-jira-text">Description</label>
+          <label className="text-sm font-medium text-jira-text">{t('issue.description')}</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
             className="mt-1 w-full rounded border border-jira-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-jira-blue"
-            placeholder="Optional..."
+            placeholder={t('common.optional')}
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium text-jira-text">Start date</label>
+            <label className="text-sm font-medium text-jira-text">{t('sprint.startDate')}</label>
             <input
               type="date"
               value={startDate}
@@ -111,7 +113,7 @@ export function EditSprintModal({ open, sprint, projectId, onClose }: EditSprint
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-jira-text">End date</label>
+            <label className="text-sm font-medium text-jira-text">{t('sprint.endDate')}</label>
             <input
               type="date"
               value={endDate}
@@ -123,24 +125,24 @@ export function EditSprintModal({ open, sprint, projectId, onClose }: EditSprint
         {needsReason && (
           <div>
             <label className="text-sm font-medium text-jira-text">
-              Lý do thay đổi ngày
+              {t('sprint.dateReason')}
             </label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={2}
               className="mt-1 w-full rounded border border-jira-border px-3 py-2 text-sm"
-              placeholder="Ví dụ: dời deadline vì scope tăng..."
+              placeholder={t('sprint.dateReasonHint')}
             />
           </div>
         )}
         {error && <p className="text-sm text-red-500">{error}</p>}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="secondary" onClick={onClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button type="submit" disabled={updateMutation.isPending || name.length < 3}>
-            Save
+            {updateMutation.isPending ? t('common.saving') : t('common.save')}
           </Button>
         </div>
       </form>

@@ -12,6 +12,7 @@ import { Avatar } from '../components/ui/Avatar'
 import { uploadAvatar } from '../utils/uploadAvatar'
 import { getApiErrorMessage } from '../utils/apiError'
 import { toast } from 'sonner'
+import { useT } from '../i18n/useT'
 
 export function ProfilePage() {
   const navigate = useNavigate()
@@ -24,6 +25,7 @@ export function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [uploading, setUploading] = useState(false)
+  const t = useT()
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile'],
@@ -44,13 +46,13 @@ export function ProfilePage() {
         user_avatar_url: avatarUrl || undefined,
       }),
     onSuccess: (res) => {
-      toast.success('Đã lưu profile')
+      toast.success(t('profile.saved'))
       updateUser(res.data.data)
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       navigate('/projects')
     },
     onError: (err) => {
-      const msg = getApiErrorMessage(err, 'Failed to save profile')
+      const msg = getApiErrorMessage(err, t('profile.saveFailed'))
       setError(msg)
       toast.error(msg)
     },
@@ -64,9 +66,9 @@ export function ProfilePage() {
     try {
       const url = await uploadAvatar(currentUser.user_id, file)
       setAvatarUrl(url)
-      toast.success('Đã upload avatar')
+      toast.success(t('profile.uploaded'))
     } catch (err) {
-      const msg = getApiErrorMessage(err, 'Failed to upload avatar')
+      const msg = getApiErrorMessage(err, t('profile.uploadFailed'))
       setError(msg)
       toast.error(msg)
     } finally {
@@ -76,14 +78,14 @@ export function ProfilePage() {
   }
 
   if (isLoading) {
-    return <div className="min-h-screen bg-jira-bg p-6">Loading profile...</div>
+    return <div className="min-h-screen bg-jira-bg p-6">{t('profile.loading')}</div>
   }
 
   return (
     <div className="relative min-h-screen">
       <CinderBackdrop />
       <div className="relative z-10 p-6 space-y-4">
-      <AppHeader title="Your profile" subtitle={profile?.user_email} />
+      <AppHeader title={t('profile.title')} subtitle={profile?.user_email} />
 
       <div className="max-w-lg mx-auto">
         <div className="cinder-glass rounded-[20px] p-6 space-y-6">
@@ -99,7 +101,7 @@ export function ProfilePage() {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
                 className="absolute bottom-0 right-0 p-1.5 rounded-full bg-jira-blue text-[#151414] hover:bg-jira-blue-dark"
-                title="Change avatar"
+                title={t('profile.changeAvatar')}
               >
                 <Camera size={14} />
               </button>
@@ -112,24 +114,24 @@ export function ProfilePage() {
               />
             </div>
             <p className="text-xs text-jira-text-subtle">
-              {uploading ? 'Uploading...' : 'JPG, PNG — max 2MB'}
+              {uploading ? t('profile.uploading') : t('profile.avatarHint')}
             </p>
           </div>
 
           <Input
-            label="Display name"
+            label={t('profile.displayName')}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Your name"
+            placeholder={t('profile.namePlaceholder')}
           />
 
           <div>
-            <label className="text-sm font-medium text-jira-text">Email</label>
+            <label className="text-sm font-medium text-jira-text">{t('auth.email')}</label>
             <p className="mt-1 text-sm text-jira-text-subtle">{profile?.user_email}</p>
           </div>
 
           <div>
-            <label className="text-sm font-medium text-jira-text">Login method</label>
+            <label className="text-sm font-medium text-jira-text">{t('profile.loginMethod')}</label>
             <p className="mt-1 text-sm text-jira-text-subtle capitalize">
               {profile?.provider?.toLowerCase()}
             </p>
@@ -143,13 +145,13 @@ export function ProfilePage() {
               type="button"
               onClick={() => navigate('/projects')}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={() => saveMutation.mutate()}
               disabled={name.trim().length < 2 || saveMutation.isPending || uploading}
             >
-              {saveMutation.isPending ? 'Saving...' : 'Save profile'}
+              {saveMutation.isPending ? t('common.saving') : t('profile.save')}
             </Button>
           </div>
         </div>

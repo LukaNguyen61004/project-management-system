@@ -22,7 +22,7 @@ export const createIssueSchema = z.object({
         .int()
         .positive()
         .optional(),
-    
+
     parent_issue_id: z.number().int().positive().optional()
 })
 
@@ -95,4 +95,15 @@ export const updateIssueEpicSchema = z.object({
 });
 
 export type UpdateIssueEpicInput = z.infer<typeof updateIssueEpicSchema>;
+
+export const getProjectIssuesQuerySchema = z.object({
+    page: z.coerce.number().min(1).default(1),
+    limit: z.coerce.number().min(1).max(100).default(50),
+    sprint_id: z.union([
+        z.literal('backlog'),
+        z.coerce.number().int().positive(),
+    ]).optional()
+});
+
+export type GetProjectIssuesQuery = z.infer<typeof getProjectIssuesQuerySchema>;
 

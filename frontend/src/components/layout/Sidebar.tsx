@@ -1,32 +1,22 @@
 import { NavLink } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { LayoutGrid, ListTodo, Settings, ChevronLeft } from 'lucide-react'
+import { useT } from '../../i18n/useT'
 
 export function Sidebar() {
     const { projectId } = useParams();
+    const t = useT()
 
     const navItems = [
-        {
-            to: `/projects/${projectId}/board`,
-            icon: LayoutGrid,
-            label: 'Board'
-        },
-        {
-            to: `/projects/${projectId}/backlog`,
-            icon: ListTodo,
-            label: 'Backlog'
-        },
-        {
-            to: `/projects/${projectId}/settings`,
-            icon: Settings,
-            label: 'Setting'
-        }
+        { to: `/projects/${projectId}/board`, icon: LayoutGrid, label: t('nav.board') },
+        { to: `/projects/${projectId}/backlog`, icon: ListTodo, label: t('nav.backlog') },
+        { to: `/projects/${projectId}/settings`, icon: Settings, label: t('nav.settings') },
     ]
 
     return (
         <aside className="w-16 lg:w-[240px] cinder-glass rounded-[30px] flex flex-col shrink-0 min-h-[calc(100vh-3rem)]">
             <div className="p-6 hidden lg:block">
-                <p className="text-[32px] font-bold text-white">Menu</p>
+                <p className="text-[32px] font-bold text-white">{t('nav.menu')}</p>
             </div>
             <nav className="flex-1 py-2">
                 {navItems.map(({ to, icon: Icon, label }) => (
@@ -50,7 +40,7 @@ export function Sidebar() {
                     to="/projects"
                     className="flex items-center gap-2 text-white/80 hover:text-white text-sm">
                     <ChevronLeft size={18} />
-                    <span className="hidden lg:block text-sm font-bold">Back to Workspace</span>
+                    <span className="hidden lg:block text-sm font-bold">{t('nav.backToWorkspace')}</span>
                 </NavLink>
             </div>
         </aside>

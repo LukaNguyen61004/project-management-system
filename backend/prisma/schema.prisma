@@ -248,6 +248,8 @@ model Sprint {
 
   activity_logs ActivityLog[]
 
+  sprint_close_issue_ids Int[] @default([])
+
   @@unique([project_id, sprint_name])
   @@index([project_id])
   @@index([sprint_status])

@@ -9,6 +9,7 @@ import { getApiErrorMessage } from '../utils/apiError'
 import { useGoogleLogin } from '../hooks/useGoogleLogin'
 import { getPostLoginPath } from '../utils/getPostLoginPath'
 import { AuthShell } from '../components/auth/AuthShell'
+import { useT } from '../i18n/useT'
 
 const authInputClass =
     'h-12 rounded-none bg-transparent border-0 border-b border-white/70 px-0 focus:ring-0 text-white'
@@ -21,6 +22,7 @@ export function LoginPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
+    const t = useT()
 
     const mutation = useMutation({
         mutationFn: (data: { email: string; password: string }) =>
@@ -32,7 +34,7 @@ export function LoginPage() {
             navigate(getPostLoginPath(searchParams.get('redirect')), { replace: true })
         },
         onError: (err) => {
-            setError(getApiErrorMessage(err, 'Login failed'))
+            setError(getApiErrorMessage(err, t('auth.loginFailed')))
         },
     })
 
@@ -46,15 +48,15 @@ export function LoginPage() {
         <AuthShell mode="signin">
             <p className="font-[Jua] text-2xl tracking-wide text-white">CINDER</p>
             <h1 className="mt-3 font-[Hind] text-[30px] font-medium leading-tight text-white uppercase">
-                Sign in account
+                {t('auth.signInTitle')}
             </h1>
             <p className="mt-3 font-[Hind] text-xl text-[rgba(252,252,252,0.48)]">
-                Welcome back !!!
+                {t('auth.welcomeBack')}
             </p>
 
             <form onSubmit={handleSubmit} className="mt-10 space-y-6">
                 <Input
-                    label="Email"
+                    label={t('auth.email')}
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -63,7 +65,7 @@ export function LoginPage() {
                     className={authInputClass}
                 />
                 <Input
-                    label="Password"
+                    label={t('auth.password')}
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -79,7 +81,7 @@ export function LoginPage() {
                         className="h-[70px] w-full h-12 rounded-full border border-white bg-transparent text-white hover:bg-transparent"
                         disabled={mutation.isPending}
                     >
-                        {mutation.isPending ? 'Signing in...' : 'Sign in'}
+                        {mutation.isPending ? t('auth.signingIn') : t('auth.signIn')}
                     </Button>
 
 
@@ -89,12 +91,12 @@ export function LoginPage() {
                         disabled={googleLogin.isPending}
                         onClick={() => googleLogin.mutate()}
                     >
-                        {googleLogin.isPending ? 'Signing in...' : 'Google'}
+                        {googleLogin.isPending ? t('auth.signingIn') : t('auth.google')}
                     </Button>
                 </div>
                 {googleLogin.error && (
                     <p className="text-center text-sm text-red-400">
-                        {getApiErrorMessage(googleLogin.error, 'Google login failed')}
+                        {getApiErrorMessage(googleLogin.error, t('auth.googleFailed'))}
                     </p>
                 )}
             </form>

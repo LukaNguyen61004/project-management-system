@@ -57,7 +57,8 @@ export const updateSprintSchema = z.object({
 export type UpdateSprintInput = z.infer<typeof updateSprintSchema>;
 
 export const changeSprintStatusSchema = z.object({
-    sprint_status: z.nativeEnum(SprintStatus)
+    sprint_status: z.nativeEnum(SprintStatus),
+    move_incomplete_to: z.number().int().positive().nullable().optional(),
 })
 
 export type changeSprintStatus = z.infer<typeof changeSprintStatusSchema>;

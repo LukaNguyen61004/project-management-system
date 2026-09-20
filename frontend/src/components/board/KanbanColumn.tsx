@@ -4,6 +4,7 @@ import { cn } from '../../utils/cn'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { SortableIssueCard } from './IssueCard'
+import { useT } from '../../i18n/useT'
 
 interface KanbanColumnProps {
   status: IssueStatus
@@ -18,6 +19,7 @@ export function KanbanColumn({
   issues,
   onIssueClick,
 }: KanbanColumnProps) {
+  const t = useT()
   const { setNodeRef, isOver } = useDroppable({
     id: status,
     data: { status },
@@ -51,7 +53,7 @@ export function KanbanColumn({
         </SortableContext>
 
         {issues.length === 0 && (
-          <p className="text-xs text-jira-text-subtle text-center py-8">Drop issues here</p>
+          <p className="text-xs text-jira-text-subtle text-center py-8">{t('common.dropHere')}</p>
         )}
       </div>
     </div>
