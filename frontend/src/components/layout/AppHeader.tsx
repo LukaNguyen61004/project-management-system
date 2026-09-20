@@ -1,5 +1,6 @@
 import { UserMenu } from './UserMenu'
 import { NotificationBell } from '../notification/NotificationBell'
+import { LanguageToggle } from './LanguageToggle'
 
 interface AppHeaderProps {
   title: string
@@ -28,6 +29,7 @@ export function AppHeader({ title, subtitle, children, compact }: AppHeaderProps
 
         <div className="flex items-center gap-3 shrink-0">
           {children}
+          <LanguageToggle />
           <NotificationBell />
           <UserMenu />
         </div>

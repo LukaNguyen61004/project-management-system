@@ -1,5 +1,6 @@
 import type { Notification } from '../../types/notification.types'
 import { NotificationItem } from './NotificationItem'
+import { useT } from '../../i18n/useT'
 
 interface NotificationDropdownProps {
   notifications: Notification[]
@@ -14,6 +15,7 @@ export function NotificationDropdown({
   onMarkAllRead,
   isMarkingAll,
 }: NotificationDropdownProps) {
+  const t = useT()
   const hasUnread = notifications.some((n) => !n.is_read)
 
   return (
@@ -22,7 +24,7 @@ export function NotificationDropdown({
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex items-center justify-between px-4 py-3 border-b border-jira-border">
-        <span className="text-sm font-semibold text-jira-text">Notifications</span>
+        <span className="text-sm font-semibold text-jira-text">{t('notif.title')}</span>
         {hasUnread && (
           <button
             type="button"
@@ -30,7 +32,7 @@ export function NotificationDropdown({
             disabled={isMarkingAll}
             className="text-xs text-jira-blue hover:underline disabled:opacity-50"
           >
-            Mark all read
+            {t('notif.markAll')}
           </button>
         )}
       </div>
@@ -38,7 +40,7 @@ export function NotificationDropdown({
       <div className="max-h-96 overflow-y-auto">
         {notifications.length === 0 ? (
           <p className="text-sm text-jira-text-subtle text-center py-8">
-            No notifications
+            {t('notif.empty')}
           </p>
         ) : (
           notifications.map((n) => (

@@ -6,12 +6,14 @@ import { NotificationDropdown } from './NotificationDropdown'
 import type { Notification } from '../../types/notification.types'
 import { InvitationActionModal } from './InvitationActionModal'
 import { useNavigate } from 'react-router-dom'
+import { useT } from '../../i18n/useT'
 
 export function NotificationBell() {
     const queryClient = useQueryClient()
     const [open, setOpen] = useState(false)
     const navigate = useNavigate()
     const [invitationNotification, setInvitationNotification] = useState<Notification | null>(null)
+    const t = useT()
 
     const { data: notifications = [] } = useQuery({
         queryKey: ['notifications'],
@@ -100,7 +102,7 @@ export function NotificationBell() {
                     setOpen(!open)
                 }}
         className="relative p-2 rounded hover:bg-white/10 text-jira-text-subtle hover:text-jira-text"
-                title="Notifications"
+                title={t('notif.title')}
             >
                 <Bell size={20} />
                 {unreadCount > 0 && (

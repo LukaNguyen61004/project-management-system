@@ -68,6 +68,11 @@ const ERROR_STATUS_MAP: Record<string, number> = {
   "Invitation already accepted": 400,
   "Invitation expired": 400,
   "Invalid account state": 400,
+
+  "Choose where to move incomplete issues": 400,
+  "Target sprint not found":404,
+  "Can only move incomplete issues to a planned sprint":400,
+  "Cannot move incomplete issues into the sprint being completed":400
 };
 
 // Message được phép trả client trên production (4xx) 
@@ -84,6 +89,11 @@ const SAFE_CLIENT_MESSAGES = new Set([
   "Invalid project id",
   "Invalid issue id",
   "Invalid sprint id",
+
+  "Choose where to move incomplete issues",
+  "Target sprint not found",
+  "Can only move incomplete issues to a planned sprint",
+  "Cannot move incomplete issues into the sprint being completed"
 ]);
 
 /**

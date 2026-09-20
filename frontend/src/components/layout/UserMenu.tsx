@@ -5,12 +5,14 @@ import { useAuthStore } from '../../store/auth.store'
 import { authApi } from '../../api/auth.api'
 import { Avatar } from '../ui/Avatar'
 import { Link } from 'react-router-dom'
+import { useT } from '../../i18n/useT'
 
 export function UserMenu() {
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const t = useT()
 
   const handleLogout = async () => {
     try {
@@ -30,7 +32,7 @@ export function UserMenu() {
       <Link
         to="/profile"
         className="flex items-center gap-3 hover:opacity-80 rounded-lg px-1 py-0.5"
-        title="Your profile"
+        title={t('auth.yourProfile')}
       >
         <Avatar
           name={user?.user_name || user?.user_email}
@@ -46,7 +48,7 @@ export function UserMenu() {
         type="button"
         onClick={handleLogout}
         className="p-1.5 rounded hover:bg-white/10 text-jira-text-subtle"
-        title="Logout"
+        title={t('common.logout')}
       >
         <LogOut size={18} />
       </button>

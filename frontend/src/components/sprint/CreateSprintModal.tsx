@@ -7,6 +7,7 @@ import { Button } from '../ui/Button'
 import { dateInputToISO } from '../../utils/date'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '../../utils/apiError'
+import { useT } from '../../i18n/useT'
 
 interface CreateSprintModalProps {
   open: boolean
@@ -19,18 +20,19 @@ export function CreateSprintModal({ open, projectId, onClose }: CreateSprintModa
   const [sprintName, setSprintName] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
+  const t = useT()
 
   const createMutation = useMutation({
     mutationFn: () => sprintApi.create(projectId, { sprint_name: sprintName, start_date: dateInputToISO(startDate), end_date: dateInputToISO(endDate),}),
     onSuccess: () => {
-      toast.success('Đã tạo sprint')
+      toast.success(t('sprint.created'))
       queryClient.invalidateQueries({ queryKey: ['sprints', projectId] })
       setSprintName('')
       setStartDate('')
       setEndDate('')
       onClose()
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Tạo sprint thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('sprint.createFailed'))),
   })
 
   const handleClose = () => {
@@ -39,7 +41,7 @@ export function CreateSprintModal({ open, projectId, onClose }: CreateSprintModa
   }
 
   return (
-    <Modal open={open} onClose={handleClose} title="Create sprint">
+    <Modal open={open} onClose={handleClose} title={t('sprint.createTitle')}>
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -48,7 +50,7 @@ export function CreateSprintModal({ open, projectId, onClose }: CreateSprintModa
         className="space-y-4"
       >
         <Input
-          label="Sprint name"
+          label={t('sprint.name')}
           value={sprintName}
           onChange={(e) => setSprintName(e.target.value)}
           placeholder="Sprint 1"
@@ -57,7 +59,7 @@ export function CreateSprintModal({ open, projectId, onClose }: CreateSprintModa
         />
           <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium text-jira-text">Start date</label>
+            <label className="text-sm font-medium text-jira-text">{t('sprint.startDate')}</label>
             <input
               type="date"
               value={startDate}
@@ -66,7 +68,7 @@ export function CreateSprintModal({ open, projectId, onClose }: CreateSprintModa
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-jira-text">End date</label>
+            <label className="text-sm font-medium text-jira-text">{t('sprint.endDate')}</label>
             <input
               type="date"
               value={endDate}
@@ -77,10 +79,10 @@ export function CreateSprintModal({ open, projectId, onClose }: CreateSprintModa
         </div>
         <div className="flex justify-end gap-2">
           <Button type="button" variant="secondary" onClick={handleClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button type="submit" disabled={createMutation.isPending}>
-            Create
+            {createMutation.isPending ? t('common.creating') : t('common.create')}
           </Button>
         </div>
       </form>

@@ -10,6 +10,7 @@ import {
 
 import {
     assignIssueSchema, changeIssuePrioritySchema, changeIssueStatusSchema, createIssueSchema,
+    getProjectIssuesQuerySchema,
     updateIssueSchema,
     updateIssueSprintSchema
 } from "../validations/issue.validation.js";
@@ -42,11 +43,19 @@ export const getProjectIssuesController = async (req: Request, res: Response) =>
             return sendError(res, new Error("Invalid project id"), 400);
         }
 
-        const result = await getProjectIssueService(projectId, currentUserId);
+        const { page, limit, sprint_id } = getProjectIssuesQuerySchema.parse(req.query);
+        const { issues, pagination } = await getProjectIssueService(
+            projectId,
+            currentUserId,
+            page,
+            limit,
+            sprint_id,
+        );
 
         return res.status(200).json({
             success: true,
-            result,
+            result: issues,
+            pagination,
         });
     } catch (error) {
         return sendError(res, error);

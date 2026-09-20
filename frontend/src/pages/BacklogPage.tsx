@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import type { Issue } from '../types/issue.types'
 import type { Sprint } from '../types/sprint.types'
-import { issueApi } from '../api/issue.api'
 import { sprintApi } from '../api/sprint.api'
 import { epicApi } from '../api/epic.api'
 import { BacklogList } from '../components/backlog/BacklogList'
@@ -18,6 +17,8 @@ import { EMPTY_ISSUE_FILTERS } from '../types/issueFilter.types'
 import { projectApi } from '../api/project.api'
 import { useIssueFilters } from '../hooks/useIssueFilters'
 import { IssueFilterBar } from '../components/issue/IssueFilterBar'
+import { fetchIssueList, issueListKey } from '../api/issue.api'
+import { useT } from '../i18n/useT'
 
 export function BacklogPage() {
   const { projectId } = useParams()
@@ -29,14 +30,18 @@ export function BacklogPage() {
   const [editingSprint, setEditingSprint] = useState<Sprint | null>(null)
   const [showCreateEpic, setShowCreateEpic] = useState(false)
   const [filters, setFilters] = useState(EMPTY_ISSUE_FILTERS)
+  const [page, setPage] = useState(1)
+  const t = useT()
 
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const { data: issues = [], isLoading, isError } = useQuery({
-    queryKey: ['issues', pid],
-    queryFn: () => issueApi.getByProject(pid).then((r) => r.data.result),
+  const { data, isLoading, isError } = useQuery({
+    queryKey: issueListKey.backlog(pid, page),
+    queryFn: () => fetchIssueList(pid, { sprint_id: 'backlog', page, limit: 50 }),
     enabled: !!pid,
   })
+  const issues = data?.issues ?? []
+  const pagination = data?.pagination
 
 
 
@@ -71,30 +76,30 @@ export function BacklogPage() {
     }
   }, [searchParams, issues, setSearchParams])
 
-  if (isLoading || sprintsLoading) {
-    return <div className="p-6 text-jira-text-subtle">Loading backlog...</div>
+  if (sprintsLoading) {
+    return <div className="p-6 text-jira-text-subtle">{t('backlog.loading')}</div>
   }
-  if (isError) return <div className="p-6 text-red-500">Failed to load issues.</div>
+  if (isError) return <div className="p-6 text-red-500">{t('backlog.loadFailed')}</div>
 
   return (
     <>
       <div className="px-4 py-3 border-b border-white/15 flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-jira-text">Backlog & Sprints</h2>
-          <p className="text-xs text-jira-text-subtle">{issues.length} issues</p>
+          <h2 className="text-sm font-semibold text-jira-text">{t('backlog.title')}</h2>
+          <p className="text-xs text-jira-text-subtle">{t('backlog.issueCount', { count: issues.length })}</p>
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="secondary" onClick={() => setShowCreateEpic(true)}>
-            <Plus size={14} /> Create epic
+            <Plus size={14} /> {t('backlog.createEpic')}
           </Button>
           <Button size="sm" variant="secondary" onClick={() => setShowCreateSprint(true)}>
-            <Plus size={14} /> Create sprint
+            <Plus size={14} /> {t('backlog.createSprint')}
           </Button>
           <Button size="sm" variant="secondary" onClick={() => {
             setParentIssueForCreate(null)
             setShowCreateIssue(true)
           }}>
-            <Plus size={14} /> Create issue
+            <Plus size={14} /> {t('backlog.createIssue')}
           </Button>
         </div>
       </div>
@@ -124,7 +129,7 @@ export function BacklogPage() {
         onChange={setFilters}
         members={members}
         epics={epics}
-        totalCount={issues.length}
+        totalCount={pagination?.total ?? issues.length}
         filteredCount={filteredIssues.length}
       />
 
@@ -136,6 +141,12 @@ export function BacklogPage() {
         sprints={sprints}
         onIssueClick={setSelectedIssue}
         onEditSprint={setEditingSprint}
+        filters={filters}
+        page={pagination?.page ?? page}
+        totalPage={pagination?.totalPage ?? 1}
+        total={pagination?.total ?? 0}
+        onPageChange={setPage}
+        isLoading={isLoading}
       />
 
       <CreateIssueModal

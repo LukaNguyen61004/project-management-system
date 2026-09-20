@@ -2,6 +2,8 @@ import prisma from "../lib/prisma.js"
 import type { CreateIssueInput, UpdateIssueInput } from "../validations/issue.validation.js"
 import { IssuePriority, IssueStatus, IssueType } from "@prisma/client"
 
+export type IssueSprintFilter = number | 'backlog' | undefined
+
 export type CreateIssueData = {
     issue_key: string;
     issue_name: string;
@@ -18,11 +20,15 @@ export type CreateIssueData = {
     parent_issue_id?: number
 };
 
-export const countProjectIssues = async (project_id: number) => {
+export const issueListWhere = (projectId: number, sprint_id?: IssueSprintFilter) => ({
+  project_id: projectId,
+  ...(sprint_id === 'backlog' ? { sprint_id: null } : typeof sprint_id === 'number' ? { sprint_id } : {}),
+})
+
+
+export const countProjectIssues = async (projectId: number, sprint_id?: IssueSprintFilter) => {
     return prisma.issue.count({
-        where: {
-            project_id: project_id,
-        }
+        where: issueListWhere(projectId, sprint_id)
     })
 }
 
@@ -66,11 +72,16 @@ export const createIssue = async (data: CreateIssueData) => {
 
 }
 
-export const getProjectIssues = async (projectId: number) => {
+export const getProjectIssues = async (
+    projectId: number,
+    skip: number,
+    take: number,
+    sprint_id?: IssueSprintFilter,
+) => {
     return prisma.issue.findMany({
-        where: {
-            project_id: projectId,
-        },
+        where: issueListWhere(projectId, sprint_id),
+        skip,
+        take,
 
         include: {
             reporter: {
@@ -313,4 +324,15 @@ export const countIssueDone = async (projectId: number) => {
             issue_status: IssueStatus.done,
         },
     })
+}
+
+export const getIssuesByIds = async (ids: number[]) => {
+  if (ids.length === 0) return []
+  return prisma.issue.findMany({
+    where: { issue_id: { in: ids } },
+    include: {
+      reporter: { select: { user_id: true, user_name: true } },
+      assignee: { select: { user_id: true, user_name: true } },
+    },
+  })
 }

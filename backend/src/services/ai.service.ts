@@ -6,6 +6,7 @@ import { findScheduleChangesForSprint } from "../repositories/activity.repositor
 import { findProjectMember } from "../repositories/project.repository.js";
 import { findSprintById, getSprintIssues } from "../repositories/sprint.repository.js";
 import prisma from "../lib/prisma.js";
+import { getIssuesByIds } from "../repositories/issue.repository.js"
 
 const DATE_FIELDS = new Set(["start_date", "end_date", "due_date"]);
 
@@ -72,7 +73,10 @@ export const summarizeSprintService = async (
         };
     }
 
-    const issues = await getSprintIssues(sprintId);
+    const issues =
+        sprint.sprint_close_issue_ids.length > 0
+            ? await getIssuesByIds(sprint.sprint_close_issue_ids)
+            : await getSprintIssues(sprintId)
     const summaryData = buildSprintSummaryData(sprint, issues);
 
     // Query log đổi due date — nằm ở repository

@@ -10,6 +10,7 @@ import { AppHeader } from '../components/layout/AppHeader'
 import { CinderBackdrop } from '../components/layout/CinderBackdrop'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '../utils/apiError'
+import { useT } from '../i18n/useT'
 
 function PageLoader() {
   return (
@@ -23,6 +24,7 @@ export function ProjectsPage() {
   const user = useAuthStore((s) => s.user)
   const queryClient = useQueryClient()
   const [showCreate, setShowCreate] = useState(false)
+  const t = useT()
 
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['projects'],
@@ -36,43 +38,43 @@ export function ProjectsPage() {
   const acceptMutation = useMutation({
     mutationFn: (token: string) => projectApi.acceptInvitation(token),
     onSuccess: () => {
-      toast.success('Đã tham gia project')
+      toast.success(t('project.joined'))
       queryClient.invalidateQueries({ queryKey: ['projects'] })
       queryClient.invalidateQueries({ queryKey: ['pending-invitations'] })
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Chấp nhận lời mời thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('project.acceptFailed'))),
   })
 
   const declineMutation = useMutation({
     mutationFn: (token: string) => projectApi.declineInvitation(token),
     onSuccess: () => {
-      toast.success('Đã từ chối lời mời')
+      toast.success(t('project.declined'))
       queryClient.invalidateQueries({ queryKey: ['pending-invitations'] })
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Từ chối lời mời thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('project.declineFailed'))),
   })
   return (
     <div className="relative min-h-screen">
       <CinderBackdrop />
       <div className="relative z-10 p-6 space-y-4">
         <AppHeader
-          title="Your projects"
-          subtitle={`Welcome back, ${user?.user_name || user?.user_email}`}
+          title={t('project.yourProjects')}
+          subtitle={t('project.welcomeBack', { name: user?.user_name || user?.user_email || '' })}
         />
 
         <div className="cinder-glass rounded-[30px] p-8 min-h-[70vh]">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-[30px] font-bold text-white tracking-wide">WORK SPACE</h2>
+            <h2 className="text-[30px] font-bold text-white tracking-wide">{t('project.workspace')}</h2>
             <Button onClick={() => setShowCreate(true)}>
               <Plus size={16} />
-              Create project
+              {t('project.create')}
             </Button>
           </div>
 
           {pendingInvites.length > 0 && (
             <div className="mb-4 rounded-[20px] border border-white/20 bg-white/5 p-4">
               <p className="mb-2 font-medium text-white">
-                Bạn có {pendingInvites.length} lời mời tham gia project
+                {t('project.invites', { count: pendingInvites.length })}
               </p>
               {pendingInvites.map((inv) => (
                 <div key={inv.invitation_id} className="flex items-center justify-between py-1">
@@ -82,13 +84,13 @@ export function ProjectsPage() {
                       onClick={() => acceptMutation.mutate(inv.token)}
                       className="rounded bg-[#9d877c] px-3 py-1 text-sm text-[#151414] hover:bg-[#b49a8e]"
                     >
-                      Chấp nhận
+                      {t('project.accept')}
                     </button>
                     <button
                       onClick={() => declineMutation.mutate(inv.token)}
                       className="rounded border border-white/30 px-3 py-1 text-sm text-white/80 hover:bg-white/10"
                     >
-                      Từ chối
+                      {t('project.decline')}
                     </button>
                   </div>
                 </div>
@@ -100,10 +102,10 @@ export function ProjectsPage() {
             <PageLoader />
           ) : projects.length === 0 ? (
             <div className="text-center py-16 cinder-glass rounded-[20px]">
-              <p className="text-jira-text-subtle mb-4">No projects yet. Create your first one!</p>
+              <p className="text-jira-text-subtle mb-4">{t('project.empty')}</p>
               <Button onClick={() => setShowCreate(true)}>
                 <Plus size={16} />
-                Create project
+                {t('project.create')}
               </Button>
             </div>
           ) : (

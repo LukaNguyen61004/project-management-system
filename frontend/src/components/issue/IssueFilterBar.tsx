@@ -1,4 +1,5 @@
-import { Search, X } from 'lucide-react'
+import type { SelectHTMLAttributes } from 'react'
+import { ChevronDown, Search, X } from 'lucide-react'
 import type { IssueFilters } from '../../types/issueFilter.types'
 import { EMPTY_ISSUE_FILTERS } from '../../types/issueFilter.types'
 import type { ProjectMember } from '../../types/project.types'
@@ -6,6 +7,7 @@ import type { Epic } from '../../types/epic.types'
 import type { IssuePriority, IssueStatus, IssueType } from '../../types/enums'
 import { ISSUE_PRIORITIES, ISSUE_STATUSES, ISSUE_TYPES } from '../../utils/constants'
 import { Button } from '../ui/Button'
+import { useT } from '../../i18n/useT'
 
 interface IssueFilterBarProps {
   filters: IssueFilters
@@ -17,7 +19,21 @@ interface IssueFilterBarProps {
 }
 
 const selectClass =
-  'rounded-3xl border border-jira-border px-1 py-1.5 text-sm bg-transparent text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/25 min-w-[120px]'
+  'appearance-none rounded-3xl border border-jira-border pl-3 pr-8 py-1.5 text-sm bg-transparent text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/25 w-max max-w-full'
+
+function FilterSelect({ className, children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <div className="relative w-max max-w-full">
+      <select {...props} className={className}>
+        {children}
+      </select>
+      <ChevronDown
+        size={14}
+        className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-white/70"
+      />
+    </div>
+  )
+}
 
 export function IssueFilterBar({
   filters,
@@ -27,6 +43,7 @@ export function IssueFilterBar({
   totalCount,
   filteredCount,
 }: IssueFilterBarProps) {
+  const t = useT()
   const set = <K extends keyof IssueFilters>(key: K, value: IssueFilters[K]) => {
     onChange({ ...filters, [key]: value })
   }
@@ -52,55 +69,51 @@ export function IssueFilterBar({
             type="text"
             value={filters.q}
             onChange={(e) => set('q', e.target.value)}
-            placeholder="Search key or title..."
+            placeholder={t('filter.search')}
             className="w-full rounded-2xl border border-jira-border bg-transparent pl-9 pr-3 py-1.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/25"
           />
         </div>
 
-        {/* Status */}
-        <select
+        <FilterSelect
           value={filters.status}
           onChange={(e) => set('status', e.target.value as IssueStatus | '')}
           className={selectClass}
         >
-          <option value="">All statuses</option>
+          <option value="">{t('filter.allStatuses')}</option>
           {ISSUE_STATUSES.map((s) => (
             <option key={s.value} value={s.value}>
-              {s.label}
+              {t(`status.${s.value}`)}
             </option>
           ))}
-        </select>
+        </FilterSelect>
 
-        {/* Priority */}
-        <select
+        <FilterSelect
           value={filters.priority}
           onChange={(e) => set('priority', e.target.value as IssuePriority | '')}
           className={selectClass}
         >
-          <option value="">All priorities</option>
+          <option value="">{t('filter.allPriorities')}</option>
           {ISSUE_PRIORITIES.map((p) => (
             <option key={p.value} value={p.value}>
-              {p.label}
+              {t(`priority.${p.value}`)}
             </option>
           ))}
-        </select>
+        </FilterSelect>
 
-        {/* Type */}
-        <select
+        <FilterSelect
           value={filters.type}
           onChange={(e) => set('type', e.target.value as IssueType | '')}
           className={selectClass}
         >
-          <option value="">All types</option>
-          {ISSUE_TYPES.map((t) => (
-            <option key={t.value} value={t.value}>
-              {t.label}
+          <option value="">{t('filter.allTypes')}</option>
+          {ISSUE_TYPES.map((item) => (
+            <option key={item.value} value={item.value}>
+              {t(`type.${item.value}`)}
             </option>
           ))}
-        </select>
+        </FilterSelect>
 
-        {/* Assignee */}
-        <select
+        <FilterSelect
           value={String(filters.assigneeId)}
           onChange={(e) => {
             const v = e.target.value
@@ -108,17 +121,16 @@ export function IssueFilterBar({
           }}
           className={selectClass}
         >
-          <option value="">All assignees</option>
-          <option value="0">Unassigned</option>
+          <option value="">{t('filter.allAssignees')}</option>
+          <option value="0">{t('common.unassigned')}</option>
           {members.map((m) => (
             <option key={m.user_id} value={m.user_id}>
               {m.user.user_name || m.user.user_email}
             </option>
           ))}
-        </select>
+        </FilterSelect>
 
-        {/* Epic */}
-        <select
+        <FilterSelect
           value={String(filters.epicId)}
           onChange={(e) => {
             const v = e.target.value
@@ -126,16 +138,15 @@ export function IssueFilterBar({
           }}
           className={selectClass}
         >
-          <option value="">All epics</option>
-          <option value="0">No epic</option>
+          <option value="">{t('filter.allEpics')}</option>
+          <option value="0">{t('common.noEpic')}</option>
           {epics.map((e) => (
             <option key={e.epic_id} value={e.epic_id}>
               {e.epic_name}
             </option>
           ))}
-        </select>
+        </FilterSelect>
 
-        {/* Clear */}
         {hasActiveFilters && (
           <Button
             type="button"
@@ -144,13 +155,13 @@ export function IssueFilterBar({
             onClick={() => onChange(EMPTY_ISSUE_FILTERS)}
           >
             <X size={14} />
-            Clear
+            {t('common.clear')}
           </Button>
         )}
       </div>
 
       <p className="text-xs text-jira-text-subtle">
-        Showing {filteredCount} of {totalCount} issues
+        {t('common.showingOf', { filtered: filteredCount, total: totalCount })}
       </p>
     </div>
   )

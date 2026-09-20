@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { LanguageToggle } from '../layout/LanguageToggle'
+import { useT } from '../../i18n/useT'
 
 interface AuthShellProps {
   mode: 'signin' | 'signup'
@@ -32,6 +34,8 @@ export function AuthShell({ mode, children }: AuthShellProps) {
     return () => cancelAnimationFrame(id)
   }, [switching, targetSide])
 
+  const t = useT()
+
   const qs = searchParams.get('redirect')
     ? `?redirect=${encodeURIComponent(searchParams.get('redirect')!)}`
     : ''
@@ -48,11 +52,17 @@ export function AuthShell({ mode, children }: AuthShellProps) {
     >
       <div className="auth-art">
         <img src="/cinder/auth-panel.png" alt="" />
+        <blockquote className="auth-slogan">
+          <div className="auth-slogan-inner">
+            <p>"GIVING UP IS NOT IN THE BLOOD, SIR"</p>
+            <cite>Nimsdai</cite>
+          </div>
+        </blockquote>
         <button
           type="button"
           className="auth-toggle"
           onClick={handleToggle}
-          aria-label={mode === 'signin' ? 'Switch to register' : 'Switch to sign in'}
+          aria-label={mode === 'signin' ? t('auth.switchToRegister') : t('auth.switchToSignIn')}
         >
           <span className="auth-toggle-knob" />
         </button>
@@ -63,10 +73,13 @@ export function AuthShell({ mode, children }: AuthShellProps) {
             type="button"
             className="auth-toggle auth-toggle-mobile"
             onClick={handleToggle}
-            aria-label={mode === 'signin' ? 'Switch to register' : 'Switch to sign in'}
+            aria-label={mode === 'signin' ? t('auth.switchToRegister') : t('auth.switchToSignIn')}
           >
             <span className="auth-toggle-knob" />
           </button>
+          <div className="mb-6 flex justify-end">
+            <LanguageToggle />
+          </div>
           {children}
         </div>
       </div>

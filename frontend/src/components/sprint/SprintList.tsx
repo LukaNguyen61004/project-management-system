@@ -1,46 +1,37 @@
 import type { Issue } from '../../types/issue.types'
 import type { Sprint } from '../../types/sprint.types'
-import { DraggableBacklogIssueRow } from '../backlog/DraggableBacklogIssueRow'
+import { EMPTY_ISSUE_FILTERS, type IssueFilters } from '../../types/issueFilter.types'
 import { SprintPanel } from './SprintPanel'
 
 interface SprintListProps {
+  projectId: number
   sprints: Sprint[]
-  issues: Issue[]
   onIssueClick: (issue: Issue) => void
   onEditSprint?: (sprint: Sprint) => void
+  filters?: IssueFilters
 }
 
-export function SprintList({ sprints, issues, onIssueClick, onEditSprint }: SprintListProps) {
+export function SprintList({
+  projectId,
+  sprints,
+  onIssueClick,
+  onEditSprint,
+  filters = EMPTY_ISSUE_FILTERS,
+}: SprintListProps) {
   return (
     <>
-      {sprints.map((sprint) => {
-        const sprintIssues = issues.filter((i) => i.sprint_id === sprint.sprint_id)
-
-        return (
-          <SprintPanel
-            key={sprint.sprint_id}
-            sprint={sprint}
-            issueCount={sprintIssues.length}
-            onEdit={onEditSprint}
-            defaultOpen={sprint.sprint_status === 'active'}
-          >
-            <div className="divide-y divide-jira-border">
-              {sprintIssues.map((issue) => {
-                const lockedInCompleted =
-                  sprint.sprint_status === 'completed' && issue.issue_status === 'done'
-                return (
-                  <DraggableBacklogIssueRow
-                    key={issue.issue_id}
-                    issue={issue}
-                    onClick={() => onIssueClick(issue)}
-                    draggable={!lockedInCompleted}
-                  />
-                )
-              })}
-            </div>
-          </SprintPanel>
-        )
-      })}
+      {sprints.map((sprint) => (
+        <SprintPanel
+          key={sprint.sprint_id}
+          projectId={projectId}
+          sprint={sprint}
+          sprints={sprints}
+          onIssueClick={onIssueClick}
+          onEdit={onEditSprint}
+          defaultOpen={sprint.sprint_status === 'active'}
+          filters={filters}
+        />
+      ))}
     </>
   )
 }

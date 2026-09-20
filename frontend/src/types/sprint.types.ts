@@ -14,6 +14,7 @@ export interface Sprint {
   sprint_updated_at: string
   sprint_summary: string | null
   sprint_summary_created_at: string | null
+  sprint_close_issue_ids?: number[]
 }
 
 export interface CreateSprintInput {

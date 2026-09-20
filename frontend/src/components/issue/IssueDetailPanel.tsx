@@ -12,7 +12,7 @@ import { epicApi } from '../../api/epic.api'
 import { Input } from '../ui/Input'
 import { Button } from '../ui/Button'
 import { Avatar } from '../ui/Avatar'
-import { ISSUE_PRIORITIES, ISSUE_STATUSES, ISSUE_TYPES } from '../../utils/constants'
+import { ISSUE_PRIORITIES, ISSUE_TYPES } from '../../utils/constants'
 import { cn } from '../../utils/cn'
 import { getWarningLabel, isIssueWarned } from '../../utils/issueWarning'
 import { useAuthStore } from '../../store/auth.store'
@@ -22,6 +22,8 @@ import { getApiErrorMessage } from '../../utils/apiError'
 import { toast } from 'sonner'
 import { PRIORITY_RANK } from '../../utils/issuePriority'
 import { getAllowedStatuses } from '../../utils/issueStatus'
+import { useT } from '../../i18n/useT'
+import { useDateFnsLocale } from '../../i18n/dateLocale'
 
 
 interface IssueDetailPanelProps {
@@ -38,6 +40,8 @@ const selectClass =
 export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSubtask }: IssueDetailPanelProps) {
   const queryClient = useQueryClient()
   const currentUser = useAuthStore((s) => s.user)
+  const t = useT()
+  const dateLocale = useDateFnsLocale()
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -112,10 +116,10 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
       return issueApi.changeStatus(issueId, status)
     },
     onSuccess: () => {
-      toast.success('Đã cập nhật status')
+      toast.success(t('issue.statusUpdated'))
       invalidate()
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Cập nhật status thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('issue.statusFailed'))),
   })
 
   const priorityMutation = useMutation({
@@ -124,10 +128,10 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
       return issueApi.changePriority(issueId, priority)
     },
     onSuccess: () => {
-      toast.success('Đã cập nhật priority')
+      toast.success(t('issue.priorityUpdated'))
       invalidate()
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Cập nhật priority thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('issue.priorityFailed'))),
   })
 
   const updateMutation = useMutation({
@@ -142,11 +146,11 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
     },
     onSuccess: () => {
       setSaveError('')
-      toast.success('Đã lưu issue')
+      toast.success(t('issue.saved'))
       invalidate()
     },
     onError: (err) => {
-      const msg = getApiErrorMessage(err, 'Lưu issue thất bại')
+      const msg = getApiErrorMessage(err, t('issue.saveFailed'))
       setSaveError(msg)
       toast.error(msg)
     },
@@ -164,12 +168,12 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
       return issueApi.delete(issueId)
     },
     onSuccess: () => {
-      toast.success('Đã xóa issue')
+      toast.success(t('issue.deleted'))
       queryClient.invalidateQueries({ queryKey: ['issues'] })
       onDeleted?.()
       onClose()
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Xóa issue thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('issue.deleteFailed'))),
   })
 
   const assignMutation = useMutation({
@@ -178,10 +182,10 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
       return issueApi.assign(issueId, assignee_id)
     },
     onSuccess: () => {
-      toast.success('Đã cập nhật assignee')
+      toast.success(t('issue.assigneeUpdated'))
       invalidate()
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Cập nhật assignee thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('issue.assigneeFailed'))),
   })
 
   const commentMutation = useMutation({
@@ -191,10 +195,10 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
     },
     onSuccess: () => {
       setCommentText('')
-      toast.success('Đã thêm comment')
+      toast.success(t('issue.commentAdded'))
       queryClient.invalidateQueries({ queryKey: ['comments', issueId] })
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Thêm comment thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('issue.commentFailed'))),
   })
 
   const updateCommentMutation = useMutation({
@@ -205,10 +209,10 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
     onSuccess: () => {
       setEditingCommentId(null)
       setEditText('')
-      toast.success('Đã cập nhật comment')
+      toast.success(t('issue.commentUpdated'))
       queryClient.invalidateQueries({ queryKey: ['comments', issueId] })
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Cập nhật comment thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('issue.commentUpdateFailed'))),
   })
 
   const deleteCommentMutation = useMutation({
@@ -217,10 +221,10 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
       return commentApi.delete(issueId, commentId)
     },
     onSuccess: () => {
-      toast.success('Đã xóa comment')
+      toast.success(t('issue.commentDeleted'))
       queryClient.invalidateQueries({ queryKey: ['comments', issueId] })
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Xóa comment thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('issue.commentDeleteFailed'))),
   })
 
   const epicMutation = useMutation({
@@ -229,11 +233,11 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
       return issueApi.updateEpic(issueId, epic_id)
     },
     onSuccess: () => {
-      toast.success('Đã cập nhật epic')
+      toast.success(t('issue.epicUpdated'))
       invalidate()
       queryClient.invalidateQueries({ queryKey: ['epics', projectId] })
     },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Cập nhật epic thất bại')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('issue.epicFailed'))),
   })
 
   if (!issue || !currentIssue) return null
@@ -272,7 +276,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
           )}
 
           <Input
-            label="Summary"
+            label={t('issue.summary')}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             minLength={3}
@@ -280,19 +284,19 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
           />
 
           <div>
-            <label className="text-sm font-medium text-jira-text">Description</label>
+            <label className="text-sm font-medium text-jira-text">{t('issue.description')}</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
               className={selectClass}
-              placeholder="Optional..."
+              placeholder={t('common.optional')}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-jira-text">Status</label>
+              <label className="text-sm font-medium text-jira-text">{t('issue.status')}</label>
               <select
                 value={currentIssue.issue_status}
                 onChange={(e) => statusMutation.mutate(e.target.value as IssueStatus)}
@@ -300,14 +304,14 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
               >
                 {getAllowedStatuses(currentIssue.issue_status, currentIssue.assignee_id).map((s) => (
                   <option key={s} value={s}>
-                    {ISSUE_STATUSES.find((x) => x.value === s)?.label}
+                    {t(`status.${s}`)}
                   </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-jira-text">Priority</label>
+              <label className="text-sm font-medium text-jira-text">{t('issue.priority')}</label>
               <select
                 value={currentIssue.issue_priority}
                 onChange={(e) => priorityMutation.mutate(e.target.value as IssuePriority)}
@@ -315,29 +319,29 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
               >
                 {availablePriorities.map((p) => (
                   <option key={p.value} value={p.value}>
-                    {p.label}
+                    {t(`priority.${p.value}`)}
                   </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-jira-text">Type</label>
+              <label className="text-sm font-medium text-jira-text">{t('issue.type')}</label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as IssueType)}
                 className={selectClass}
               >
-                {(canCreateBug || type === 'bug' ? ISSUE_TYPES : ISSUE_TYPES.filter((t) => t.value !== 'bug')).map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
+                {(canCreateBug || type === 'bug' ? ISSUE_TYPES : ISSUE_TYPES.filter((item) => item.value !== 'bug')).map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {t(`type.${item.value}`)}
                   </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-jira-text">Epic</label>
+              <label className="text-sm font-medium text-jira-text">{t('issue.epic')}</label>
               <select
                 value={String(currentIssue.epic_id ?? '')}
                 onChange={(e) => {
@@ -346,7 +350,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
                 }}
                 className={selectClass}
               >
-                <option value="">No epic</option>
+                <option value="">{t('common.noEpic')}</option>
                 {epics.map((e) => (
                   <option key={e.epic_id} value={e.epic_id}>
                     {e.epic_name}
@@ -356,7 +360,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
             </div>
 
             <div>
-              <label className="text-sm font-medium text-jira-text">Assignee</label>
+              <label className="text-sm font-medium text-jira-text">{t('issue.assignee')}</label>
               <select
                 value={String(currentIssue.assignee_id ?? '')}
                 onChange={(e) => {
@@ -365,7 +369,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
                 }}
                 className={selectClass}
               >
-                <option value="">Unassigned</option>
+                <option value="">{t('common.unassigned')}</option>
                 {members.map((m) => (
                   <option key={m.user_id} value={m.user_id}>
                     {m.user.user_name || m.user.user_email}
@@ -375,7 +379,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
             </div>
 
             <div>
-              <label className="text-sm font-medium text-jira-text">Reporter</label>
+              <label className="text-sm font-medium text-jira-text">{t('issue.reporter')}</label>
               <div className="flex items-center gap-2 mt-1">
                 {currentIssue.reporter ? (
                   <>
@@ -397,7 +401,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
             </div>
 
             <div>
-              <label className="text-sm font-medium text-jira-text">Due date</label>
+              <label className="text-sm font-medium text-jira-text">{t('issue.dueDate')}</label>
               <input
                 type="date"
                 value={dueDate}
@@ -409,14 +413,14 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
           {currentIssue.issue_type !== 'subtask' && onAddSubtask && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium text-jira-text">Subtasks</label>
+                <label className="text-sm font-medium text-jira-text">{t('issue.subtasks')}</label>
                 <Button
                   type="button"
                   size="sm"
                   variant="secondary"
                   onClick={() => onAddSubtask(currentIssue)}
                 >
-                  Add subtask
+                  {t('issue.addSubtask')}
                 </Button>
               </div>
               {currentIssue.subtasks && currentIssue.subtasks.length > 0 ? (
@@ -428,7 +432,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-jira-text-subtle">No subtasks yet</p>
+                <p className="text-xs text-jira-text-subtle">{t('issue.noSubtasks')}</p>
               )}
             </div>
           )}
@@ -439,7 +443,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
             onClick={handleSave}
             disabled={updateMutation.isPending || title.length < 3}
           >
-            {updateMutation.isPending ? 'Saving...' : 'Save changes'}
+            {updateMutation.isPending ? t('common.saving') : t('settings.saveChanges')}
           </Button>
 
 
@@ -449,7 +453,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
 
           <div className="pt-4 border-t border-jira-border">
             <h3 className="text-sm font-semibold text-jira-text-subtle mb-3">
-              Comments ({comments.length})
+              {t('issue.comments', { count: comments.length })}
             </h3>
 
             <div className="space-y-3 mb-4">
@@ -466,13 +470,13 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
                         {c.user?.user_name || c.user?.user_email}
                       </span>
                       <span className="text-xs text-jira-text-subtle">
-                        {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
+                        {formatDistanceToNow(new Date(c.created_at), { addSuffix: true, locale: dateLocale })}
                       </span>
                       {isOwnComment(c.user_id) && editingCommentId !== c.comment_id && (
                         <div className="ml-auto flex items-center gap-1">
                           <button
                             type="button"
-                            title="Edit"
+                            title={t('common.edit')}
                             onClick={() => {
                               setEditingCommentId(c.comment_id)
                               setEditText(c.content)
@@ -483,9 +487,9 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
                           </button>
                           <button
                             type="button"
-                            title="Delete"
+                            title={t('common.delete')}
                             onClick={() => {
-                              if (window.confirm('Delete this comment?')) {
+                              if (window.confirm(t('issue.confirmDeleteComment'))) {
                                 deleteCommentMutation.mutate(c.comment_id)
                               }
                             }}
@@ -515,7 +519,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
                               })
                             }
                           >
-                            Save
+                            {t('common.save')}
                           </Button>
                           <Button
                             size="sm"
@@ -525,7 +529,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
                               setEditText('')
                             }}
                           >
-                            Cancel
+                            {t('common.cancel')}
                           </Button>
                         </div>
                       </div>
@@ -543,7 +547,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
                 type="text"
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
-                placeholder="Add a comment..."
+                placeholder={t('issue.addComment')}
                 className={cn(
                   'flex-1 rounded border border-jira-border px-3 py-2 text-sm',
                   'focus:outline-none focus:ring-2 focus:ring-jira-blue'
@@ -571,12 +575,12 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
               className="text-red-500 border-red-200 hover:bg-red-50"
               disabled={deleteMutation.isPending}
               onClick={() => {
-                if (window.confirm('Delete this issue?')) {
+                if (window.confirm(t('issue.confirmDelete'))) {
                   deleteMutation.mutate()
                 }
               }}
             >
-              {deleteMutation.isPending ? 'Deleting...' : 'Delete issue'}
+              {deleteMutation.isPending ? t('common.deleting') : t('issue.deleteIssue')}
             </Button>
           </div>
         </div>

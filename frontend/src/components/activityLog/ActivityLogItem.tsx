@@ -2,12 +2,16 @@ import { formatDistanceToNow } from 'date-fns'
 import type { ActivityLog } from '../../types/activityLog.types'
 import { formatActivityMessage } from '../../utils/formatActivityMessage'
 import { Avatar } from '../ui/Avatar'
+import { useT } from '../../i18n/useT'
+import { useDateFnsLocale } from '../../i18n/dateLocale'
 
 interface ActivityLogItemProps {
   activity: ActivityLog
 }
 
 export function ActivityLogItem({ activity }: ActivityLogItemProps) {
+  useT()
+  const dateLocale = useDateFnsLocale()
   return (
     <div className="flex gap-3 py-3">
       <Avatar
@@ -18,7 +22,10 @@ export function ActivityLogItem({ activity }: ActivityLogItemProps) {
       <div className="flex-1 min-w-0">
         <p className="text-sm text-jira-text">{formatActivityMessage(activity)}</p>
         <p className="text-xs text-jira-text-subtle mt-0.5">
-          {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}
+          {formatDistanceToNow(new Date(activity.created_at), {
+            addSuffix: true,
+            locale: dateLocale,
+          })}
         </p>
       </div>
     </div>

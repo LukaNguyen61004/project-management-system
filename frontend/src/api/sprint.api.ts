@@ -19,7 +19,7 @@ export const sprintApi = {
     update: (sprintId: number, data: Partial<UpdateSprintInput>) =>
         apiClient.patch(`/sprints/${sprintId}`, data),
 
-    changeStatus: (sprintId: number, sprint_status: SprintStatus) =>
-        apiClient.patch(`/sprints/${sprintId}/status`, { sprint_status }),
+    changeStatus: (sprintId: number, sprint_status: SprintStatus, extra?: {move_incomplete_to ?: number | null}) =>
+        apiClient.patch(`/sprints/${sprintId}/status`, { sprint_status, ...extra }),
     
 }

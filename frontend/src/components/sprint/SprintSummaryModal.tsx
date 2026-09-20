@@ -1,6 +1,7 @@
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import type { SprintSummaryResult } from '../../api/ai.api'
+import { useT } from '../../i18n/useT'
 
 interface SprintSummaryModalProps {
   open: boolean
@@ -286,6 +287,7 @@ export function SprintSummaryModal({
   loading,
   error,
 }: SprintSummaryModalProps) {
+  const t = useT()
   const handleCopy = () => {
     if (data?.summary) navigator.clipboard.writeText(data.summary)
   }
@@ -294,66 +296,65 @@ export function SprintSummaryModal({
     data?.member_progress?.filter((m) => m.completion_pct < 100).length ?? 0
 
   return (
-    <Modal open={open} onClose={onClose} title={`Sprint Summary — ${sprintName}`} size="lg">
+    <Modal open={open} onClose={onClose} title={t('sprint.summaryTitle', { name: sprintName })} size="lg">
       {loading ? (
-        <p className="text-sm text-jira-text-subtle">Đang tạo tóm tắt với AI...</p>
+        <p className="text-sm text-jira-text-subtle">{t('sprint.summaryLoading')}</p>
       ) : data ? (
         <div className="space-y-4">
           {data.manager_stats && (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm space-y-1 text-amber-950">
-              <p className="font-semibold text-amber-900">Highlight cho Manager</p>
+              <p className="font-semibold text-amber-900">{t('sprint.highlight')}</p>
               <p>
-                Hoàn thành:{' '}
+                {t('sprint.completion')}{' '}
                 <strong>{data.manager_stats.completion_rate}</strong> ({data.manager_stats.done}/
                 {data.manager_stats.total})
               </p>
               <p>
-                Overdue: <strong>{data.manager_stats.overdue_count}</strong>
+                {t('sprint.overdue')} <strong>{data.manager_stats.overdue_count}</strong>
                 {data.manager_stats.overdue_keys.length > 0 &&
                   ` (${data.manager_stats.overdue_keys.join(', ')})`}
               </p>
               <p>
-                Unassigned (chưa done): {data.manager_stats.unassigned_count}
+                {t('sprint.unassignedOpen')} {data.manager_stats.unassigned_count}
               </p>
               {(data.manager_stats.done_without_assignee_count ?? 0) > 0 && (
                 <p className="text-amber-800">
-                  Done nhưng chưa assign: {data.manager_stats.done_without_assignee_count}
-                  {' '}(vẫn tính hoàn thành)
+                  {t('sprint.doneUnassigned', { count: data.manager_stats.done_without_assignee_count ?? 0 })}
                 </p>
               )}
-              <p>Member chưa 100%: {membersBelow100}</p>
+              <p>{t('sprint.membersBelow', { count: membersBelow100 })}</p>
             </div>
           )}
 
           <div className="flex flex-wrap gap-4 p-3 bg-jira-bg rounded-lg text-sm">
             <span>
-              <strong>{data.stats.completion_rate}</strong> hoàn thành
+              {t('sprint.completedPct', { rate: data.stats.completion_rate })}
             </span>
             <span>
-              {data.stats.done}/{data.stats.total} done
+              {t('sprint.doneCount', { done: data.stats.done, total: data.stats.total })}
             </span>
             {data.stats.in_review > 0 && (
-              <span className="text-purple-600">{data.stats.in_review} in review</span>
+              <span className="text-purple-600">{t('sprint.inReview', { count: data.stats.in_review })}</span>
             )}
             {data.stats.in_progress > 0 && (
-              <span className="text-blue-600">{data.stats.in_progress} in progress</span>
+              <span className="text-blue-600">{t('sprint.inProgress', { count: data.stats.in_progress })}</span>
             )}
             {data.stats.todo > 0 && (
-              <span className="text-gray-500">{data.stats.todo} todo</span>
+              <span className="text-gray-500">{t('sprint.todo', { count: data.stats.todo })}</span>
             )}
           </div>
 
           {data.member_progress?.length > 0 && (
             <div className="overflow-x-auto">
-              <p className="text-sm font-semibold text-jira-text mb-2">Tiến độ theo member</p>
+              <p className="text-sm font-semibold text-jira-text mb-2">{t('sprint.memberProgress')}</p>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-jira-text-subtle border-b border-jira-border">
-                    <th className="py-1.5 pr-2">Member</th>
-                    <th className="py-1.5 pr-2">Assigned</th>
-                    <th className="py-1.5 pr-2">Done</th>
+                    <th className="py-1.5 pr-2">{t('sprint.member')}</th>
+                    <th className="py-1.5 pr-2">{t('sprint.assigned')}</th>
+                    <th className="py-1.5 pr-2">{t('sprint.done')}</th>
                     <th className="py-1.5 pr-2">%</th>
-                    <th className="py-1.5">Còn lại</th>
+                    <th className="py-1.5">{t('sprint.remaining')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -385,16 +386,16 @@ export function SprintSummaryModal({
 
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="secondary" size="sm" onClick={handleCopy}>
-              Copy
+              {t('common.copy')}
             </Button>
             <Button size="sm" onClick={onClose}>
-              Đóng
+              {t('common.close')}
             </Button>
           </div>
         </div>
       ) : (
         <p className="text-sm text-red-500">
-          {error || 'Không tạo được tóm tắt.'}
+          {error || t('sprint.summaryFailed')}
         </p>
       )}
     </Modal>

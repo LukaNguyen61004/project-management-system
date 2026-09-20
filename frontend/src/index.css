@@ -161,6 +161,53 @@ select option {
   object-fit: cover;
 }
 
+.auth-slogan {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  box-sizing: border-box;
+  padding: 5rem 3.25rem 3rem 1.75rem;
+  margin: 0;
+  pointer-events: none;
+}
+
+.auth-shell[data-side="left"] .auth-slogan {
+  padding-left: 3.25rem;
+  padding-right: 1.75rem;
+}
+
+.auth-slogan-inner {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.auth-slogan p {
+  margin: 0;
+  font-family: Hind, sans-serif;
+  font-size: clamp(1.15rem, 1.75vw, 1.7rem);
+  font-weight: 700;
+  line-height: 1.3;
+  color: #fff;
+  white-space: nowrap;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
+}
+
+.auth-slogan cite {
+  display: block;
+  margin-top: 0.75rem;
+  font-family: Hind, sans-serif;
+  font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+  font-style: italic;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.88);
+  text-align: right;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.4);
+}
+
 .auth-form-col {
   position: relative;
   z-index: 1;

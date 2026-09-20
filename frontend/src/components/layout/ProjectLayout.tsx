@@ -5,11 +5,13 @@ import { useAuthStore } from "../../store/auth.store";
 import { AppHeader } from "./AppHeader";
 import { Sidebar } from "./Sidebar";
 import { CinderBackdrop } from "./CinderBackdrop";
+import { useT } from "../../i18n/useT";
 
 export function ProjectLayout() {
     const { projectId } = useParams();
     const pid = Number(projectId);
     const userId = useAuthStore((s) => s.user?.user_id);
+    const t = useT()
 
     const { data: project, isError, isLoading } = useQuery({
         queryKey: ['project', pid, userId],
@@ -31,7 +33,7 @@ export function ProjectLayout() {
                 <div className="flex-1 flex flex-col min-w-0 gap-4">
                     <AppHeader
                         compact
-                        title={isLoading ? 'Loading...' : (project?.project_name ?? 'Project')}
+                        title={isLoading ? t('common.loading') : (project?.project_name ?? t('common.project'))}
                         subtitle={project?.project_key}
                     />
                     <main className="relative flex-1 min-h-0 rounded-[30px] flex flex-col">

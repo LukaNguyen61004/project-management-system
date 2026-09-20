@@ -1,8 +1,10 @@
 import { AlertTriangle } from 'lucide-react'
 import type { Issue } from '../../types/issue.types'
 import { getWarningLabel, isIssueWarned } from '../../utils/issueWarning'
+import { useT } from '../../i18n/useT'
 
 export function IssueWarningBadge({ issue }: { issue: Issue }) {
+  useT()
   if (!isIssueWarned(issue)) return null
 
   return (
