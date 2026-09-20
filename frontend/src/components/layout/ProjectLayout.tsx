@@ -25,19 +25,19 @@ export function ProjectLayout() {
     }
 
     return (
-        <div className="relative min-h-screen">
+        <div className="relative min-h-dvh">
             <CinderBackdrop />
-            <div className="relative z-10 flex gap-4 p-6 min-h-screen">
+            <div className="relative z-10 flex gap-2 p-2 pb-[calc(4.5rem+env(safe-area-inset-bottom))] min-h-dvh lg:gap-4 lg:p-6 lg:pb-6 lg:min-h-screen">
                 <Sidebar />
 
-                <div className="flex-1 flex flex-col min-w-0 gap-4">
+                <div className="flex-1 flex flex-col min-w-0 gap-2 lg:gap-4">
                     <AppHeader
                         compact
                         title={isLoading ? t('common.loading') : (project?.project_name ?? t('common.project'))}
                         subtitle={project?.project_key}
                     />
-                    <main className="relative flex-1 min-h-0 rounded-[30px] flex flex-col">
-                        <div className="cinder-glass pointer-events-none absolute inset-0 rounded-[30px]" />
+                    <main className="relative flex-1 min-h-0 rounded-[20px] lg:rounded-[30px] flex flex-col">
+                        <div className="cinder-glass pointer-events-none absolute inset-0 rounded-[20px] lg:rounded-[30px]" />
                         <div className="relative flex-1 overflow-auto min-h-0">
                           <Outlet />
                         </div>

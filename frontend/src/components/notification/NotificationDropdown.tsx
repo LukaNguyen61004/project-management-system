@@ -20,7 +20,7 @@ export function NotificationDropdown({
 
   return (
     <div
-      className="absolute right-0 top-full mt-2 w-80 bg-black rounded-[16px] shadow-xl z-50"
+      className="absolute right-0 top-full mt-2 w-[min(20rem,calc(100vw-1.5rem))] bg-black rounded-[16px] shadow-xl z-50"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex items-center justify-between px-4 py-3 border-b border-jira-border">

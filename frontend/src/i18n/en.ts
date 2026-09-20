@@ -35,6 +35,7 @@ export const en = {
     backlog: 'Backlog',
     settings: 'Settings',
     backToWorkspace: 'Back to Workspace',
+    projects: 'Projects',
   },
   auth: {
     signInTitle: 'Sign in account',
@@ -141,6 +142,7 @@ export const en = {
     allTypes: 'All types',
     allAssignees: 'All assignees',
     allEpics: 'All epics',
+    filters: 'Filters',
   },
   issue: {
     createTitle: 'Create issue',

@@ -56,15 +56,15 @@ export function ProjectsPage() {
   return (
     <div className="relative min-h-screen">
       <CinderBackdrop />
-      <div className="relative z-10 p-6 space-y-4">
+      <div className="relative z-10 p-3 sm:p-6 space-y-4">
         <AppHeader
           title={t('project.yourProjects')}
           subtitle={t('project.welcomeBack', { name: user?.user_name || user?.user_email || '' })}
         />
 
-        <div className="cinder-glass rounded-[30px] p-8 min-h-[70vh]">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-[30px] font-bold text-white tracking-wide">{t('project.workspace')}</h2>
+        <div className="cinder-glass rounded-[24px] sm:rounded-[30px] p-4 sm:p-8 min-h-[70vh]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-[30px] font-bold text-white tracking-wide">{t('project.workspace')}</h2>
             <Button onClick={() => setShowCreate(true)}>
               <Plus size={16} />
               {t('project.create')}
@@ -77,7 +77,7 @@ export function ProjectsPage() {
                 {t('project.invites', { count: pendingInvites.length })}
               </p>
               {pendingInvites.map((inv) => (
-                <div key={inv.invitation_id} className="flex items-center justify-between py-1">
+                <div key={inv.invitation_id} className="flex items-center justify-between gap-2 flex-wrap py-1">
                   <span className="text-sm text-white/80">{inv.project?.project_name}</span>
                   <div className="flex gap-2">
                     <button

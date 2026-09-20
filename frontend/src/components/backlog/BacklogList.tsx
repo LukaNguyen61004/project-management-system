@@ -2,9 +2,6 @@ import { useState } from 'react'
 import {
   DndContext,
   DragOverlay,
-  PointerSensor,
-  useSensor,
-  useSensors,
   pointerWithin,
   rectIntersection,
   type CollisionDetection,
@@ -19,6 +16,7 @@ import { SprintList } from '../sprint/SprintList'
 import { resolveTargetSprintId } from '../sprint/sprintDnd'
 import { BacklogSection } from './BacklogSection'
 import { BacklogIssueRow } from './BacklogIssueRow'
+import { useAppDndSensors } from '../../hooks/useAppDndSensors'
 
 interface BacklogListProps {
   projectId: number
@@ -61,9 +59,7 @@ export function BacklogList({
   const [activeIssue, setActiveIssue] = useState<Issue | null>(null)
   const moveMutation = useMoveIssueToSprint(projectId)
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
-  )
+  const sensors = useAppDndSensors()
 
   const handleDragStart = (event: DragStartEvent) => {
     const issue = issueFromDrag(event)

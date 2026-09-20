@@ -253,8 +253,8 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-md [-webkit-backdrop-filter:blur(12px)]" onClick={onClose} />
-      <div className="relative w-full max-w-xl cinder-glass shadow-2xl overflow-y-auto min-h-full">
-        <div className="sticky top-0 bg-[#141313]/90 backdrop-blur-md border-b border-jira-border px-6 py-4 flex items-center justify-between">
+      <div className="relative w-full md:max-w-xl cinder-glass-solid shadow-2xl overflow-y-auto min-h-full max-md:h-dvh">
+        <div className="sticky top-0 bg-[#141313]/90 backdrop-blur-md border-b border-jira-border px-4 sm:px-6 py-4 flex items-center justify-between">
           <span className="text-sm text-jira-text-subtle font-medium">
             {currentIssue.issue_key}
           </span>
@@ -267,7 +267,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-6">
           {isIssueWarned(currentIssue) && (
             <div className="flex items-start gap-2 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
               <AlertTriangle size={16} className="shrink-0 mt-0.5" />
@@ -294,7 +294,7 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-jira-text">{t('issue.status')}</label>
               <select

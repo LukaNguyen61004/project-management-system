@@ -124,7 +124,7 @@ export function ProjectSettingPage() {
   if (isError) return <div className="p-6 text-red-500">{t('settings.loadFailed')}</div>
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-3 sm:p-6">
       <h2 className="text-lg font-semibold text-jira-text mb-6">{t('settings.title')}</h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 items-start">

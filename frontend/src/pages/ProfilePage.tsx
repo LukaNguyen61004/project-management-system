@@ -84,7 +84,7 @@ export function ProfilePage() {
   return (
     <div className="relative min-h-screen">
       <CinderBackdrop />
-      <div className="relative z-10 p-6 space-y-4">
+      <div className="relative z-10 p-3 sm:p-6 space-y-4">
       <AppHeader title={t('profile.title')} subtitle={profile?.user_email} />
 
       <div className="max-w-lg mx-auto">

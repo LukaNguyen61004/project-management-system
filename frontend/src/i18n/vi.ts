@@ -37,6 +37,7 @@ export const vi: Messages = {
     backlog: 'Backlog',
     settings: 'Cài đặt',
     backToWorkspace: 'Về workspace',
+    projects: 'Projects',
   },
   auth: {
     signInTitle: 'Đăng nhập',
@@ -143,6 +144,7 @@ export const vi: Messages = {
     allTypes: 'Mọi loại',
     allAssignees: 'Mọi assignee',
     allEpics: 'Mọi epic',
+    filters: 'Bộ lọc',
   },
   issue: {
     createTitle: 'Tạo issue',

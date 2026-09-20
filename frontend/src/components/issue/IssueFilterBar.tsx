@@ -1,5 +1,5 @@
-import type { SelectHTMLAttributes } from 'react'
-import { ChevronDown, Search, X } from 'lucide-react'
+import { useState, type SelectHTMLAttributes } from 'react'
+import { ChevronDown, Search, SlidersHorizontal, X } from 'lucide-react'
 import type { IssueFilters } from '../../types/issueFilter.types'
 import { EMPTY_ISSUE_FILTERS } from '../../types/issueFilter.types'
 import type { ProjectMember } from '../../types/project.types'
@@ -8,6 +8,7 @@ import type { IssuePriority, IssueStatus, IssueType } from '../../types/enums'
 import { ISSUE_PRIORITIES, ISSUE_STATUSES, ISSUE_TYPES } from '../../utils/constants'
 import { Button } from '../ui/Button'
 import { useT } from '../../i18n/useT'
+import { cn } from '../../utils/cn'
 
 interface IssueFilterBarProps {
   filters: IssueFilters
@@ -19,11 +20,11 @@ interface IssueFilterBarProps {
 }
 
 const selectClass =
-  'appearance-none rounded-3xl border border-jira-border pl-3 pr-8 py-1.5 text-sm bg-transparent text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/25 w-max max-w-full'
+  'appearance-none rounded-3xl border border-jira-border pl-3 pr-8 py-1.5 text-sm bg-transparent text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/25 w-full md:w-max max-w-full'
 
 function FilterSelect({ className, children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <div className="relative w-max max-w-full">
+    <div className="relative w-full md:w-max max-w-full">
       <select {...props} className={className}>
         {children}
       </select>
@@ -44,6 +45,7 @@ export function IssueFilterBar({
   filteredCount,
 }: IssueFilterBarProps) {
   const t = useT()
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const set = <K extends keyof IssueFilters>(key: K, value: IssueFilters[K]) => {
     onChange({ ...filters, [key]: value })
   }
@@ -59,8 +61,7 @@ export function IssueFilterBar({
   return (
     <div className="px-4 py-3 border-b border-white/15 space-y-2">
       <div className="flex flex-wrap items-center gap-2">
-        {/* Search */}
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+        <div className="relative flex-1 min-w-0 sm:min-w-[200px] max-w-none sm:max-w-sm">
           <Search
             size={16}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-jira-text-subtle"
@@ -74,7 +75,24 @@ export function IssueFilterBar({
           />
         </div>
 
-        <FilterSelect
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="md:hidden shrink-0"
+          onClick={() => setFiltersOpen((v) => !v)}
+        >
+          <SlidersHorizontal size={14} />
+          {t('filter.filters')}
+        </Button>
+
+        <div
+          className={cn(
+            'flex flex-wrap items-center gap-2 w-full md:w-auto md:contents',
+            !filtersOpen && 'max-md:hidden'
+          )}
+        >
+          <FilterSelect
           value={filters.status}
           onChange={(e) => set('status', e.target.value as IssueStatus | '')}
           className={selectClass}
@@ -158,6 +176,7 @@ export function IssueFilterBar({
             {t('common.clear')}
           </Button>
         )}
+        </div>
       </div>
 
       <p className="text-xs text-jira-text-subtle">

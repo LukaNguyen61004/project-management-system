@@ -83,12 +83,12 @@ export function BacklogPage() {
 
   return (
     <>
-      <div className="px-4 py-3 border-b border-white/15 flex items-center justify-between">
+      <div className="px-3 sm:px-4 py-3 border-b border-white/15 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold text-jira-text">{t('backlog.title')}</h2>
           <p className="text-xs text-jira-text-subtle">{t('backlog.issueCount', { count: issues.length })}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="secondary" onClick={() => setShowCreateEpic(true)}>
             <Plus size={14} /> {t('backlog.createEpic')}
           </Button>
