@@ -27,7 +27,7 @@ export function BoardPage() {
   const [parentIssueForCreate, setParentIssueForCreate] = useState<Issue | null>(null)
   const t = useT()
   const selectClass =
-    'appearance-none rounded-3xl border border-jira-border pl-3 pr-8 py-1.5 text-sm bg-transparent text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/25 w-max max-w-full'
+    'appearance-none rounded-3xl border border-jira-border pl-3 pr-8 py-1.5 text-sm bg-transparent text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/25 w-full sm:w-max max-w-full'
 
   const { data: sprints = [], isLoading: sprintsLoading } = useQuery({
     queryKey: ['sprints', pid],
@@ -102,11 +102,11 @@ export function BoardPage() {
 
   return (
     <>
-      <div className="px-4 py-3 border-b border-white/15 flex items-center justify-between gap-3">
+      <div className="px-3 sm:px-4 py-3 border-b border-white/15 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             <h2 className="text-sm font-semibold text-jira-text shrink-0">{t('board.title')}</h2>
-            <div className="relative w-max max-w-full">
+            <div className="relative min-w-0 flex-1 sm:flex-none sm:w-max max-w-full">
               <select
                 className={selectClass}
                 value={String(boardScope)}
@@ -135,7 +135,7 @@ export function BoardPage() {
               : t('board.showingAll')}
           </p>
         </div>
-        <Button size="sm" variant="secondary" onClick={() => {
+        <Button size="sm" variant="secondary" className="shrink-0 self-start sm:self-auto" onClick={() => {
           setParentIssueForCreate(null)
           setShowCreate(true)
         }}> <Plus size={16} /> {t('backlog.createIssue')}</Button>

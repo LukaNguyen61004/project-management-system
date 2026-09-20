@@ -27,7 +27,7 @@ export function DraggableBacklogIssueRow({
       {...(draggable ? { ...attributes, ...listeners } : {})}
       onClick={onClick}
       className={cn(
-        'flex items-center gap-3 px-4 py-2.5 hover:bg-jira-bg hover:opacity-70 transition-all',
+        'flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 hover:bg-jira-bg hover:opacity-70 transition-all flex-wrap sm:flex-nowrap',
         draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer',
         isDragging && 'opacity-40'
       )}

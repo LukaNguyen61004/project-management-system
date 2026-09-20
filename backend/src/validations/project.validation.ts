@@ -3,18 +3,20 @@ import { z } from "zod";
 export const createProjectSchema = z.object({
    project_name: z
       .string()
-      .min(3)
-      .max(100),
+      .trim()
+      .min(3, "Project name must be at least 3 characters")
+      .max(100, "Project name cannot exceed 100 characters"),
 
    project_key: z
       .string()
-      .min(2)
-      .max(10)
-      .regex(/^[A-Z]+$/),
+      .trim()
+      .min(2, "Project key must be at least 2 characters")
+      .max(10, "Project key cannot exceed 10 characters")
+      .regex(/^[A-Z]+$/, "Project key must be uppercase letters only (A–Z)"),
 
    project_description: z
       .string()
-      .max(500)
+      .max(500, "Description cannot exceed 500 characters")
       .optional(),
 })
 
@@ -30,13 +32,14 @@ export const acceptInvitationSchema = z.object({
 export const updateProjectSchema = z.object({
    project_name: z
       .string()
-      .min(3)
-      .max(100)
+      .trim()
+      .min(3, "Project name must be at least 3 characters")
+      .max(100, "Project name cannot exceed 100 characters")
       .optional(),
 
    project_description: z
       .string()
-      .max(1000)
+      .max(1000, "Description cannot exceed 1000 characters")
       .optional(),
 })
 

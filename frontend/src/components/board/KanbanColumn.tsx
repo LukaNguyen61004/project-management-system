@@ -28,7 +28,7 @@ export function KanbanColumn({
   const issueIds = issues.map((i) => i.issue_id)
 
   return (
-    <div className="flex flex-col w-[278px] shrink-0">
+    <div className="flex flex-col w-[min(278px,calc(100vw-2.75rem))] lg:w-[278px] shrink-0 snap-start">
       <div className="flex items-center justify-between mb-3 px-1 border-b border-white/30 pb-2">
         <h3 className="text-sm font-semibold text-jira-text">{label}</h3>
         <span className="text-xs text-white bg-white/15 rounded-full px-2 py-0.5 min-w-5 text-center">
