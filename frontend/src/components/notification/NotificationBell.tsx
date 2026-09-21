@@ -70,12 +70,10 @@ export function NotificationBell() {
             return
         }
 
-        const isMemberJoined =
+        if (
             notification.notifi_type === 'project_member_joined' ||
-            (notification.notifi_type === 'project_invitation' &&
-                notification.notifi_title === 'New member joined')
-
-        if (isMemberJoined || notification.notifi_type === 'project_invitation_declined') {
+            notification.notifi_type === 'project_invitation_declined'
+        ) {
             if (pid) navigate(`/projects/${pid}/board`)
             return
         }
