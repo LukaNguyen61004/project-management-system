@@ -3,6 +3,8 @@ import type { Notification } from '../../types/notification.types'
 import { Avatar } from '../ui/Avatar'
 import { cn } from '../../utils/cn'
 import { useDateFnsLocale } from '../../i18n/dateLocale'
+import { useT } from '../../i18n/useT'
+import { formatNotification } from '../../utils/formatNotification'
 
 interface NotificationItemProps {
   notification: Notification
@@ -10,7 +12,9 @@ interface NotificationItemProps {
 }
 
 export function NotificationItem({ notification, onClick }: NotificationItemProps) {
+  useT()
   const dateLocale = useDateFnsLocale()
+  const { title, content } = formatNotification(notification)
   return (
     <button
       type="button"
@@ -29,7 +33,7 @@ export function NotificationItem({ notification, onClick }: NotificationItemProp
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
             <p className="text-sm font-medium text-jira-text truncate">
-              {notification.notifi_title}
+              {title}
             </p>
             <span className="text-xs text-jira-text-subtle shrink-0">
               {formatDistanceToNow(new Date(notification.notifi_created_at), {
@@ -39,7 +43,7 @@ export function NotificationItem({ notification, onClick }: NotificationItemProp
             </span>
           </div>
           <p className="text-xs text-jira-text-subtle mt-1 line-clamp-2">
-            {notification.notifi_content}
+            {content}
           </p>
         </div>
       </div>
