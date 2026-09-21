@@ -121,6 +121,7 @@ export const vi: Messages = {
     statusFailed: 'Đổi status thất bại',
     statusUpdated: 'Đã cập nhật status',
     adjacent: 'Chỉ được chuyển sang cột liền kề (không nhảy cóc, Done không về To Do)',
+    noBackToTodo: 'Không được kéo từ In Progress về To Do',
     needAssignee: 'Cần gán người nhận trước khi kéo sang In Progress',
   },
   backlog: {
