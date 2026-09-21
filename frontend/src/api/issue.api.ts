@@ -50,7 +50,7 @@ export async function fetchIssueList(
 export const issueApi = {
   getByProject: (
     projectId: number,
-    { page = 1, limit = 50, sprint_id }: GetProjectIssuesParams = {},
+    { page = 1, limit = 20, sprint_id }: GetProjectIssuesParams = {},
   ) =>
     apiClient.get<{
       success: boolean

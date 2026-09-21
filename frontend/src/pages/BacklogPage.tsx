@@ -37,7 +37,7 @@ export function BacklogPage() {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: issueListKey.backlog(pid, page),
-    queryFn: () => fetchIssueList(pid, { sprint_id: 'backlog', page, limit: 50 }),
+    queryFn: () => fetchIssueList(pid, { sprint_id: 'backlog', page, limit: 20 }),
     enabled: !!pid,
   })
   const issues = data?.issues ?? []
