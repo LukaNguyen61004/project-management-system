@@ -27,7 +27,7 @@ interface KanbanBoardProps {
   listQueryKey: readonly unknown[]
 }
 
-export function KanbanBoard({ projectId, issues, onIssueClick, listQueryKey }: KanbanBoardProps) {
+export function KanbanBoard({ issues, onIssueClick, listQueryKey }: KanbanBoardProps) {
   const queryClient = useQueryClient()
   const [activeIssue, setActiveIssue] = useState<Issue | null>(null)
   const translate = useT()
@@ -50,11 +50,11 @@ export function KanbanBoard({ projectId, issues, onIssueClick, listQueryKey }: K
       await queryClient.cancelQueries({ queryKey: listQueryKey })
 
       // Lưu bản cũ để rollback nếu lỗi
-      const previous = queryClient.getQueryData<IssueListPage[]>(listQueryKey)
+      const previous = queryClient.getQueryData<IssueListPage>(listQueryKey)
 
       // Cập nhật cache — card nhảy cột NGAY
       queryClient.setQueryData<IssueListPage>(listQueryKey, (old) => {
-        if (!old) return old
+        if (!old?.issues) return old
         return {
           ...old,
           issues: old.issues.map((issue) =>
@@ -68,7 +68,7 @@ export function KanbanBoard({ projectId, issues, onIssueClick, listQueryKey }: K
     // 2. API lỗi → trả lại data cũ
     onError: (err, _vars, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(['issues', projectId], context.previous)
+        queryClient.setQueryData(listQueryKey, context.previous)
       }
       toast.error(getApiErrorMessage(err, t('board.statusFailed')))
     },

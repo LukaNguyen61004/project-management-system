@@ -83,7 +83,10 @@ export function IssueDetailPanel({ issue, projectId, onClose, onDeleted, onAddSu
 
   const currentIssue = detail || issue
 
-  const issues = queryClient.getQueryData<Issue[]>(['issues', projectId]) ?? []
+  const cachedIssues = queryClient.getQueryData<Issue[] | { issues?: Issue[] }>(['issues', projectId])
+  const issues = Array.isArray(cachedIssues)
+    ? cachedIssues
+    : cachedIssues?.issues ?? []
   const canCreateBug = issues.some((i) => i.issue_status === 'done')
 
   useEffect(() => {

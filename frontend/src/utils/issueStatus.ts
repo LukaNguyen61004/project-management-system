@@ -10,6 +10,9 @@ export function getStatusTransitionError(from : IssueStatus, to: IssueStatus, as
   if (Math.abs(i - j) !== 1) {
     return t('board.adjacent')
   }
+  if (from === 'in_progress' && to === 'todo') {
+    return t('board.noBackToTodo')
+  }
   if (from === 'todo' && to === 'in_progress' && assigneeId == null) {
     return t('board.needAssignee')
   }
