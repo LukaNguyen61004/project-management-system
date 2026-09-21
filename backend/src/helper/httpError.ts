@@ -56,6 +56,7 @@ const ERROR_STATUS_MAP: Record<string, number> = {
   "Issue is already moved to this sprint": 400,
   "Invalid issue status transition": 400,
   "Assign someone before moving to In Progress": 400,
+  "Cannot move In Progress to To Do": 400,
   "Cannot move issue into a completed sprint": 400,
   "Cannot move done issue out of a completed sprint": 400,
   "Sprint must be completed before generating summary": 400,

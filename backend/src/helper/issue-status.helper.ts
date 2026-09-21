@@ -15,7 +15,7 @@ export function assertCanChangeIssueStatus(from: IssueStatus, to: IssueStatus, a
         throw new Error("Invalid issue status transition");
     }
     if (from === 'in_progress' && to === 'todo') {
-        throw new Error("Cannout move In Progress to To Do")
+        throw new Error("Cannot move In Progress to To Do")
     }
     if (from === IssueStatus.todo && to === IssueStatus.in_progress && assigneeId == null) {
         throw new Error("Assign someone before moving to In Progress");

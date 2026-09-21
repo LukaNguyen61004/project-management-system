@@ -119,6 +119,7 @@ export const en = {
     statusFailed: 'Failed to change status',
     statusUpdated: 'Status updated',
     adjacent: 'You can only move to an adjacent column (no skipping, Done cannot go back to To Do)',
+    noBackToTodo: 'Cannot move In Progress back to To Do',
     needAssignee: 'Assign someone before moving to In Progress',
   },
   backlog: {
