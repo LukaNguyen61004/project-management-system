@@ -55,7 +55,7 @@ export function BoardPage() {
     queryFn: () =>
       fetchIssueList(pid, {
         page: 1,
-        limit: 100,
+        limit: 20,
         ...(boardScope === 'all' ? {} : { sprint_id: boardScope }),
       }),
     enabled: !!pid && !sprintsLoading,
