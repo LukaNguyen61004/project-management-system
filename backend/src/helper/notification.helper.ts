@@ -1,5 +1,5 @@
 import { getProjectMemberIds } from "../repositories/project.repository.js";
-import { createNotificationService } from "../services/notification.service.js";
+import { createNotifications } from "../repositories/notification.repository.js";
 import { NotificationType } from "@prisma/client";
 
 export const notifyProjectMembers = async (
@@ -13,18 +13,18 @@ export const notifyProjectMembers = async (
 ) => {
     const members = await getProjectMemberIds(projectId);
 
-    for (const m of members) {
-        if (m.user_id === senderId) continue;
+    const rows = members
+        .filter((m) => m.user_id !== senderId)
+        .map((m) => ({
+            receiver_id: m.user_id,
+            sender_id: senderId,
+            notifi_type: type,
+            notifi_title: title,
+            notifi_content: content,
+            ...(issueId !== undefined && { related_issue_id: issueId }),
+            ...(projectId !== undefined && { related_project_id: projectId }),
+            ...(sprintId !== undefined && { related_sprint_id: sprintId }),
+        }))
 
-        await createNotificationService(
-            m.user_id,
-            senderId,
-            type,
-            title,
-            content,
-            issueId,
-            projectId,
-            sprintId
-        );
-    }
+    await createNotifications(rows)
 };

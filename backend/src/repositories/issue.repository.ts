@@ -21,8 +21,8 @@ export type CreateIssueData = {
 };
 
 export const issueListWhere = (projectId: number, sprint_id?: IssueSprintFilter) => ({
-  project_id: projectId,
-  ...(sprint_id === 'backlog' ? { sprint_id: null } : typeof sprint_id === 'number' ? { sprint_id } : {}),
+    project_id: projectId,
+    ...(sprint_id === 'backlog' ? { sprint_id: null } : typeof sprint_id === 'number' ? { sprint_id } : {}),
 })
 
 
@@ -83,51 +83,38 @@ export const getProjectIssues = async (
         skip,
         take,
 
-        include: {
-            reporter: {
-                select: {
-                    user_id: true,
-                    user_name: true,
-                    user_email: true,
-                    user_avatar_url: true,
-                }
-            },
-
+        select: {
+            issue_id: true,
+            project_id: true,
+            sprint_id: true,
+            epic_id: true,
+            parent_issue_id: true,
+            issue_key: true,
+            issue_name: true,
+            issue_type: true,
+            issue_status: true,
+            issue_priority: true,
+            reporter_id: true,
+            assignee_id: true,
+            due_date: true,
+            last_activity_at: true,
+            warning_count: true,
+            review_reject_count: true,
+            issue_created_at: true,
+            issue_updated_at: true,
             assignee: {
                 select: {
                     user_id: true,
                     user_name: true,
-                    user_email: true,
                     user_avatar_url: true,
-                }
-            },
-            parent: {
-                select: {
-                    issue_id: true,
-                    issue_key: true,
-                    issue_priority: true,
-                    issue_type: true
                 },
-            },
-            subtasks: {
-                select: {
-                    issue_id: true,
-                    issue_key: true,
-                    issue_priority: true
-                },
-            },
-            sprint: {
-                select: {
-                    sprint_id: true,
-                    sprint_name: true,
-                }
             },
             epic: {
                 select: {
                     epic_id: true,
                     epic_name: true,
                     epic_color: true,
-                }
+                },
             },
         },
         orderBy: {
@@ -327,12 +314,12 @@ export const countIssueDone = async (projectId: number) => {
 }
 
 export const getIssuesByIds = async (ids: number[]) => {
-  if (ids.length === 0) return []
-  return prisma.issue.findMany({
-    where: { issue_id: { in: ids } },
-    include: {
-      reporter: { select: { user_id: true, user_name: true } },
-      assignee: { select: { user_id: true, user_name: true } },
-    },
-  })
+    if (ids.length === 0) return []
+    return prisma.issue.findMany({
+        where: { issue_id: { in: ids } },
+        include: {
+            reporter: { select: { user_id: true, user_name: true } },
+            assignee: { select: { user_id: true, user_name: true } },
+        },
+    })
 }
