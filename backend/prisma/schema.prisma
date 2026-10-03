@@ -325,6 +325,7 @@ model Issue {
   @@index([issue_priority])
   @@index([last_activity_at])
   @@index([parent_issue_id])
+  @@index([project_id, issue_created_at(sort: Desc)])
 }
 
 model IssueAttachment {

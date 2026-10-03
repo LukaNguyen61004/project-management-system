@@ -52,3 +52,8 @@ export const createNotification = async(data: CreateNotificationData)=>{
         data
     })
 }
+
+export const createNotifications = async (data: CreateNotificationData[]) => {
+  if (data.length === 0) return
+  return prisma.notification.createMany({ data })
+}
